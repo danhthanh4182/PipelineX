@@ -5,7 +5,7 @@ import { data, Link, useRevalidator, useSearchParams } from "react-router";
 import { SITE } from "@aihot/site";
 import { adminPageGet, GRAY_HEADERS } from "../../../apps/web/app/lib/admin.server";
 import { ago, num } from "../../../apps/web/app/features/admin/format";
-import { toast, Toaster } from "../../../apps/web/app/features/admin/toast";
+import { toast } from "../../../apps/web/app/features/admin/toast";
 import { AdminPage, Badge, Button, Card, DataTable, Empty, Select } from "../../../apps/web/app/features/admin/ui";
 
 type Step = "story" | "dossier" | "script" | "verify" | "assets" | "voice" | "render";
@@ -154,13 +154,12 @@ export default function VideosAdmin({ loaderData }: { loaderData: { overview: Ov
       title="Videos"
       subtitle={
         <>
-          One video per story: script → pictures → voice → render. Daily automatic video:{" "}
+          One video per story: research → script → fact-check → pictures → voice → render. Daily automatic video:{" "}
           <b className={o.auto ? "text-ok" : "text-ink-2"}>{o.auto ? "on" : "off"}</b> (VIDEO_AUTO_ENABLED)
           {!o.modelCalls && <span className="text-hot"> · MODEL_CALLS_ENABLED is off: videos cannot be made</span>}
         </>
       }
     >
-      <Toaster />
       {detail && <VideoDetail d={detail} steps={o.steps} run={run} busy={busy} close={() => setParams({}, { preventScrollReset: true })} />}
 
       <div className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">

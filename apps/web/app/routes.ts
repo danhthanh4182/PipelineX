@@ -11,7 +11,9 @@ const modulePages: RouteConfigEntry[] = MODULES.flatMap((m) =>
   (m.pages ?? []).filter((p) => "layout" in p || !p.admin)
     .map((p) => ("layout" in p ? layout(file(m.name, p.layout), p.id ? { id: p.id } : {}, p.pages.map((c) => page(m.name, c))) : page(m.name, p))),
 );
-const adminPages: RouteConfigEntry[] = MODULES.flatMap((m) => (m.pages ?? []).flatMap((p) => ("layout" in p || !p.admin ? [] : [page(m.name, p)])));
+const adminPages: RouteConfigEntry[] = MODULES.flatMap((m) => (m.pages ?? []).flatMap((p) => ("layout" in p || !p.admin || p.shell ? [] : [page(m.name, p)])));
+/** Admin pages that sit in the engine's back office (ModulePage.shell "engine"), for engine admins. */
+const engineShellPages: RouteConfigEntry[] = MODULES.flatMap((m) => (m.pages ?? []).flatMap((p) => ("layout" in p || !p.admin || !p.shell ? [] : [page(m.name, p)])));
 
 export default [
   index("routes/home.tsx"),
@@ -59,5 +61,6 @@ export default [
     route("admin/selectbench/:runId", "routes/admin/selectbench-run.tsx"),
     route("admin/settings", "routes/admin/settings.tsx"),
     route("admin/audit", "routes/admin/audit.tsx"),
+    ...engineShellPages,
   ]),
 ] satisfies RouteConfig;

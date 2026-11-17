@@ -22,6 +22,13 @@ export interface ModulePage {
   admin?: true;
   /** An admin page's name in the back office's sidebar. */
   nav?: string;
+  /**
+   * PipelineX: "engine" puts an admin page inside the engine's back office (its layout and sidebar, engine admins
+   * only) instead of the modules' own shell, listed under `group` at the top of the sidebar.
+   */
+  shell?: "engine";
+  /** The sidebar group of an engine-shell admin page (default "Modules"). */
+  group?: string;
 }
 
 /** Pages that share a layout route. */
@@ -47,6 +54,7 @@ export function defineModule(module: ModuleDeclaration): ModuleDeclaration {
     if (page.gray && page.admin) throw new Error("A page cannot be both gray and admin");
     if (page.admin && "layout" in item) throw new Error("An admin page sits in the back office's shell, not a module's layout");
     if (page.admin && !page.nav) throw new Error("An admin page needs its name in the back office's sidebar (nav)");
+    if (page.shell && !page.admin) throw new Error("Only an admin page can sit in the engine's back office (shell)");
   }
   return module;
 }

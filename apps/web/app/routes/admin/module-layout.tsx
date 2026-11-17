@@ -9,7 +9,7 @@ import { NavigationProgress } from "../../components/shell/Chrome";
 import { adminPageAccess, GRAY_HEADERS } from "../../lib/admin.server";
 
 /** The sidebar: every admin page without parameters in its address, in the order the site lists its modules. */
-const NAV = MODULES.flatMap((m) => (m.pages ?? []).flatMap((p) => ("layout" in p || !p.admin || p.path.includes(":") ? [] : [{ to: `/admin/${p.path}`, label: p.nav ?? p.path }])));
+const NAV = MODULES.flatMap((m) => (m.pages ?? []).flatMap((p) => ("layout" in p || !p.admin || p.shell || p.path.includes(":") ? [] : [{ to: `/admin/${p.path}`, label: p.nav ?? p.path }])));
 
 // Plain types, not the generated ones: a site without admin pages (the open-source edition) has no such route.
 export async function loader({ request }: { request: Request }) {

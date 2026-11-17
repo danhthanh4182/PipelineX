@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { Suspense } from "react";
 import { ADMIN, SITE } from "@aihot/site";
+import { MODULES } from "@aihot/site/modules";
 import { Await, data, NavLink, Outlet, useLocation, useNavigation, type ShouldRevalidateFunction } from "react-router";
 import type { Route } from "./+types/layout";
 import { RingMark } from "@aihot/site/brand/Logo.tsx";
@@ -33,7 +34,19 @@ export const meta: Route.MetaFunction = () => [{ title: `${SITE.name} Admin` }, 
 
 export const headers: Route.HeadersFunction = () => ({ "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow", "X-Accel-Buffering": "no" });
 
+/** The modules' admin pages that sit in this back office (ModulePage.shell "engine"), by group, ahead of the engine's. */
+function moduleGroups(): Array<{ group: string; items: AdminNavEntry[] }> {
+  const groups = new Map<string, AdminNavEntry[]>();
+  for (const m of MODULES) for (const p of m.pages ?? []) {
+    if ("layout" in p || !p.admin || !p.shell || p.path.includes(":")) continue;
+    const group = p.group ?? "Modules";
+    groups.set(group, [...(groups.get(group) ?? []), { to: `/admin/${p.path}`, label: p.nav ?? p.path }]);
+  }
+  return [...groups].map(([group, items]) => ({ group, items }));
+}
+
 const nav = (): Array<{ group: string; items: AdminNavEntry[] }> => [
+  ...moduleGroups(),
   {
     group: "Content",
     items: [

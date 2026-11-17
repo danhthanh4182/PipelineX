@@ -1,12 +1,14 @@
 // Step "verify": every sentence of the narration checked against the reports' full text.
 // It does not change the script: it lists what is supported, partly supported or unsupported, for the reviewer
 // (and as the measure when comparing ways of writing). Framing sentences ("Here's what we know.") are told apart.
-// Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env verify.ts   (reads <dir>/script.json + story.json, writes <dir>/verify.json)
+// Usage: VIDEO_WORKDIR=<dir> [VIDEO_VARIANT=short] node --env-file=<app>/.env verify.ts
+//   (reads <dir>/script.json or script-short.json + the reports, writes <dir>/verify.json or verify-short.json)
 import { readFileSync, writeFileSync } from "node:fs";
 import { chatJson, materialOf, readArticles, splitSentences, W } from "./lib.ts";
 
 const articles = readArticles();
-const script = JSON.parse(readFileSync(`${W}/script.json`, "utf8"));
+const VARIANT = process.env.VIDEO_VARIANT ? `-${process.env.VIDEO_VARIANT}` : "";
+const script = JSON.parse(readFileSync(`${W}/script${VARIANT}.json`, "utf8"));
 
 // Sentences, numbered in narration order, with where they sit.
 const sentences: Array<{ id: string; scene: number; beat: number; text: string }> = [];
@@ -28,7 +30,10 @@ Return ONLY JSON: {"checks": [{"id": "S1", "verdict": "...", "sources": [n], "no
 Check every sentence, in order.`;
 
 const user = `Reports:\n\n${materialOf(articles, Number(process.env.VIDEO_DOSSIER_CHARS || 12000))}\n\nNarration:\n${sentences.map((s) => `${s.id}: ${s.text}`).join("\n")}`;
-const { json, cost } = await chatJson(system, user, { temperature: 0, maxTokens: 40000 });
+const { json, cost, provider } = await chatJson(system, user, {
+  temperature: 0, maxTokens: 40000,
+  check: (j) => { if (!Array.isArray(j.checks) || j.checks.length < sentences.length * 0.8) throw new Error(`checked ${Array.isArray(j.checks) ? j.checks.length : 0} of ${sentences.length} sentences`); },
+});
 
 const byId = new Map((json.checks ?? []).map((c: any) => [c.id, c]));
 const checks = sentences.map((s) => {
@@ -37,6 +42,6 @@ const checks = sentences.map((s) => {
 });
 const count = (v: string) => checks.filter((c) => c.verdict === v).length;
 const summary = { sentences: checks.length, supported: count("supported"), partial: count("partial"), unsupported: count("unsupported"), framing: count("framing"), unchecked: count("unchecked") };
-writeFileSync(`${W}/verify.json`, JSON.stringify({ summary, checks }, null, 2));
+writeFileSync(`${W}/verify${VARIANT}.json`, JSON.stringify({ summary, checks }, null, 2));
 for (const c of checks.filter((c) => c.verdict === "partial" || c.verdict === "unsupported")) console.log(`${c.verdict.toUpperCase()} ${c.id}: ${c.text}\n  -> ${c.note}`);
-console.log(`RESULT ${JSON.stringify({ cost, ...summary })}`);
+console.log(`RESULT ${JSON.stringify({ cost, provider, ...summary })}`);

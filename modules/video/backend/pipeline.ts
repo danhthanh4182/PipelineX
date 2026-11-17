@@ -6,7 +6,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } fr
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config } from "@aihot/backend/config";
-import { finishVideo, getVideo, markStep, recordStep, STEPS, storyMaterial, type Step } from "./videos.ts";
+import { EXTRAS, finishVideo, getVideo, markStep, recordStep, STEPS, storyMaterial, type Step } from "./videos.ts";
 
 export const ROOT = fileURLToPath(new URL("../../../", import.meta.url));
 export const RENDERER = process.env.VIDEO_RENDERER_DIR || path.join(ROOT, "renderer");
@@ -14,19 +14,45 @@ export const WORK_ROOT = process.env.VIDEO_WORK_DIR || path.join(ROOT, ".data", 
 
 export const workDir = (id: number) => path.join(WORK_ROOT, String(id));
 export const videoFile = (id: number) => path.join(workDir(id), "video.mp4");
+export const shortFile = (id: number) => path.join(workDir(id), "short.mp4");
+export const thumbnailFile = (id: number) => path.join(workDir(id), "thumbnail.jpg");
 
 const MINUTE = 60_000;
-const LIMITS: Record<Exclude<Step, "story">, number> = { dossier: 10 * MINUTE, script: 10 * MINUTE, verify: 10 * MINUTE, assets: 20 * MINUTE, voice: 15 * MINUTE, render: 40 * MINUTE };
+
+/**
+ * What the renderer's programs may see of the worker's environment: the system basics and the settings and keys they
+ * read (renderer/lib.ts, background.ts, assets.ts, tts.py). Nothing else (database address, admin password, session
+ * secrets) reaches them. renderer/.env (PIXABAY_API_KEY) is read by the programs themselves.
+ */
+const SYSTEM_ENV = ["PATH", "HOME", "TMPDIR", "LANG", "LC_ALL", "USER", "SHELL"];
+const RENDERER_ENV = [
+  "LLM_BASE_URL", "LLM_API_KEY", "LLM_MODEL", "LLM_REASONING_TOKENS",
+  "NVIDIA_BASE_URL", "NVIDIA_API_KEY", "NVIDIA_MODEL", "OPENROUTER_BASE_URL", "OPENROUTER_API_KEY", "OPENROUTER_MODEL",
+  "ORCAROUTER_BASE_URL", "ORCAROUTER_API_KEY", "ORCAROUTER_MODEL", "VIDEO_PROVIDERS",
+  "TINYFISH_API_KEY", "TINYFISH_SEARCH_URL", "TINYFISH_FETCH_URL", "PIXABAY_API_KEY",
+  "VIDEO_SCRIPT_MODEL", "VIDEO_SCRIPT_WORDS", "VIDEO_MATERIAL_CHARS", "VIDEO_DOSSIER", "VIDEO_DOSSIER_CHARS", "VIDEO_MUSIC",
+];
+const rendererEnv = () => Object.fromEntries([...SYSTEM_ENV, ...RENDERER_ENV].flatMap((k) => (process.env[k] === undefined ? [] : [[k, process.env[k]!]])));
+const LIMITS: Record<Exclude<Step, "story">, number> = { thumbnail: 5 * MINUTE, short: 15 * MINUTE, shortvoice: 10 * MINUTE, shortrender: 20 * MINUTE, background: 10 * MINUTE, dossier: 10 * MINUTE, script: 10 * MINUTE, verify: 10 * MINUTE, assets: 20 * MINUTE, voice: 15 * MINUTE, render: 40 * MINUTE };
 
 function command(step: Exclude<Step, "story">, dir: string): [string, string[]] {
   // Node reads the app's .env and the renderer's own (PIXABAY_API_KEY); the worker's env already carries the app's.
   const node = (file: string): [string, string[]] => [process.execPath, ["--env-file-if-exists=.env", file]];
   switch (step) {
+    case "background": return node("background.ts");
     case "dossier": return node("dossier.ts");
     case "script": return node("script.ts");
     case "verify": return node("verify.ts");
     case "assets": return node("assets.ts");
     case "voice": return [path.join(RENDERER, ".venv", "bin", "python"), ["tts.py"]];
+    case "thumbnail": return [path.join(RENDERER, "node_modules", ".bin", "remotion"), [
+      "still", "src/index.ts", "Thumbnail", path.join(dir, "thumbnail.jpg"), `--props=${path.join(dir, "timeline.json")}`,
+      `--public-dir=${path.join(dir, "public")}`, "--image-format=jpeg", "--jpeg-quality=88"]];
+    case "short": return node("short.ts");
+    case "shortvoice": return [path.join(RENDERER, ".venv", "bin", "python"), ["tts.py"]];
+    case "shortrender": return [path.join(RENDERER, "node_modules", ".bin", "remotion"), [
+      "render", "src/index.ts", "ShortVideo", path.join(dir, "short.mp4"), `--props=${path.join(dir, "timeline-short.json")}`,
+      `--public-dir=${path.join(dir, "public")}`, "--codec", "h264", "--crf", "20", "--concurrency", process.env.VIDEO_RENDER_CONCURRENCY || "4"]];
     case "render": return [path.join(RENDERER, "node_modules", ".bin", "remotion"), [
       "render", "src/index.ts", "NewsVideo", path.join(dir, "video.mp4"), `--props=${path.join(dir, "timeline.json")}`,
       `--public-dir=${path.join(dir, "public")}`, "--codec", "h264", "--crf", "20", "--concurrency", process.env.VIDEO_RENDER_CONCURRENCY || "4"]];
@@ -39,7 +65,8 @@ function run(step: Exclude<Step, "story">, dir: string): Promise<Record<string, 
   const log = path.join(dir, "log.txt");
   appendFileSync(log, `\n=== ${step} ${new Date().toISOString()}\n`);
   return new Promise((resolve, reject) => {
-    const child = spawn(bin, args, { cwd: RENDERER, env: { ...process.env, VIDEO_WORKDIR: dir }, stdio: ["ignore", "pipe", "pipe"] });
+    const variant = step === "shortvoice" ? { VIDEO_VARIANT: "short" } : {};
+    const child = spawn(bin, args, { cwd: RENDERER, env: { ...rendererEnv(), VIDEO_WORKDIR: dir, ...variant }, stdio: ["ignore", "pipe", "pipe"] });
     let tail = "";
     let result: Record<string, unknown> | null = null;
     const take = (chunk: Buffer) => {
@@ -82,6 +109,7 @@ export async function makeVideo(id: number, from: Step = "story"): Promise<void>
   const dir = workDir(id);
   mkdirSync(dir, { recursive: true });
   let step: Step = from;
+  let shortFailed = false;
   try {
     if (!config.modelCallsEnabled) throw new Error("MODEL_CALLS_ENABLED is not true: the script and picture checks call paid models.");
     for (step of STEPS.slice(STEPS.indexOf(from))) {
@@ -89,8 +117,14 @@ export async function makeVideo(id: number, from: Step = "story"): Promise<void>
       if (step === "story") {
         if (!video.story_id) throw new Error("story: the story was deleted");
         await recordStep(id, step, await writeStory(video.story_id, dir));
-      } else if (step === "verify") {
-        // The fact-check informs the reviewer; a failed check does not stop the video.
+      } else if (EXTRAS.includes(step)) {
+        // Thumbnail and Short come after the long video: a failure is recorded, the video stays ready.
+        if (shortFailed && step !== "thumbnail") { await recordStep(id, step, { skipped: "the Short's earlier step failed" }); continue; }
+        const outcome = await run(step, dir).catch((error: Error) => ({ error: error.message.slice(0, 300) }));
+        if ("error" in outcome && step !== "thumbnail") shortFailed = true;
+        await recordStep(id, step, outcome);
+      } else if (step === "verify" || step === "background") {
+        // Background research and the fact-check help the video and the reviewer; their failure does not stop it.
         await recordStep(id, step, await run(step, dir).catch((error: Error) => ({ error: error.message.slice(0, 300) })));
       } else {
         await recordStep(id, step, await run(step, dir));
@@ -129,6 +163,14 @@ export function videoFiles(id: number) {
     credits: (read("ATTRIBUTIONS.txt") ?? "").split("\n").filter(Boolean),
     log: (read("log.txt") ?? "").split("\n").slice(-40).join("\n"),
     hasVideo: existsSync(videoFile(id)),
+    hasShort: existsSync(shortFile(id)),
+    hasThumbnail: existsSync(thumbnailFile(id)),
+    short: (() => {
+      const s = JSON.parse(read("script-short.json") ?? "null") as null | { title: string; scenes: Array<{ beats: Array<{ narration: string }> }> };
+      const v = JSON.parse(read("verify-short.json") ?? "null") as null | { summary: Record<string, number>; checks: Array<{ id: string; text: string; verdict: string; note: string }> };
+      return s && { title: s.title, narration: s.scenes.flatMap((x) => x.beats.map((b) => b.narration)),
+        verify: v && { summary: v.summary, flagged: v.checks.filter((c) => c.verdict === "partial" || c.verdict === "unsupported") } };
+    })(),
   };
 }
 

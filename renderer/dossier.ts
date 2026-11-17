@@ -17,6 +17,7 @@ Rules:
 - Quotes: copy the exact words from the report text, only text that appears inside quotation marks there. Max 40 words.
 - Numbers: copy the figure as written in the report.
 - "background": context the reports themselves give (earlier events, who someone is). No outside knowledge.
+- Items marked BACKGROUND are earlier or official pages found for context: use them for background facts (kind "background"), never as reports of this story's new events.
 - "open_questions": what the reports say is unknown or not yet decided.
 
 Return ONLY JSON:
@@ -30,7 +31,10 @@ Return ONLY JSON:
  "open_questions": [string]}
 Aim for 25-50 facts (never more than 50), ordered from most to least important. Keep each fact under 30 words.`;
 
-const { json, text, cost } = await chatJson(system, `Reports:\n\n${materialOf(articles, CHARS)}`, { maxTokens: 60000 });
+const { json, text, cost, provider } = await chatJson(system, `Reports:\n\n${materialOf(articles, CHARS)}`, {
+  maxTokens: 60000,
+  check: (j) => { if (!Array.isArray(j.facts) || j.facts.length < 8) throw new Error(`fact sheet too thin (${Array.isArray(j.facts) ? j.facts.length : "no"} facts)`); },
+});
 writeFileSync(`${W}/dossier-raw.txt`, text);
 
 // ── Checks against the reports themselves ──
@@ -74,4 +78,4 @@ writeFileSync(`${W}/dossier.json`, JSON.stringify(dossier, null, 2));
 const used = new Set(facts.flatMap((f: any) => f.sources));
 console.log(`facts ${facts.length}, quotes ${quotes.length}, numbers ${numbers.length}, conflicts ${conflicts.length}, timeline ${dossier.timeline.length}, open ${dossier.open_questions.length}`);
 console.log(`reports used ${used.size}/${n}, dropped ${dropped.length}${dropped.length ? `:\n  ${dropped.join("\n  ")}` : ""}`);
-console.log(`RESULT ${JSON.stringify({ cost, facts: facts.length, quotes: quotes.length, conflicts: conflicts.length, reports: n, reportsUsed: used.size, dropped: dropped.length })}`);
+console.log(`RESULT ${JSON.stringify({ cost, provider, facts: facts.length, quotes: quotes.length, conflicts: conflicts.length, reports: n, reportsUsed: used.size, dropped: dropped.length })}`);

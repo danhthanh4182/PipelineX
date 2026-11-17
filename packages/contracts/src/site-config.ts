@@ -10,6 +10,11 @@ export interface ModelPreset {
   reasoningTokens?: number;
   jsonMode: boolean;
   vision?: boolean;
+  /**
+   * PipelineX: a chain of other presets tried in order (cheapest first); a member that throttles, fails, times out,
+   * refuses the key or is not configured hands the call to the next (providers/llm.ts). Its own address is unused.
+   */
+  chain?: string[];
   /** Capability → primary model for which this preset is an evaluated backup. */
   fallbackFor?: Record<string, string>;
   /** The score step's call parameters with this model, instead of the step's own (editorial/analyze.ts). */

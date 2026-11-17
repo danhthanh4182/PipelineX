@@ -9,7 +9,7 @@ import { enqueueOn } from "@aihot/backend/jobs/queue";
 import { actorOf, sessionPrincipal, type AdminPrincipal } from "@aihot/backend/admin/auth";
 import { config } from "@aihot/backend/config";
 import { pickCandidates } from "./backend/candidates.ts";
-import { makeVideo, videoFile, videoFiles } from "./backend/pipeline.ts";
+import { makeVideo, shortFile, thumbnailFile, videoFile, videoFiles } from "./backend/pipeline.ts";
 import { autoPick, candidatesWithVideos, createVideo, getVideo, listVideos, requeueVideo, reviewVideo, STEPS, VideoConflict, type Step } from "./backend/videos.ts";
 
 export const AUTO_ENABLED = () => process.env.VIDEO_AUTO_ENABLED === "true";
@@ -52,15 +52,17 @@ function guarded(fn: Handler) {
 
 const idParam = z.object({ id: z.coerce.number().int().positive() });
 
-/** The rendered file, with byte ranges so the browser can seek. */
-function sendVideo(req: FastifyRequest, reply: FastifyReply, file: string) {
+/** A rendered file, with byte ranges so the browser can seek; `download` asks the browser to save it. */
+function sendVideo(req: FastifyRequest, reply: FastifyReply, file: string, type = "video/mp4") {
   let size: number;
   try {
     size = statSync(file).size;
   } catch {
     return reply.code(404).send({ error: "not_found", detail: "This video has not been rendered." });
   }
-  reply.header("Content-Type", "video/mp4").header("Accept-Ranges", "bytes");
+  reply.header("Content-Type", type).header("Accept-Ranges", "bytes");
+  const name = (req.query as Record<string, string> | undefined)?.download;
+  if (name && /^[\w.-]{1,80}$/.test(name)) reply.header("Content-Disposition", `attachment; filename="${name}"`);
   const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? "");
   if (range && (range[1] || range[2])) {
     const start = range[1] ? Number(range[1]) : Math.max(0, size - Number(range[2]));
@@ -103,6 +105,8 @@ export const videoServer: ServerModule = {
     }));
 
     app.get("/api/admin/video/videos/:id/video.mp4", guarded(async (req, reply) => sendVideo(req, reply, videoFile(idParam.parse(req.params).id))));
+    app.get("/api/admin/video/videos/:id/short.mp4", guarded(async (req, reply) => sendVideo(req, reply, shortFile(idParam.parse(req.params).id))));
+    app.get("/api/admin/video/videos/:id/thumbnail.jpg", guarded(async (req, reply) => sendVideo(req, reply, thumbnailFile(idParam.parse(req.params).id), "image/jpeg")));
 
     app.post("/api/admin/video/videos", guarded(async (req, _reply, admin) => {
       const { storyId } = z.object({ storyId: z.coerce.number().int().positive() }).parse(req.body);

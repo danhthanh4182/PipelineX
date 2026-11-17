@@ -6,6 +6,7 @@
 // Pixabay content: Pixabay Content License (free commercial use, no attribution required; we credit anyway).
 // Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env assets.ts   (reads <dir>/script.json, writes <dir>/script-final.json and <dir>/public/assets)
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { chat } from "./lib.ts";
 
 const UA = "PipelineX-prototype/0.1 (automated news video research)";
 const OK_LICENSE = /^(cc0|cc[- ]?by(-sa)?( \d\.\d)?|public domain|pd)/i;
@@ -16,6 +17,15 @@ mkdirSync(`${W}/public/assets`, { recursive: true });
 type Cand = { url: string; thumb: string; credit: string; license: string; sourceUrl: string; width: number; height: number;
   kind?: "image" | "video"; duration?: number };
 const PIXABAY = process.env.PIXABAY_API_KEY ?? "";
+/** A fetch that never throws: a source that does not answer (DNS, connect timeout…) is skipped, not fatal. */
+async function get(url: string | URL, headers: Record<string, string>, timeoutMs = 30_000): Promise<Response | null> {
+  try {
+    return await fetch(url, { headers, signal: AbortSignal.timeout(timeoutMs) });
+  } catch (error) {
+    console.log(`  no answer from ${new URL(String(url)).hostname}: ${(error as Error).message.slice(0, 80)}`);
+    return null;
+  }
+}
 const strip = (html = "") => html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 const used = new Set<string>();
 let cost = 0;
@@ -25,9 +35,9 @@ async function commons(query: string): Promise<Cand[]> {
   const params: Record<string, string> = { action: "query", format: "json", generator: "search", gsrsearch: `${query} filetype:bitmap`,
     gsrnamespace: "6", gsrlimit: "20", prop: "imageinfo", iiprop: "url|extmetadata|size", iiurlwidth: "1920", origin: "*" };
   for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
-  const res = await fetch(u, { headers: { "user-agent": UA, "api-user-agent": UA } });
-  const body = await res.json().catch(() => null) as any;
-  if (!res.ok || !body) { console.log(`  commons ${res.status}`); return []; }
+  const res = await get(u, { "user-agent": UA, "api-user-agent": UA });
+  const body = res && await res.json().catch(() => null) as any;
+  if (!res?.ok || !body) { console.log(`  commons ${res?.status ?? "-"}`); return []; }
   const pages = Object.values(body.query?.pages ?? {}) as any[];
   pages.sort((a, b) => a.index - b.index);
   const out: Cand[] = [];
@@ -47,8 +57,8 @@ async function openverse(query: string): Promise<Cand[]> {
   const u = new URL("https://api.openverse.org/v1/images/");
   const params: Record<string, string> = { q: query, license_type: "commercial,modification", aspect_ratio: "wide", size: "large", page_size: "20", mature: "false" };
   for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
-  const res = await fetch(u, { headers: { "user-agent": UA } });
-  if (!res.ok) return [];
+  const res = await get(u, { "user-agent": UA });
+  if (!res?.ok) return [];
   const out: Cand[] = [];
   for (const r of ((await res.json().catch(() => null)) as any)?.results ?? []) {
     const license = `${r.license === "cc0" || r.license === "pdm" ? r.license.toUpperCase() : `CC ${r.license.toUpperCase()}`} ${r.license_version ?? ""}`.trim();
@@ -65,8 +75,8 @@ async function pixabay(query: string, videos: boolean): Promise<Cand[]> {
   const params: Record<string, string> = { key: PIXABAY, q: query.slice(0, 100), safesearch: "true", per_page: "20", order: "popular",
     ...(videos ? { video_type: "film" } : { image_type: "photo", orientation: "horizontal", min_width: "1600" }) };
   for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
-  const res = await fetch(u, { headers: { "user-agent": UA } });
-  if (!res.ok) { console.log(`  pixabay ${res.status}`); return []; }
+  const res = await get(u, { "user-agent": UA });
+  if (!res?.ok) { console.log(`  pixabay ${res?.status ?? "-"}`); return []; }
   const out: Cand[] = [];
   for (const h of ((await res.json().catch(() => null)) as any)?.hits ?? []) {
     if (h.isAiGenerated || h.isLowQuality) continue;
@@ -86,7 +96,6 @@ async function pixabay(query: string, videos: boolean): Promise<Cand[]> {
 
 /** Vision check: does the picture really show the query, and is it fit for a neutral news video on this story? */
 async function fits(c: Cand, query: string, kind: string, context: string, narration: string): Promise<boolean> {
-  const base = (process.env.LLM_BASE_URL ?? "").replace(/\/$/, "");
   const wanted = kind === "photo" ? `"${query}" as the main subject` : `something a viewer would recognise as "${query}"`;
   const what = c.kind === "video" ? "still frame from a stock video clip" : kind === "photo" ? "photo of a specific subject" : "generic illustrative b-roll image";
   const prompt = `A ${what} is needed for a news video.
@@ -101,22 +110,20 @@ Answer YES only if ALL hold: (1) the image clearly shows ${wanted};
 (6) its mood fits what is spoken (no celebration, smiling crowds or luxury over a scandal, lawsuit or loss) and it does not suggest a person, brand or product the narration is not about.
 Reply with one word: YES or NO.`;
   // Send the picture itself: providers cannot always fetch Wikimedia/Openverse URLs.
-  let pic = await fetch(c.thumb, { headers: { "user-agent": UA } });
-  if (!pic.ok) pic = await fetch(c.url, { headers: { "user-agent": UA } });
-  if (!pic.ok) { console.log(`  thumbnail ${pic.status}`); return false; }
+  let pic = await get(c.thumb, { "user-agent": UA });
+  if (!pic?.ok) pic = await get(c.url, { "user-agent": UA });
+  if (!pic?.ok) { console.log(`  thumbnail ${pic?.status ?? "-"}`); return false; }
   const type = pic.headers.get("content-type")?.split(";")[0] || "image/jpeg";
   const dataUrl = `data:${type};base64,${Buffer.from(await pic.arrayBuffer()).toString("base64")}`;
-  const res = await fetch(`${base}/chat/completions`, {
-    method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${process.env.LLM_API_KEY}` },
-    body: JSON.stringify({ model: process.env.VISION_MODEL || process.env.LLM_MODEL, temperature: 0, max_tokens: 3000,
-      reasoning: { max_tokens: 1500 },
-      messages: [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: dataUrl } }] }] }),
-    signal: AbortSignal.timeout(120_000),
-  });
-  const d = await res.json().catch(() => ({})) as any;
-  if (!res.ok) { console.log(`  vision error ${res.status}: ${JSON.stringify(d).slice(0, 160)}`); return false; }
-  cost += d.usage?.cost ?? 0;
-  return /^\s*yes/i.test(d.choices?.[0]?.message?.content ?? "");
+  try {
+    const { text, cost: spent } = await chat([{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: dataUrl } }] }],
+      { temperature: 0, maxTokens: 3000, json: false, reasoning: 1500, timeoutMs: 120_000 });
+    cost += spent;
+    return /^\s*yes/i.test(text);
+  } catch (error) {
+    console.log(`  vision check failed: ${(error as Error).message.slice(0, 160)}`);
+    return false;
+  }
 }
 
 let n = 0, missing = 0;
@@ -134,8 +141,8 @@ for (const scene of script.scenes) for (const beat of scene.beats) {
   if (!found) { missing++; console.log(`beat ${i} ${v.type} "${v.query}": nothing fitting (${tried} checked) -> text card`); v.type = "card"; continue; }
   const ext = found.kind === "video" ? "mp4" : (found.url.split("?")[0].match(/\.(jpe?g|png|webp)$/i)?.[1] ?? "jpg").toLowerCase();
   const file = `assets/beat-${String(i).padStart(2, "0")}.${ext}`;
-  const img = await fetch(found.url, { headers: { "user-agent": UA } });
-  if (!img.ok) { missing++; console.log(`beat ${i}: download ${img.status}`); v.type = "card"; continue; }
+  const img = await get(found.url, { "user-agent": UA }, 120_000);
+  if (!img?.ok) { missing++; console.log(`beat ${i}: download ${img?.status ?? "failed"}`); v.type = "card"; continue; }
   writeFileSync(`${W}/public/${file}`, Buffer.from(await img.arrayBuffer()));
   v.asset = { file, credit: found.credit.slice(0, 80), license: found.license, sourceUrl: found.sourceUrl,
     kind: found.kind ?? "image", ...(found.duration ? { duration: found.duration } : {}) };

@@ -51,3 +51,16 @@ Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cậ
 - Còn nợ: các lượt gọi LLM của video chưa ghi biên nhận (receipts) của AIHOT; edge-tts không có giấy phép thương mại (xem RESEARCH-PROCESS.md).
 - Bước `dossier` (hồ sơ sự kiện từ toàn văn, có kiểm tra trích dẫn/con số) và `verify` (kiểm chứng từng câu, hiện trên trang Videos; lỗi kiểm chứng không làm hỏng video). Kết quả thử A/B: RESEARCH-PROCESS.md ở thư mục PipelineX.
 - `packages/contracts/src/modules.ts`, `apps/web/app/routes.ts`, `apps/web/app/routes/admin/layout.tsx`, `module-layout.tsx`: trang admin của module có thể khai báo `shell: "engine"` (+ `group`) để nằm trong khung admin chính, ở đầu menu, thay vì khung riêng của module. Trang Videos dùng cách này (nhóm "Production"). Lý do: trang dùng hằng ngày, cần chuyển qua lại với Sources/Operations mà không đổi giao diện.
+
+## Provider miễn phí trước, trả phí sau
+
+- `site/models.ts`: preset `nvidia-nemotron` (NVIDIA API, miễn phí ~40 lượt/phút), `openrouter-free-nemotron` (`:free`, 20/phút, 1.000/ngày), `orcarouter-free-deepseek` (OrcaRouter free, chỉ chữ), `openrouter-nemotron` (trả phí) và `pipelinex-chain` = chuỗi theo thứ tự đó, cuối cùng là `default` (`LLM_*`). Code mặc định giữ như AIHOT (test chạy như upstream); `.env` chuyển 12 bước sang chuỗi (`PREFILTER_MODEL=pipelinex-chain`…).
+- `packages/contracts/src/site-config.ts`: `ModelPreset.chain`. `packages/backend/src/providers/llm.ts`: `chatChain` thử từng thành viên, mỗi lượt có biên nhận; chuyển tiếp khi không có câu trả lời, chưa cấu hình, bị từ chối tài khoản hoặc gói free từ chối; câu trả lời hỏng thì không mua lại; lượt gọi có ảnh bỏ qua thành viên không đọc ảnh. Cặp chính/dự phòng gốc của AIHOT giữ nguyên luật (tài khoản bị từ chối không chuyển sang dự phòng). `LLM_FAILOVER_TIMEOUT_MS` (mặc định 30 s, PipelineX đặt 90 s). Test: `tests/model-chain.test.ts`.
+- `renderer/lib.ts`: chuỗi tương tự cho các bước video (`VIDEO_PROVIDERS`, mặc định nvidia,openrouter-free,orcarouter,openrouter), kèm kiểm tra câu trả lời dùng được (hồ sơ ≥ 8 sự kiện, kịch bản ≥ 8 beat…).
+- `modules/video/backend/pipeline.ts`: tiến trình dựng video chỉ nhận các biến môi trường cần thiết (không nhận mật khẩu DB/admin).
+
+## Video: Background, Thumbnail, Short
+
+- Bước `background` (TinyFish, miễn phí, không bắt buộc): lấp toàn văn bài ngắn (không lấy báo trả phí), tìm bối cảnh trong tên miền uy tín, thêm tối đa 8 trang được đánh dấu BACKGROUND.
+- Bước `thumbnail` (Remotion still 1280×720, chữ do kịch bản viết `thumbnail_text`), `short` / `shortvoice` / `shortrender` (YouTube Short dọc 1080×1920, ~45–60 s, dùng lại hình đã kiểm tra của bản dài, kiểm chứng từng câu như bản dài). Lỗi ở các bước này không làm hỏng video dài.
+- Trang Videos: ảnh thumbnail, trình phát Short, nút tải video/thumbnail/Short, kết quả kiểm chứng của Short.

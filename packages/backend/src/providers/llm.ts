@@ -137,7 +137,8 @@ const TIMEOUT_MS = 120_000;
  * answers took longer than this (99.9% came within it, the slowest in 77 s), while in an outage every
  * call held its work for the full wait before failing.
  */
-const FAILOVER_TIMEOUT_MS = 30_000;
+// PipelineX: LLM_FAILOVER_TIMEOUT_MS lets a free primary that reasons slowly answer before the paid backup is asked.
+const FAILOVER_TIMEOUT_MS = Number(process.env.LLM_FAILOVER_TIMEOUT_MS || 30_000);
 
 /**
  * With a backup (fallbackModel: editorial/models.ts picks one at another provider), a primary whose
@@ -146,6 +147,8 @@ const FAILOVER_TIMEOUT_MS = 30_000;
  * followed by a second paid request.
  */
 export async function chatJson<S extends z.ZodType>(opts: ChatJsonOptions<S>): Promise<ChatJsonResult<z.infer<S>>> {
+  const chain = MODELS[opts.model]?.chain;
+  if (chain?.length) return chatChain(opts, chain);
   if (!opts.fallbackModel) return chatOnce(opts);
   const backupOpts = { ...opts, model: opts.fallbackModel };
   const fallbackFor = logicalKeyFor(requestFor(opts, MODELS[opts.model]!).request);
@@ -159,6 +162,40 @@ export async function chatJson<S extends z.ZodType>(opts: ChatJsonOptions<S>): P
     if (kind !== "unknown" && kind !== "outage") throw error;
     return chatOnce(backupOpts, true, fallbackFor);
   }
+}
+
+/**
+ * Whether a chain member's failure may go on to the next member (PipelineX chains only; an evaluated primary/backup pair
+ * keeps the engine's rule that a refused account does not buy the backup): it was not answered, the member is not
+ * configured, or that provider cannot serve this account now (each member has its own key).
+ */
+function handsOver(error: unknown): boolean {
+  const kind = failureKind(error);
+  if (kind === "unknown" || kind === "outage" || kind === "off") return true;
+  // A free tier's own refusals (e.g. OrcaRouter's prompt cap or access check) say nothing about the next provider.
+  return error instanceof ProviderRejectedError && (error.accessRefused || /free_rate_limited|err_free_/.test(error.message));
+}
+
+/**
+ * PipelineX: a chain preset (ModelPreset.chain) tries its members in order, each with its own receipt; the later ones
+ * are recorded as continuing the first one's request. An answer that is unusable is not retried elsewhere.
+ */
+async function chatChain<S extends z.ZodType>(opts: ChatJsonOptions<S>, chain: string[]): Promise<ChatJsonResult<z.infer<S>>> {
+  // A call with an image skips the members that cannot read one.
+  const image = Array.isArray(opts.user) && opts.user.some((part) => part.type === "image_url");
+  const members = chain.filter((key) => MODELS[key] && !MODELS[key]!.chain && (!image || MODELS[key]!.vision));
+  if (!members.length) throw new Error(`Chain ${opts.model} has no usable members`);
+  const first = logicalKeyFor(requestFor({ ...opts, model: members[0]! }, MODELS[members[0]!]!).request);
+  let last: unknown;
+  for (const [i, model] of members.entries()) {
+    try {
+      return await chatOnce({ ...opts, model, fallbackModel: undefined }, true, i > 0 ? first : undefined);
+    } catch (error) {
+      last = error;
+      if (!handsOver(error) || i === members.length - 1) throw error;
+    }
+  }
+  throw last;
 }
 
 async function chatOnce<S extends z.ZodType>(opts: ChatJsonOptions<S>, circuit = false, fallbackFor?: string): Promise<ChatJsonResult<z.infer<S>>> {

@@ -1,6 +1,7 @@
 """Step 3 prototype: script-final.json -> one MP3 per beat + word timings (edge-tts) -> src/timeline.json.
 
-Usage: VIDEO_WORKDIR=<dir> python tts.py [voice]   (reads <dir>/script-final.json, writes <dir>/public/audio and <dir>/timeline.json)
+Usage: VIDEO_WORKDIR=<dir> [VIDEO_VARIANT=short] python tts.py [voice]
+  (reads <dir>/script-final.json or script-short.json, writes <dir>/public/audio and <dir>/timeline.json or timeline-short.json)
 """
 import asyncio, datetime, json, os, shutil, subprocess, sys
 from pathlib import Path
@@ -9,9 +10,15 @@ import edge_tts
 
 VOICE = sys.argv[1] if len(sys.argv) > 1 else "en-US-AndrewMultilingualNeural"
 W = Path(os.environ.get("VIDEO_WORKDIR", "work"))
+VARIANT = os.environ.get("VIDEO_VARIANT", "")
+IN = "script-short.json" if VARIANT == "short" else "script-final.json"
+TIMELINE = f"timeline-{VARIANT}.json" if VARIANT else "timeline.json"
+PREFIX = f"{VARIANT}-" if VARIANT else ""
 OUT = W / "public" / "audio"; OUT.mkdir(parents=True, exist_ok=True)
-BEAT_GAP = 0.25   # pause between beats inside a scene
-SCENE_GAP = 0.7   # pause between scenes
+SHORT = VARIANT == "short"
+BEAT_GAP = 0.1 if SHORT else 0.25   # pause between beats inside a scene (a Short keeps moving)
+SCENE_GAP = 0.3 if SHORT else 0.7   # pause between scenes
+RATE = "+10%" if SHORT else "+4%"
 
 
 def duration(path: Path) -> float:
@@ -22,20 +29,21 @@ def duration(path: Path) -> float:
 
 async def speak(name: str, text: str):
     # The service sometimes answers with no audio; try again before failing the video.
-    for attempt in range(3):
+    # The service throttles bursts: wait longer each time (5, 10, 20, 40 s) before giving up.
+    for attempt in range(5):
         try:
             return await speak_once(name, text)
         except edge_tts.exceptions.NoAudioReceived:
-            if attempt == 2:
+            if attempt == 4:
                 raise
             print(f"{name}: no audio, retrying")
-            await asyncio.sleep(3 * (attempt + 1))
+            await asyncio.sleep(5 * 2 ** attempt)
 
 
 async def speak_once(name: str, text: str):
     path = OUT / f"{name}.mp3"
     words = []
-    comm = edge_tts.Communicate(text, VOICE, rate="+4%", boundary="WordBoundary")
+    comm = edge_tts.Communicate(text, VOICE, rate=RATE, boundary="WordBoundary")
     with open(path, "wb") as f:
         async for chunk in comm.stream():
             if chunk["type"] == "audio":
@@ -47,14 +55,14 @@ async def speak_once(name: str, text: str):
 
 
 async def main():
-    script = json.loads((W / "script-final.json").read_text())
+    script = json.loads((W / IN).read_text())
     t = 0.0
     scenes = []
     for si, s in enumerate(script["scenes"]):
         scene_start = t
         beats = []
         for bi, b in enumerate(s["beats"]):
-            path, words = await speak(f"s{si:02d}b{bi:02d}", b["narration"])
+            path, words = await speak(f"{PREFIX}s{si:02d}b{bi:02d}", b["narration"])
             d = duration(path)
             gap = SCENE_GAP if bi == len(s["beats"]) - 1 else BEAT_GAP
             beats.append({**b, "audio": f"audio/{path.name}", "start": round(t - scene_start, 3), "duration": round(d + gap, 3), "words": words})
@@ -65,10 +73,10 @@ async def main():
     music = os.environ.get("VIDEO_MUSIC") or next((str(p) for p in sorted(Path("music").glob("*.mp3"))), None)
     if music and Path(music).exists():
         shutil.copy(music, W / "public" / "music.mp3")
-    timeline = {"title": script["title"], "voice": VOICE, "total": round(t, 3), "scenes": scenes, "sources": script["sources"],
+    timeline = {"title": script["title"], "thumbnail_text": script.get("thumbnail_text"), "voice": VOICE, "total": round(t, 3), "scenes": scenes, "sources": script["sources"],
                 "music": "music.mp3" if music and Path(music).exists() else None,
                 "date": datetime.date.today().strftime("%b %-d, %Y")}
-    (W / "timeline.json").write_text(json.dumps(timeline, indent=2))
+    (W / TIMELINE).write_text(json.dumps(timeline, indent=2))
     print(f"total {t:.1f}s")
     print("RESULT " + json.dumps({"duration": round(t, 1)}))
 

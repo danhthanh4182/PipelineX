@@ -58,13 +58,21 @@ Visual types (pick what best fits the beat):
 
 Return ONLY JSON:
 {"title": string (YouTube title, max 70 chars),
+ "thumbnail_text": string (2-5 punchy words for the thumbnail, true to the story, no question marks, no claims the video does not support, e.g. "NVIDIA CEO OUT"),
  "description": string (2-3 sentences),
  "scenes": [{"kind": "hook"|"story"|"outro", "kicker": string (2-4 words, e.g. "WHAT HAPPENED"),
    "headline": string (max 60 chars),
    "beats": [{"narration": string, ${dossier ? `"facts": ["F1"], ` : ""}"visual": {...}}]}]}`;
 
 const material = dossier ? `Dossier:\n\n${dossierText(dossier)}` : `Material:\n\n${materialOf(articles, Number(process.env.VIDEO_MATERIAL_CHARS || 3000))}`;
-const { json, text, cost } = await chatJson(system, material, { temperature: 0.4 });
+const { json, text, cost, provider } = await chatJson(system, material, {
+  temperature: 0.4,
+  check: (j) => {
+    const beats = Array.isArray(j.scenes) ? j.scenes.flatMap((s: any) => (Array.isArray(s.beats) ? s.beats : [])) : [];
+    if (beats.length < 8 || beats.some((b: any) => typeof b.narration !== "string" || !b.visual?.type)) throw new Error(`script unusable (${beats.length} beats)`);
+    if (dossier && beats.filter((b: any) => Array.isArray(b.facts) && b.facts.length).length < beats.length / 2) throw new Error("most beats name no dossier facts");
+  },
+});
 writeFileSync(`${W}/script-raw.txt`, text);
 
 // ── Grounding checks: anything shown on screen as a quote or number must be in the reports. ──
@@ -108,4 +116,4 @@ const beats = json.scenes.flatMap((s: any) => s.beats);
 const wordCount = beats.reduce((n: number, b: any) => n + b.narration.split(/\s+/).length, 0);
 console.log(`mode: ${json.mode}\ntitle: ${json.title}\nscenes: ${json.scenes.length}, beats: ${beats.length}, words: ${wordCount}${dossier ? `, story beats without facts: ${unfounded}` : ""}`);
 console.log(`visuals: ${beats.map((b: any) => b.visual.type).join(" ")}\ndropped (not grounded): ${dropped.length ? dropped.join(" | ") : "none"}`);
-console.log(`RESULT ${JSON.stringify({ cost, mode: json.mode, title: json.title, words: wordCount, beats: beats.length, dropped: dropped.length, unfounded })}`);
+console.log(`RESULT ${JSON.stringify({ cost, provider, mode: json.mode, title: json.title, words: wordCount, beats: beats.length, dropped: dropped.length, unfounded })}`);

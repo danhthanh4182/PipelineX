@@ -8,7 +8,7 @@ import { ago, num } from "../../../apps/web/app/features/admin/format";
 import { toast } from "../../../apps/web/app/features/admin/toast";
 import { AdminPage, Badge, Button, Card, DataTable, Empty, Select } from "../../../apps/web/app/features/admin/ui";
 
-type Step = "story" | "dossier" | "script" | "verify" | "assets" | "voice" | "render";
+type Step = "story" | "background" | "dossier" | "script" | "verify" | "assets" | "voice" | "render" | "thumbnail" | "short" | "shortvoice" | "shortrender";
 type Status = "queued" | "running" | "ready" | "failed" | "approved" | "rejected";
 
 interface Video {
@@ -71,6 +71,13 @@ interface Detail {
   credits: string[];
   log: string;
   hasVideo: boolean;
+  hasShort: boolean;
+  hasThumbnail: boolean;
+  short: null | {
+    title: string;
+    narration: string[];
+    verify: null | { summary: Record<string, number>; flagged: Array<{ id: string; text: string; verdict: string; note: string }> };
+  };
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -86,7 +93,7 @@ export const headers = () => GRAY_HEADERS;
 
 export const meta = () => [{ title: `Videos · ${SITE.name} Admin` }];
 
-const STEP_LABEL: Record<Step, string> = { story: "Story", dossier: "Research", script: "Script", verify: "Fact-check", assets: "Pictures", voice: "Voice", render: "Render" };
+const STEP_LABEL: Record<Step, string> = { thumbnail: "Thumbnail", short: "Short script", shortvoice: "Short voice", shortrender: "Short render", story: "Story", background: "Background", dossier: "Research", script: "Script", verify: "Fact-check", assets: "Pictures", voice: "Voice", render: "Render" };
 const STATUS: Record<Status, { label: string; tone: "ok" | "warn" | "bad" | "muted" | "accent" | "info" }> = {
   queued: { label: "Queued", tone: "muted" },
   running: { label: "Making", tone: "accent" },
@@ -154,7 +161,7 @@ export default function VideosAdmin({ loaderData }: { loaderData: { overview: Ov
       title="Videos"
       subtitle={
         <>
-          One video per story: research → script → fact-check → pictures → voice → render. Daily automatic video:{" "}
+          One video per story: background → research → script → fact-check → pictures → voice → render, then thumbnail and a vertical Short. Daily automatic video:{" "}
           <b className={o.auto ? "text-ok" : "text-ink-2"}>{o.auto ? "on" : "off"}</b> (VIDEO_AUTO_ENABLED)
           {!o.modelCalls && <span className="text-hot"> · MODEL_CALLS_ENABLED is off: videos cannot be made</span>}
         </>
@@ -231,6 +238,7 @@ function VideoDetail({ d, steps, run, busy, close }: {
         <div className="min-w-0">
           {d.hasVideo ? (
             <video key={v.updated_at} controls preload="metadata" className="aspect-video w-full rounded-control bg-black"
+              poster={d.hasThumbnail ? `/api/admin/video/videos/${v.id}/thumbnail.jpg?v=${encodeURIComponent(v.updated_at)}` : undefined}
               src={`/api/admin/video/videos/${v.id}/video.mp4?v=${encodeURIComponent(v.updated_at)}`} />
           ) : (
             <div className="flex aspect-video w-full items-center justify-center rounded-control bg-bg-sunk text-[13.5px] text-ink-3">
@@ -238,6 +246,43 @@ function VideoDetail({ d, steps, run, busy, close }: {
             </div>
           )}
           {d.script?.description && <p className="mt-3 text-[13.5px] leading-relaxed text-ink-2">{d.script.description}</p>}
+          {(d.hasVideo || d.hasThumbnail || d.hasShort) && (
+            <div className="mt-3 flex flex-wrap gap-2 text-[12.5px]">
+              {d.hasVideo && <a className="rounded-control px-2.5 py-1 ring-1 ring-line hover:bg-bg-sunk" href={`/api/admin/video/videos/${v.id}/video.mp4?download=pipelinex-${v.id}.mp4`}>Download video</a>}
+              {d.hasThumbnail && <a className="rounded-control px-2.5 py-1 ring-1 ring-line hover:bg-bg-sunk" href={`/api/admin/video/videos/${v.id}/thumbnail.jpg?download=pipelinex-${v.id}-thumbnail.jpg`}>Download thumbnail</a>}
+              {d.hasShort && <a className="rounded-control px-2.5 py-1 ring-1 ring-line hover:bg-bg-sunk" href={`/api/admin/video/videos/${v.id}/short.mp4?download=pipelinex-${v.id}-short.mp4`}>Download Short</a>}
+            </div>
+          )}
+          {(d.hasThumbnail || d.hasShort || d.short) && (
+            <div className="mt-4 flex flex-wrap items-start gap-4">
+              {d.hasThumbnail && (
+                <figure className="w-[260px]">
+                  <img alt="Thumbnail" className="aspect-video w-full rounded-control object-cover ring-1 ring-line" src={`/api/admin/video/videos/${v.id}/thumbnail.jpg?v=${encodeURIComponent(v.updated_at)}`} />
+                  <figcaption className="mt-1 text-[12px] text-ink-3">Thumbnail · 1280×720</figcaption>
+                </figure>
+              )}
+              {(d.hasShort || d.short) && (
+                <figure className="w-[170px]">
+                  {d.hasShort ? (
+                    <video key={`short-${v.updated_at}`} controls preload="metadata" className="aspect-[9/16] w-full rounded-control bg-black"
+                      src={`/api/admin/video/videos/${v.id}/short.mp4?v=${encodeURIComponent(v.updated_at)}`} />
+                  ) : <div className="flex aspect-[9/16] w-full items-center justify-center rounded-control bg-bg-sunk text-[12px] text-ink-3">Short not rendered</div>}
+                  <figcaption className="mt-1 text-[12px] text-ink-3">
+                    Short{d.short?.verify ? ` · ${d.short.verify.summary.supported ?? 0}/${d.short.verify.summary.sentences ?? 0} supported` : ""}
+                  </figcaption>
+                </figure>
+              )}
+              {d.short && (
+                <div className="min-w-[220px] flex-1 text-[12.5px] leading-relaxed text-ink-3">
+                  <div className="mb-1 font-medium text-ink-2">{d.short.title}</div>
+                  <p>{d.short.narration.join(" ")}</p>
+                  {d.short.verify?.flagged.map((c) => (
+                    <div key={c.id} className="mt-1"><Badge tone={c.verdict === "unsupported" ? "bad" : "warn"}>{c.verdict === "unsupported" ? "Unsupported" : "Partly"}</Badge> {c.text} {c.note && <span>→ {c.note}</span>}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="min-w-0 space-y-4">
@@ -318,6 +363,13 @@ function VideoDetail({ d, steps, run, busy, close }: {
           </summary>
           <div className="space-y-3 border-t border-line p-3 text-[13px] leading-relaxed">
             <p className="text-ink-2"><b>Angle:</b> {d.dossier.angle}</p>
+            {d.video.result.background && (
+              <p className="text-[12.5px] text-ink-3">
+                <b className="text-ink-2">Background (TinyFish):</b>{" "}
+                {d.video.result.background.skipped ? String(d.video.result.background.skipped)
+                  : `${d.video.result.background.added ?? 0} page(s) added from ${d.video.result.background.searched ?? 0} searches on trusted sites; ${d.video.result.background.filled ?? 0} short report(s) filled with full text`}
+              </p>
+            )}
             <p className="text-ink-3">{d.dossier.summary}</p>
             {d.dossier.conflicts.length > 0 && (
               <div>

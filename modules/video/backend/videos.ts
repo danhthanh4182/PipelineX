@@ -1,7 +1,9 @@
 // Videos made from stories: the rows the admin page lists and the pipeline (pipeline.ts) moves along.
 import { sql, type Db } from "@aihot/backend/db";
 
-export const STEPS = ["story", "dossier", "script", "verify", "assets", "voice", "render"] as const;
+export const STEPS = ["story", "background", "dossier", "script", "verify", "assets", "voice", "render", "thumbnail", "short", "shortvoice", "shortrender"] as const;
+/** Steps after the long video: their failure is recorded but leaves the video ready (a Short failure skips the rest of the Short). */
+export const EXTRAS: readonly Step[] = ["thumbnail", "short", "shortvoice", "shortrender"];
 export type Step = (typeof STEPS)[number];
 export type VideoStatus = "queued" | "running" | "ready" | "failed" | "approved" | "rejected";
 

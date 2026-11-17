@@ -35,7 +35,7 @@ function SideLink({ item, dot, active }: { item: NavItem; dot: boolean; active: 
         <Icon size={17} />
       </span>
       <span className="min-w-0 truncate">{item.label}</span>
-      {dot && item.changelog && <span className="ml-auto size-1.5 shrink-0 rounded-full bg-hot" aria-label="有新的更新" />}
+      {dot && item.changelog && <span className="ml-auto size-1.5 shrink-0 rounded-full bg-hot" aria-label="New updates" />}
     </IntentLink>
   );
 }
@@ -43,7 +43,7 @@ function SideLink({ item, dot, active }: { item: NavItem; dot: boolean; active: 
 /**
  * Narrow desktops (lg up to wide: an unfolded foldable, a tablet upright, a phone on its side) leave the
  * page too little room beside the full sidebar, so the phone's tabs stand down the left side instead and
- * the rest of the sidebar sits under 我的, as on phones.
+ * the rest of the sidebar sits under mine, as on phones.
  */
 function Rail({ dot }: { dot: boolean }) {
   const { pathname } = useLocation();
@@ -51,10 +51,10 @@ function Rail({ dot }: { dot: boolean }) {
   const [railRef, railOverscroll] = useContainedScroll<HTMLElement>();
   return (
     <aside ref={railRef} className={`scrollbar-thin sticky top-0 hidden h-dvh w-16 shrink-0 flex-col items-center border-r border-line bg-sidebar px-1.5 pb-[max(14px,env(safe-area-inset-bottom))] pt-5 lg:flex wide:hidden short:overflow-y-auto short:pt-3 ${railOverscroll}`}>
-      <Link to="/" className="mb-3 flex size-11 shrink-0 items-center justify-center text-accent short:mb-1" aria-label={`${SITE.name} 首页`}>
+      <Link to="/" className="mb-3 flex size-11 shrink-0 items-center justify-center text-accent short:mb-1" aria-label={`${SITE.name} Home`}>
         <RingMark className="size-7" />
       </Link>
-      <nav className="flex w-full flex-col gap-1" aria-label="主导航">
+      <nav className="flex w-full flex-col gap-1" aria-label="Main navigation">
         {rail().map((t) => {
           const on = railIsActive(t, pathname, tab ?? home);
           const Icon = t.icon;
@@ -71,7 +71,7 @@ function Rail({ dot }: { dot: boolean }) {
                 <Icon size={20} />
               </span>
               <span className="max-w-full truncate">{t.label}</span>
-              {dot && t.changelog && <span className="absolute right-2 top-2 size-1.5 rounded-full bg-hot" aria-label="有新的更新" />}
+              {dot && t.changelog && <span className="absolute right-2 top-2 size-1.5 rounded-full bg-hot" aria-label="New updates" />}
             </IntentLink>
           );
         })}
@@ -92,10 +92,10 @@ export function Sidebar({ changelogVersion }: { changelogVersion: string | null 
     <>
       <Rail dot={dot} />
       <aside ref={columnRef} className={`scrollbar-thin sticky top-0 hidden h-dvh w-[180px] shrink-0 flex-col border-r border-line bg-sidebar px-3 pb-[max(14px,env(safe-area-inset-bottom))] pt-6 wide:flex short:overflow-y-auto ${columnOverscroll}`}>
-        <Link to="/" className="mb-4 flex h-[50px] shrink-0 items-center px-1 text-ink" aria-label={`${SITE.name} 首页`}>
+        <Link to="/" className="mb-4 flex h-[50px] shrink-0 items-center px-1 text-ink" aria-label={`${SITE.name} Home`}>
           <Wordmark size={26} />
         </Link>
-        <nav ref={navRef} className={`scrollbar-thin -mx-1 flex-1 overflow-y-auto px-1 short:flex-none short:overflow-visible ${navOverscroll}`} aria-label="主导航">
+        <nav ref={navRef} className={`scrollbar-thin -mx-1 flex-1 overflow-y-auto px-1 short:flex-none short:overflow-visible ${navOverscroll}`} aria-label="Main navigation">
           {sidebar().map((section) => {
             // Only the most specific entry of a section is lit, so a detail page does not light the list above it too.
             const lit = activeSidebarItem(section.items, pathname);
@@ -120,8 +120,8 @@ export function Sidebar({ changelogVersion }: { changelogVersion: string | null 
                 href={SITE.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="GitHub 开源"
-                title="GitHub 开源"
+                aria-label="GitHub Open Source"
+                title="GitHub Open Source"
                 className="flex size-[34px] shrink-0 items-center justify-center rounded-full border border-line text-ink-3 transition-colors hover:bg-bg-sunk hover:text-ink touch:size-11"
               >
                 <IconGithub size={15} />
@@ -133,7 +133,7 @@ export function Sidebar({ changelogVersion }: { changelogVersion: string | null 
           <div className="-mx-1 flex flex-col items-center gap-1.5">
             {SITE.poweredBy && (
               <a href={SITE.poweredBy.url} target="_blank" rel="noopener" className="whitespace-nowrap text-[9.5px] leading-[1.3] text-ink-4 hover:text-ink-3">
-                由 {SITE.poweredBy.name} 驱动
+                Powered by {SITE.poweredBy.name}
               </a>
             )}
             <Filings className="whitespace-nowrap text-[9.5px] leading-[1.3] text-ink-4 hover:text-ink-3" badgeSize={10} />

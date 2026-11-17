@@ -1,0 +1,12 @@
+{
+  "name": "@aihot/video",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./server": "./server.ts"
+  },
+  "dependencies": {
+    "@aihot/backend": "*"
+  }
+}

@@ -108,7 +108,7 @@ test("全部动态's later pages leave search to its first page and keep their l
   const $ = await page("/all?channel=all&tab=relevance&anchorAt=old&page=2&utm_source=fixture");
   assert.equal($("meta[name=robots]").attr("content"), "noindex, follow");
   assert.equal($("link[rel=canonical]").attr("href"), `${web.origin}/all?page=2`);
-  assert.match($("title").text(), new RegExp(`^${SEO_TITLES.all} · 第 2 页`), "the title still names what the list is");
+  assert.match($("title").text(), new RegExp(`^${SEO_TITLES.all} · Page 2`), "the title still names what the list is");
   assert.ok($("main").text().includes(item.title), "the page itself is unchanged");
 });
 
@@ -120,14 +120,14 @@ test("an event page stands in search once it gathers more than one report", asyn
   assert.equal(several("meta[name=googlebot]").length, 0);
 });
 
-// Chinese readers search issues by the date as they write it ("10月4日 AI 新闻"), not by the key.
-for (const [kind, label, date] of [["daily", "日报", "10月4日"], ["weekly", "周报", "9月28日—10月4日"], ["monthly", "月报", "2026年10月"]] as const) {
+// Readers search issues by the date as they write it ("Oct 4 AI News"), not by the key.
+for (const [kind, label, date] of [["daily", "Daily", "Oct 4"], ["weekly", "Weekly", "Sep 28 – Oct 4"], ["monthly", "Monthly", "Oct 2026"]] as const) {
   test(`${kind} issue metadata describes its visible lead and the permanent entry names the latest issue's date`, async () => {
     const r = report(kind);
     const $ = await page(`/${kind}/${r.key}`);
-    const title = `${withSubject(label)}｜${date}：${r.lead!.title}`;
+    const title = `${withSubject(label)} | ${date}: ${r.lead!.title}`;
     // A daily is described by its own headlines; its lead's paragraph is that article's own description.
-    const description = kind === "daily" ? `${date} ${withSubject("新闻")}：${r.lead!.title}；${item.title}。` : `${date} ${withSubject("资讯")}：${r.lead!.leadParagraph}`;
+    const description = kind === "daily" ? `${date} ${withSubject("News")}: ${r.lead!.title}; ${item.title}.` : `${date} ${withSubject("News")}: ${r.lead!.leadParagraph}`;
     assert.equal($("meta[name=description]").attr("content"), description);
     assert.equal($("title").text(), `${title} · ${SITE.name}`);
     assert.equal($("meta[property='og:title']").attr("content"), title);
@@ -147,7 +147,7 @@ for (const [kind, label, date] of [["daily", "日报", "10月4日"], ["weekly", 
 
 test("a daily without a lead is not headed by a report its highlights were only filled with", async () => {
   const $ = await page(`/daily/${leadless().key}`);
-  const title = `${withSubject("日报")}｜10月5日`;
+  const title = `${withSubject("Daily")} | Oct 5`;
   assert.equal($("title").text(), `${title} · ${SITE.name}`);
   assert.equal(structured($).find((entry) => entry["@type"] === "NewsArticle")!.headline, title);
 });
@@ -159,11 +159,11 @@ test("the latest issue is one page however its address is written", async () => 
   }
 });
 
-test("an issue's date reads as Chinese readers write it, across months and years", () => {
-  assert.equal(reportDateLabel("daily", "2026-10-17"), "10月17日");
-  assert.equal(reportDateLabel("weekly", "2026-W42"), "10月12日—18日");
-  assert.equal(reportDateLabel("weekly", "2026-W53"), "12月28日—1月3日");
-  assert.equal(reportDateLabel("monthly", "2026-01"), "2026年1月");
+test("an issue's date reads as readers write it, across months and years", () => {
+  assert.equal(reportDateLabel("daily", "2026-10-17"), "Oct 17");
+  assert.equal(reportDateLabel("weekly", "2026-W42"), "Oct 12 – Oct 18");
+  assert.equal(reportDateLabel("weekly", "2026-W53"), "Dec 28 – Jan 3");
+  assert.equal(reportDateLabel("monthly", "2026-01"), "Jan 2026");
 });
 
 test("a report without an edited lead uses only a still-public visible highlight", () => {

@@ -310,14 +310,14 @@ export interface StoryDetail {
 export type ReportKind = "daily" | "weekly" | "monthly";
 
 /** What each kind of report is called. */
-export const REPORT_NAMES: Record<ReportKind, string> = { daily: "日报", weekly: "周报", monthly: "月报" };
+export const REPORT_NAMES: Record<ReportKind, string> = { daily: "Daily", weekly: "Weekly", monthly: "Monthly" };
 
 /** An issue's date as Chinese readers write and search it: "10月17日", "10月12日—18日" (or "9月28日—10月4日"), "2026年10月". */
 export function reportDateLabel(kind: ReportKind, key: string): string {
   if (kind === "daily") return monthDay(key);
-  if (kind === "monthly") return `${key.slice(0, 4)}年${Number(key.slice(5, 7))}月`;
+  if (kind === "monthly") return `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][Number(key.slice(5, 7)) - 1] ?? ""} ${key.slice(0, 4)}`;
   const { start, end } = isoWeekRange(key)!;
-  return `${monthDay(start)}—${start.slice(5, 7) === end.slice(5, 7) ? `${Number(end.slice(8, 10))}日` : monthDay(end)}`;
+  return `${monthDay(start)} – ${monthDay(end)}`;
 }
 
 export interface ReportCitation {

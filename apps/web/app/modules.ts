@@ -24,7 +24,7 @@ export interface AgentTrack {
   key: string;
   /** On its card and in the aside's list. */
   name: string;
-  /** Where the page and the 我的 page list the ways in a few words. */
+  /** Where the page and the my page list the ways in a few words. */
   short: string;
   badge?: string;
   pitch: string;
@@ -77,21 +77,21 @@ export interface AgentPart {
   resources?: Array<[label: string, href: string, note: string]>;
   /** The MCP panel's tool table: its tools. */
   tools?: Array<{ name: string; does: string; ask: string }>;
-  /** The MCP panel's 连不上怎么办: entries after the engine's first. */
+  /** What to do if The MCP panel's cannot be connected: entries after the engine's first. */
   mcpTroubles?: ReactNode[];
-  /** What the RSS panel's opening sentence goes on to say, a clause each after "；". */
+  /** What the RSS panel's opening sentence goes on to say, a clause each after ";". */
   rssLead?: string[];
   /** The API panel's table: a group of its addresses. */
   api?: { group: string; rows: Array<[path: string, does: string, often: string]> };
   /** The API panel's usage tabs: one each, after the engine's. */
   recipes?: Array<{ key: string; label: string; Body: ComponentType<{ base: string; curl: string }> }>;
-  /** The API panel's 出错了怎么办: [status, what to do], after the engine's. */
+  /** The API panel's What to do if something goes wrong: [status, what to do], after the engine's. */
   apiErrors?: Array<[status: string, what: ReactNode]>;
 }
 
 /** A module's part of a topic page (routes/topic.tsx), from what its server module's topics.page returned for it. */
 export interface TopicPagePart {
-  /** What it is called: after "最新动态与" in the page's title, and in the name of its structured-data list. */
+  /** What it is called: after "Latest News and" in the page's title, and in the name of its structured-data list. */
   name: string;
   /** Whether it has anything on this page; without, the page leaves it out of its body and its head. */
   shows: (data: unknown, topic: TopicSummary) => boolean;
@@ -103,7 +103,7 @@ export interface TopicPagePart {
   news: (data: unknown) => string[];
 }
 
-/** Where the reader's account shows: the 我的 page's first row, the desktop sidebar's foot, the 收藏 page's note, the 卡册. */
+/** Where the reader's account shows: the my page's first row, the desktop sidebar's foot, the collection page's note, the card book. */
 export type AccountPlace = "me" | "sidebar" | "starred" | "album";
 
 export interface WebModule {
@@ -113,11 +113,11 @@ export interface WebModule {
   account?: ComponentType<{ place: AccountPlace }>;
   /** The email of the reader signed in in this browser, or null (read after hydration). */
   signedInEmail?: () => string | null;
-  /** Desktop sidebar: entries in a section between the engine's 内容 and 更多; modules naming the same section share it. */
+  /** Desktop sidebar: entries in a section between the engine's content and more; modules naming the same section share it. */
   sidebar?: { section: string; items: NavItem[] };
-  /** Phone tab bar: tabs before 我的. */
+  /** Phone tab bar: tabs before mine. */
   tabs?: Tab[];
-  /** The 我的 page: rows ahead of the engine's tools. */
+  /** The my page: rows ahead of the engine's tools. */
   tools?: Array<{ to: string; label: string; icon: ReactNode }>;
   /** Parts of every public page (root.tsx); the admin has its own chrome and gets none of them. */
   root?: {
@@ -134,7 +134,7 @@ export interface WebModule {
   topicPage?: Part<TopicPagePart>;
   /** Paths of the marks it serves that are drawn in white, for a dark tile (components/BrandMark.tsx). */
   darkMarks?: string[];
-  /** The starred page (routes/starred.tsx): buttons ahead of 导入文件 that bring stars in from elsewhere, each resolving to the line it reports. */
+  /** The starred page (routes/starred.tsx): buttons ahead of imported files that bring stars in from elsewhere, each resolving to the line it reports. */
   starredImports?: Array<{ label: string; run: () => Promise<{ ok: boolean; text: string }> }>;
   /**
    * The feedback page (routes/feedback.tsx): a draft kept elsewhere in this browser, read when the page
@@ -151,7 +151,7 @@ export interface WebModule {
   onClick?: (target: string) => void;
   /** The terms page's footer: links after the engine's (routes/terms.tsx). */
   termsLinks?: Array<{ to: string; label: string }>;
-  /** Its ways into the agent page (AgentPart.tracks) by their short names: the 我的 page's row names the first three (routes/more.tsx). */
+  /** Its ways into the agent page (AgentPart.tracks) by their short names: the my page's row names the first three (routes/more.tsx). */
   agentWays?: string[];
 }
 

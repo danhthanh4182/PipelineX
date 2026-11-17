@@ -27,7 +27,8 @@ const collecting = process.env.COLLECT_ENABLED === "true";
 const ENGINE_SCHEDULES: Scheduled[] = [
   { name: "content.sweep", cron: "*/5 * * * *", run: sweepUnprocessed },
   // Full-text translations of newly selected items (model calls; off with MODEL_CALLS_ENABLED=false).
-  { name: "content.translate", cron: "*/5 * * * *", run: () => translatePending() },
+  // PipelineX: off with TRANSLATE_ENABLED=false (English-language site, nothing to translate into Chinese).
+  { name: "content.translate", cron: "*/5 * * * *", when: () => process.env.TRANSLATE_ENABLED !== "false", run: () => translatePending() },
   { name: "hot.rank", cron: "*/5 * * * *", run: () => computeHotRanking() },
   { name: "hot.snapshot", cron: "2 * * * *", run: () => snapshotHeat() },
   { name: "stories.links", cron: "12 * * * *", run: linkRelatedStories },

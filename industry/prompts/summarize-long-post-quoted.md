@@ -1,2 +1,2 @@
-{{quotedLabel}}（背景上下文，仅在理解主推文时参考，不要逐句复述）：
+{{quotedLabel}} (Background context, use only to understand the main post; do not recite verbatim):
 {{quotedText}}

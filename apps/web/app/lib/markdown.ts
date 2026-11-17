@@ -17,7 +17,7 @@ function inline(s: string, site: string): string {
     return `<a href="${h}"${external ? ' target="_blank" rel="noopener noreferrer"' : ""}>${text}</a>`;
   });
   // Bare URLs.
-  out = out.replace(/(^|[\s（(])((?:https?:\/\/)[^\s<）)]+)/g, (_m, pre: string, url: string) => `${pre}<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+  out = out.replace(/(^|[\\s\\uff08(])((?:https?:\/\/)[^\\s<\\uff09)]+)/g, (_m, pre: string, url: string) => `${pre}<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
   return out;
 }
 
@@ -66,13 +66,13 @@ export function renderMarkdown(md: string, site: string): RenderedCopy {
       html.push(`<blockquote><p>${inline(buf.join(" "), site)}</p></blockquote>`);
       continue;
     }
-    if (/^\s*[-*]\s+/.test(line) || /^\s*\d+[.．]\s+/.test(line)) {
-      const ordered = /^\s*\d+[.．]\s+/.test(line);
+    if (/^\s*[-*]\s+/.test(line) || /^\s*\d+[.\\uff0e]\s+/.test(line)) {
+      const ordered = /^\s*\d+[.\\uff0e]\s+/.test(line);
       const items: string[] = [];
-      while (i < lines.length && (/^\s*[-*]\s+/.test(lines[i]!) || /^\s*\d+[.．]\s+/.test(lines[i]!) || (/^\s{2,}\S/.test(lines[i]!) && items.length))) {
+      while (i < lines.length && (/^\s*[-*]\s+/.test(lines[i]!) || /^\s*\d+[.\\uff0e]\s+/.test(lines[i]!) || (/^\s{2,}\S/.test(lines[i]!) && items.length))) {
         const l = lines[i]!;
-        if (/^\s{2,}\S/.test(l) && !/^\s*[-*]\s+/.test(l) && !/^\s*\d+[.．]\s+/.test(l)) items[items.length - 1] += ` ${l.trim()}`;
-        else items.push(l.replace(/^\s*(?:[-*]|\d+[.．])\s+/, ""));
+        if (/^\s{2,}\S/.test(l) && !/^\s*[-*]\s+/.test(l) && !/^\s*\d+[.\\uff0e]\s+/.test(l)) items[items.length - 1] += ` ${l.trim()}`;
+        else items.push(l.replace(/^\s*(?:[-*]|\d+[.\\uff0e])\s+/, ""));
         i++;
       }
       const tag = ordered ? "ol" : "ul";
@@ -80,7 +80,7 @@ export function renderMarkdown(md: string, site: string): RenderedCopy {
       continue;
     }
     const para: string[] = [];
-    while (i < lines.length && lines[i]!.trim() && !/^(#{2,4}\s|\||>|\s*[-*]\s|\s*\d+[.．]\s)/.test(lines[i]!)) para.push(lines[i++]!.trim());
+    while (i < lines.length && lines[i]!.trim() && !/^(#{2,4}\s|\||>|\s*[-*]\s|\s*\d+[.\\uff0e]\s)/.test(lines[i]!)) para.push(lines[i++]!.trim());
     html.push(`<p>${inline(para.join(""), site)}</p>`);
   }
   return { html: html.join("\n"), outline };
@@ -95,15 +95,15 @@ export interface CopyDocument {
 
 /**
  * Splits a page copy file (site/pages/) into its page parts: the first heading (title), the meta table,
- * the page-top statement (页首说明) and the verbatim body starting at the first "## " section.
+ * the page-top statement and the verbatim body starting at the first "## " section.
  */
 export function parseCopyFile(md: string, firstSection = /^## /m): CopyDocument {
-  const title = (/^#\s+(.+)$/m.exec(md)?.[1] ?? "").replace(/（现行版）|（现网）/g, "").trim();
+  const title = (/^#\s+(.+)$/m.exec(md)?.[1] ?? "").replace(/\(Current Version\)|\(Live\)/gi, "").trim();
   const meta: Record<string, string> = {};
   for (const m of md.matchAll(/^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$/gm)) {
-    if (m[1] !== "项" && !/^-+$/.test(m[1]!)) meta[m[1]!] = m[2]!;
+    if (m[1] !== "Item" && !/^-+$/.test(m[1]!)) meta[m[1]!] = m[2]!;
   }
-  const introMatch = /页首说明：\s*\n+((?:>.*\n?)+)/.exec(md);
+  const introMatch = /(?:Header Note|Introduction):\s*\n+((?:>.*\n?)+)/i.exec(md);
   const intro = introMatch ? introMatch[1]!.replace(/^>\s?/gm, "").replace(/\n/g, "").trim() : null;
   const start = md.search(firstSection);
   return { title, meta, intro, body: start >= 0 ? md.slice(start) : md };

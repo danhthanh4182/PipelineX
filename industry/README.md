@@ -1,14 +1,14 @@
-# 行业包
+# Industry Domain Pack
 
-这个行业的知识都在这里：分类、主题、信源、精选标准和门槛。换一个行业，主要就是改这个文件夹和 [`site/`](../site/)（站名、文案、品牌和页面），步骤见 [把它改成你的行业](../docs/customize.md)。
+Domain-specific knowledge: taxonomy, topics, seed sources, prompt rubrics, and selection thresholds. When adapting to another domain, customize this folder and [`site/`](../site/) (site identity, copy, branding, and pages). See [Adapting AIHOT to Your Field](../docs/customize.md).
 
-| 文件 | 内容 |
+| File | Content |
 |---|---|
-| `taxonomy.ts` | 分类、标签、公司与机构、防止模型写错公司的词表，这个行业最受关注的那类发布（`RELEASE`） |
-| `topics.json` | 主题目录（`/topics`），站点启动时读取 |
-| `sources.json` | 首次启动时导入的示范信源 |
-| `prompts/` | 每一步的提示词：预筛、评分、写作、结构化、归组、事件综述、周报月报、翻译 |
-| `selection.ts` | 入选门槛 |
-| `gold.example.jsonl` | 精选评测样本的格式示例 |
-| `relation-gold.example.jsonl` | 事件关系评测样本的格式示例 |
-| `story-digest-eval.example.jsonl` | 事件综述评测案例的格式示例 |
+| `taxonomy.ts` | Categories, tags, entity directory, anti-hallucination dictionary, primary release metric (`RELEASE`). |
+| `topics.json` | Topics catalog (`/topics`), read on site startup. |
+| `sources.json` | Seed sources imported on initial boot. |
+| `prompts/` | Prompt templates per pipeline step: pre-screen, score, write, structure, cluster, event synthesis, periodic briefings, translation. |
+| `selection.ts` | Selection thresholds per source tier and class. |
+| `gold.example.jsonl` | Example format for selection evaluation benchmark sets. |
+| `relation-gold.example.jsonl` | Example format for pairwise event relation evaluation sets. |
+| `story-digest-eval.example.jsonl` | Example format for event synthesis evaluation cases. |

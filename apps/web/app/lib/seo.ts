@@ -174,8 +174,8 @@ export function siteLd() {
       "@context": "https://schema.org",
       "@type": "Dataset",
       "@id": `${base}/#dataset`,
-      name: `${SITE.name} — ${withSubject("行业动态数据集")}`,
-      description: `${subjectAfter("持续更新的中文", "行业动态")}：每条附中文摘要、评分与原文出处，${subjectAfter("另有每日精选与", "日报")}，可通过 RSS 与公开 API 获取。`,
+      name: `${SITE.name} — ${withSubject("News & Updates Dataset")}`,
+      description: `Continuously updated ${withSubject("industry updates")}: each item includes a summary, score, and source link, plus daily selections and reports, available via RSS and public API.`,
       url: base,
       inLanguage: SITE.locale,
       isAccessibleForFree: true,
@@ -184,12 +184,12 @@ export function siteLd() {
       creator: orgRef(),
       publisher: orgRef(),
       distribution: [
-        { "@type": "DataDownload", name: "精选 RSS", encodingFormat: "application/rss+xml", contentUrl: `${base}/feed.xml` },
-        { "@type": "DataDownload", name: "全部动态 RSS", encodingFormat: "application/rss+xml", contentUrl: `${base}/feed/all.xml` },
-        { "@type": "DataDownload", name: `${withSubject("日报")} RSS`, encodingFormat: "application/rss+xml", contentUrl: `${base}/feed/daily.xml` },
-        { "@type": "DataDownload", name: `${withSubject("周报")} RSS`, encodingFormat: "application/rss+xml", contentUrl: `${base}/feed/weekly.xml` },
-        { "@type": "DataDownload", name: `${withSubject("月报")} RSS`, encodingFormat: "application/rss+xml", contentUrl: `${base}/feed/monthly.xml` },
-        { "@type": "DataDownload", name: "公开 API v1", encodingFormat: "application/json", contentUrl: `${base}/api/v1/items` },
+        { "@type": "DataDownload", name: "Featured RSS", encodingFormat: "application/rss+xml", contentUrl: `${base}/feed.xml` },
+        { "@type": "DataDownload", name: "All Updates RSS", encodingFormat: "application/rss+xml", contentUrl: `${base}/feed/all.xml` },
+        { "@type": "DataDownload", name: `${withSubject("Daily Report")} RSS`, encodingFormat: "application/rss+xml", contentUrl: `${base}/feed/daily.xml` },
+        { "@type": "DataDownload", name: `${withSubject("Weekly Report")} RSS`, encodingFormat: "application/rss+xml", contentUrl: `${base}/feed/weekly.xml` },
+        { "@type": "DataDownload", name: `${withSubject("Monthly Report")} RSS`, encodingFormat: "application/rss+xml", contentUrl: `${base}/feed/monthly.xml` },
+        { "@type": "DataDownload", name: "Public API v1", encodingFormat: "application/json", contentUrl: `${base}/api/v1/items` },
         { "@type": "DataDownload", name: "OpenAPI", encodingFormat: "application/json", contentUrl: `${base}/openapi-v1.json` },
       ],
     },
@@ -258,8 +258,8 @@ export function reportTitle(report: ReportDetail): string {
   // highlights were filled with are not its news.
   const entries = new Set(report.sections.flatMap((s) => s.items.map((i) => i.itemId)));
   const lead = report.lead?.title.trim() || report.highlights.find((item) => item.available && entries.has(item.itemId))?.title.trim();
-  const name = `${withSubject(REPORT_NAMES[report.kind])}｜${reportDateLabel(report.kind, report.key)}`;
-  return lead ? `${name}：${lead}` : name;
+  const name = `${withSubject(REPORT_NAMES[report.kind])} | ${reportDateLabel(report.kind, report.key)}`;
+  return lead ? `${name}: ${lead}` : name;
 }
 
 /**
@@ -277,13 +277,13 @@ export function reportDescription(r: ReportDetail): string | null {
       let text = titles[0]!;
       for (const t of titles.slice(1)) {
         if (text.length + t.length > 120) break;
-        text += `；${t}`;
+        text += `; ${t}`;
       }
-      return `${date} ${withSubject("新闻")}：${text}${/[。！？!?]$/.test(text) ? "" : "。"}`;
+      return `${date} ${withSubject("News")}: ${text}${/[.!?]$/.test(text) ? "" : "."}`;
     }
   }
   const lead = r.lead?.leadParagraph ?? r.overview?.slice(0, 150);
-  return lead ? `${date} ${withSubject("资讯")}：${lead}` : null;
+  return lead ? `${date} ${withSubject("News")}: ${lead}` : null;
 }
 
 /** One report issue: an editorial round-up by the site (no personal byline), sections as its sections. */
@@ -320,7 +320,7 @@ export function storyLd(story: StoryDetail) {
     ...(reports.length ? {
       mainEntity: {
         "@type": "ItemList",
-        name: "报道时间线",
+        name: "Coverage Timeline",
         itemListOrder: "https://schema.org/ItemListOrderDescending",
         numberOfItems: reports.length,
         itemListElement: reports.map((report, index) => ({ "@type": "ListItem", position: index + 1, name: report.title })),

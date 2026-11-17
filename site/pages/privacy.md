@@ -1,34 +1,24 @@
-# 隐私说明
+# Privacy Policy
 
-这是开源框架自带的模板，只写了这套软件默认会处理哪些数据。上线前请按你的实际情况改写（运营主体、联系方式、你另外接入的统计或服务），必要时请专业人士审阅。
+This template outlines default data handling behavior. Adapt according to your specific deployment.
 
-| 项 | 值 |
+| Item | Value |
 |---|---|
-| 版本 | 请填写 |
-| 生效日期 | 请填写 |
-| 运营主体 | 请填写 |
-| 联系方式 | 请填写 |
+| Version | 1.0.0 |
+| Effective Date | 2026-11-17 |
+| Operator | PipelineX |
+| Contact | Contact via Feedback page |
 
-页首说明：
+> Browsing this site does not require user registration or account login. We only process technical data required for site operation and feedback handling. We do not sell personal data.
 
-> 使用本站不需要注册或登录。我们只处理让网站正常运行、处理反馈所必需的信息，不出售个人信息。
+## 1. Browser Local Storage
+Bookmarks, read history, theme preferences (light/dark mode), recent search keywords (up to 10), and feedback drafts are stored strictly on your local device browser. Tab scroll positions and session states remain in session storage and expire when the tab is closed. None of this data is transmitted to our servers.
 
-## 1. 浏览器本地数据
+## 2. Feedback Submissions
+Information submitted via the feedback form (message content, optional email, referring URL, attached screenshot) is stored to diagnose and respond to reports. Non-reversible client fingerprints derived from network address and user-agent may be processed temporarily to prevent spam abuse.
 
-收藏、已读记录、深浅色设置、最近搜索（你搜过的词，最多 10 条）、更新日志已读状态和反馈草稿保存在你当前的浏览器里；返回时的列表位置、滚动位置和展开状态只存在当前标签页的会话存储里，关闭标签页即清除。这些都不会发送到服务器。清除浏览器数据后它们会消失；换设备不会同步。收藏、已读记录和深浅色设置可以在“收藏”页导出和导入。
+## 3. Server and Access Logs
+This application includes no visitor analytics trackers by default. Infrastructure reverse proxies (e.g. Nginx, Caddy, Cloudflare) may record standard access logs (client IP, request time, path, User-Agent) for security monitoring.
 
-## 2. 反馈
-
-你在反馈页提交的内容、选填的邮箱、提交时所在页面的地址，以及你选择附上的截图，会保存在服务器上，用于处理你的反馈。站点配置了飞书内部群时，反馈会转发到那个群，截图上传到飞书后服务器上不再保留。为防止滥用，服务器会保存一个由网络地址和浏览器类别计算出的、无法还原的标识，用于限流和封禁滥用来源。
-
-## 3. 服务器与网络日志
-
-本软件默认不做访客统计。你的服务器、反向代理或 CDN 可能会按它们自己的配置记录访问日志（如 IP 地址、访问时间、页面地址、浏览器信息）。请在这里写明你实际使用的服务和保存期限。
-
-## 4. 第三方内容
-
-本站展示的是第三方原文的摘要与链接。点击原文链接后，你访问的是对方网站，适用对方的隐私政策。
-
-## 5. 联系我们
-
-请写明联系方式，以及查询、更正或删除反馈资料的方式。
+## 4. Third-Party Content & Links
+This site aggregates summaries with links back to original articles. Following external links places you on third-party sites governed by their respective privacy policies.

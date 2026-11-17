@@ -23,9 +23,12 @@ export function beijingIso(instant: Date | string | number): string {
  * "9月28日" of a calendar date (YYYY-MM-DD). Given `today` (YYYY-MM-DD, Beijing), a day of another year carries its
  * year, so an archived item is not read as this year's: "2019年2月19日".
  */
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// PipelineX: English dates ("Nov 7", "Dec 31, 2025") — see FORK_CHANGES.md.
 export function monthDay(date: string, today?: string): string {
-  const year = today && date.slice(0, 4) !== today.slice(0, 4) ? `${date.slice(0, 4)}年` : "";
-  return `${year}${Number(date.slice(5, 7))}月${Number(date.slice(8, 10))}日`;
+  const year = today && date.slice(0, 4) !== today.slice(0, 4) ? `, ${date.slice(0, 4)}` : "";
+  return `${MONTH_NAMES[Number(date.slice(5, 7)) - 1] ?? ""} ${Number(date.slice(8, 10))}${year}`;
 }
 
 /** "9月29日" in Beijing time. */
@@ -52,7 +55,7 @@ export function addDays(date: string, days: number): string {
   return new Date(t).toISOString().slice(0, 10);
 }
 
-const WEEKDAYS = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export function beijingWeekday(date: string): string {
   return WEEKDAYS[new Date(`${date}T00:00:00Z`).getUTCDay()]!;

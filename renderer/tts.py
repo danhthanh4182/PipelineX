@@ -2,7 +2,7 @@
 
 Usage: VIDEO_WORKDIR=<dir> python tts.py [voice]   (reads <dir>/script-final.json, writes <dir>/public/audio and <dir>/timeline.json)
 """
-import asyncio, json, os, subprocess, sys
+import asyncio, datetime, json, os, shutil, subprocess, sys
 from pathlib import Path
 
 import edge_tts
@@ -61,7 +61,13 @@ async def main():
             t += d + gap
         scenes.append({k: s[k] for k in ("kind", "kicker", "headline")} | {"start": round(scene_start, 3), "duration": round(t - scene_start, 3), "beats": beats})
         print(f"scene {si}: {t - scene_start:5.1f}s, {len(beats)} beats")
-    timeline = {"title": script["title"], "voice": VOICE, "total": round(t, 3), "scenes": scenes, "sources": script["sources"]}
+    # Optional music bed: VIDEO_MUSIC, else the first track in renderer/music/ (e.g. from the YouTube Audio Library).
+    music = os.environ.get("VIDEO_MUSIC") or next((str(p) for p in sorted(Path("music").glob("*.mp3"))), None)
+    if music and Path(music).exists():
+        shutil.copy(music, W / "public" / "music.mp3")
+    timeline = {"title": script["title"], "voice": VOICE, "total": round(t, 3), "scenes": scenes, "sources": script["sources"],
+                "music": "music.mp3" if music and Path(music).exists() else None,
+                "date": datetime.date.today().strftime("%b %-d, %Y")}
     (W / "timeline.json").write_text(json.dumps(timeline, indent=2))
     print(f"total {t:.1f}s")
     print("RESULT " + json.dumps({"duration": round(t, 1)}))

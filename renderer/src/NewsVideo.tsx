@@ -6,7 +6,11 @@ type Word = { text: string; start: number; end: number };
 type Visual = Record<string, any> & { type: string };
 type Beat = { narration: string; visual: Visual; audio: string; start: number; duration: number; words: Word[] };
 type Scene = { kind: string; kicker: string; headline: string; start: number; duration: number; beats: Beat[] };
-export type Timeline = { title: string; total: number; scenes: Scene[]; sources?: unknown[] };
+export type Timeline = { title: string; total: number; scenes: Scene[]; sources?: Array<{ n: number; name: string; title?: string }>; music?: string | null; date?: string };
+
+/** Branded opening and the end card, around the narrated part (seconds). */
+export const INTRO = 3;
+export const OUTRO = 7;
 
 const C = { bg: "#0b0f17", panel: "#141b2b", paper: "#f7f5ef", ink: "#f4f6fb", dark: "#111317", dim: "#8b95a8", accent: "#36d399", hot: "#ff5c5c", line: "#1f2838" };
 const SANS = "Inter, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif";
@@ -189,16 +193,91 @@ const TimelineBeat = ({ v, frames }: { v: Visual; frames: number }) => {
   );
 };
 
-/** Fallback when no fitting picture was found: the scene headline as a bold card. */
-const CardBeat = ({ scene }: { scene: Scene }) => {
-  const s = useSpring();
+/** Spoken phrases split like the captions: a new one at a pause or after `max` words. */
+const phrasesOf = (words: Word[], max = 7) => {
+  const groups: Word[][] = [];
+  for (const w of words) {
+    const cur = groups[groups.length - 1]; const prev = cur?.[cur.length - 1];
+    if (!cur || cur.length >= max || (prev && w.start - prev.end > 0.18)) groups.push([w]); else cur.push(w);
+  }
+  return groups;
+};
+
+/**
+ * Kinetic text: the narration itself, large, phrase by phrase, each word lighting up as it is spoken. Used when a
+ * beat has no picture (none fitted, or the same article was already shown), so the screen always says what is heard.
+ */
+const KineticBeat = ({ scene, beat }: { scene: Scene; beat: Beat }) => {
+  const f = useCurrentFrame();
+  const t = f / FPS;
+  const groups = phrasesOf(beat.words, 9);
+  const gi = Math.max(0, groups.findIndex((g) => t <= g[g.length - 1]!.end + 0.25));
+  const g = groups[gi] ?? groups[groups.length - 1] ?? [];
+  const enter = spring({ frame: f - Math.round((g[0]?.start ?? 0) * FPS), fps: FPS, config: { damping: 200 } });
   return (
     <AbsoluteFill>
       <Grid />
-      <AbsoluteFill style={{ padding: "0 140px", justifyContent: "center", fontFamily: SANS }}>
-        <div style={{ color: C.ink, fontSize: 104, fontWeight: 900, lineHeight: 1.05, maxWidth: 1500, opacity: s, transform: `translateY(${(1 - s) * 40}px)` }}>
-          {scene.headline}
+      <AbsoluteFill style={{ padding: "0 160px", justifyContent: "center", fontFamily: SANS }}>
+        <div style={{ color: C.accent, fontSize: 30, fontWeight: 800, letterSpacing: 6, marginBottom: 28 }}>{scene.kicker.toUpperCase()}</div>
+        <div style={{ fontSize: 92, fontWeight: 800, lineHeight: 1.12, maxWidth: 1600, opacity: enter, transform: `translateY(${(1 - enter) * 30}px)` }}>
+          {g.map((w, i) => (
+            <span key={i} style={{ color: t >= w.start - 0.05 ? (t <= w.end + 0.1 ? C.accent : C.ink) : "rgba(244,246,251,0.22)" }}>{w.text} </span>
+          ))}
         </div>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
+/** A slow push on graphic beats, so no frame stands still. */
+const Push = ({ frames, children }: { frames: number; children: React.ReactNode }) => {
+  const f = useCurrentFrame();
+  const z = interpolate(f, [0, frames], [1, 1.045], { extrapolateRight: "clamp" });
+  return <AbsoluteFill style={{ transform: `scale(${z})` }}>{children}</AbsoluteFill>;
+};
+
+/** Opening: channel mark, date and the video's title. */
+const Intro = ({ title, date }: { title: string; date?: string }) => {
+  const f = useCurrentFrame();
+  const a = spring({ frame: f, fps: FPS, config: { damping: 200 } });
+  const b = spring({ frame: f - 10, fps: FPS, config: { damping: 200 } });
+  const out = interpolate(f, [INTRO * FPS - 10, INTRO * FPS], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  return (
+    <AbsoluteFill style={{ opacity: out }}>
+      <Grid />
+      <AbsoluteFill style={{ padding: "0 160px", justifyContent: "center", fontFamily: SANS }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 18, opacity: a, transform: `translateX(${(1 - a) * -40}px)` }}>
+          <div style={{ width: 22, height: 22, borderRadius: 11, background: C.hot }} />
+          <div style={{ color: C.ink, fontWeight: 900, fontSize: 44, letterSpacing: 8 }}>PIPELINEX</div>
+          <div style={{ color: C.dim, fontSize: 36, letterSpacing: 4 }}>AI NEWS{date ? ` · ${date}` : ""}</div>
+        </div>
+        <div style={{ marginTop: 40, color: C.ink, fontSize: 96, fontWeight: 900, lineHeight: 1.05, maxWidth: 1600, opacity: b, transform: `translateY(${(1 - b) * 40}px)` }}>{title}</div>
+        <div style={{ marginTop: 48, height: 8, width: `${interpolate(f, [10, INTRO * FPS], [0, 100], { extrapolateRight: "clamp" })}%`, background: C.accent, borderRadius: 4 }} />
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
+/** End card: the sources the video was made from, and the invitation to subscribe. */
+const Outro = ({ sources }: { sources: Array<{ n: number; name: string; title?: string }> }) => {
+  const f = useCurrentFrame();
+  const a = spring({ frame: f, fps: FPS, config: { damping: 200 } });
+  const outlets = [...new Set(sources.map((s) => s.name))];
+  return (
+    <AbsoluteFill>
+      <Grid />
+      <AbsoluteFill style={{ padding: "120px 160px", fontFamily: SANS, justifyContent: "center", opacity: a }}>
+        <div style={{ color: C.accent, fontSize: 30, fontWeight: 800, letterSpacing: 6 }}>SOURCES</div>
+        <div style={{ marginTop: 22, display: "flex", flexWrap: "wrap", gap: 16, maxWidth: 1600 }}>
+          {outlets.map((o, i) => {
+            const s = spring({ frame: f - 6 - i * 3, fps: FPS, config: { damping: 200 } });
+            return <div key={o} style={{ color: C.ink, fontSize: 34, fontWeight: 600, padding: "10px 22px", borderRadius: 10, background: C.panel, border: `1px solid ${C.line}`, opacity: s }}>{o}</div>;
+          })}
+        </div>
+        <div style={{ marginTop: 90, color: C.ink, fontSize: 84, fontWeight: 900 }}>The AI news that matters, every day.</div>
+        <div style={{ marginTop: 34, display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: 18, background: C.hot, color: "white",
+          fontSize: 44, fontWeight: 900, padding: "18px 40px", borderRadius: 14, transform: `scale(${1 + 0.03 * Math.sin(f / 8)})` }}>Subscribe</div>
+        <div style={{ marginTop: 26, color: C.dim, fontSize: 30 }}>Links to every report are in the description.</div>
       </AbsoluteFill>
     </AbsoluteFill>
   );
@@ -240,11 +319,7 @@ const LowerThird = ({ scene }: { scene: Scene }) => {
 /** Captions: one line per speech phrase (break at pauses or after 7 words), the spoken word highlighted. */
 const Captions = ({ words }: { words: Word[] }) => {
   const t = useCurrentFrame() / FPS;
-  const groups: Word[][] = [];
-  for (const w of words) {
-    const cur = groups[groups.length - 1]; const prev = cur?.[cur.length - 1];
-    if (!cur || cur.length >= 7 || (prev && w.start - prev.end > 0.18)) groups.push([w]); else cur.push(w);
-  }
+  const groups = phrasesOf(words);
   const g = groups.find((grp) => t >= grp[0].start - 0.05 && t <= grp[grp.length - 1].end + 0.25);
   if (!g) return null;
   return (
@@ -257,46 +332,61 @@ const Captions = ({ words }: { words: Word[] }) => {
   );
 };
 
-const BeatView = ({ scene, beat, index, at, total }: { scene: Scene; beat: Beat; index: number; at: number; total: number }) => {
+const BeatView = ({ scene, beat, index, at, total, repeat }: { scene: Scene; beat: Beat; index: number; at: number; total: number; repeat: boolean }) => {
   const frames = Math.round(beat.duration * FPS);
   const f = useCurrentFrame();
-  const fade = interpolate(f, [0, 8], [0, 1], { extrapolateRight: "clamp" });
+  // Enter: a short fade with a slight zoom-out, so cuts feel like moves rather than flashes.
+  const enter = interpolate(f, [0, 10], [0, 1], { extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) });
   const v = beat.visual;
-  const body =
-    v.type === "photo" || v.type === "broll" ? (v.asset ? <PhotoBeat v={v} frames={frames} index={index} /> : <CardBeat scene={scene} />)
-    : v.type === "article" ? <ArticleBeat v={v} />
-    : v.type === "quote" ? <QuoteBeat v={v} frames={frames} />
-    : v.type === "stat" ? <StatBeat v={v} />
-    : v.type === "chart" ? <ChartBeat v={v} />
-    : v.type === "timeline" ? <TimelineBeat v={v} frames={frames} />
-    : <CardBeat scene={scene} />;
+  const kinetic = (v.type === "photo" || v.type === "broll") ? !v.asset : v.type === "card" || (v.type === "article" && repeat);
+  const body = kinetic ? <KineticBeat scene={scene} beat={beat} />
+    : v.type === "photo" || v.type === "broll" ? <PhotoBeat v={v} frames={frames} index={index} />
+    : <Push frames={frames}>{
+        v.type === "article" ? <ArticleBeat v={v} />
+        : v.type === "quote" ? <QuoteBeat v={v} frames={frames} />
+        : v.type === "stat" ? <StatBeat v={v} />
+        : v.type === "chart" ? <ChartBeat v={v} />
+        : v.type === "timeline" ? <TimelineBeat v={v} frames={frames} />
+        : <KineticBeat scene={scene} beat={beat} />
+      }</Push>;
   return (
-    <AbsoluteFill style={{ opacity: fade }}>
+    <AbsoluteFill style={{ opacity: enter, transform: `scale(${1.03 - 0.03 * enter})` }}>
       {body}
       <Header at={at + f / FPS} total={total} />
-      <Captions words={beat.words} />
+      {!kinetic && <Captions words={beat.words} />}
       <Audio src={staticFile(beat.audio)} />
     </AbsoluteFill>
   );
 };
 
-export const NewsVideo = ({ scenes, total }: Timeline) => {
+export const NewsVideo = ({ scenes, total, title, sources = [], music, date }: Timeline) => {
   let index = 0;
+  const shown = new Set<string>();
+  const end = Math.round((INTRO + total) * FPS);
   return (
     <AbsoluteFill style={{ background: C.bg }}>
-      {scenes.map((s, si) => (
-        <Sequence key={si} from={Math.round(s.start * FPS)} durationInFrames={Math.round(s.duration * FPS)}>
-          {s.beats.map((b, bi) => {
-            const i = index++;
-            return (
-              <Sequence key={bi} from={Math.round(b.start * FPS)} durationInFrames={Math.round(b.duration * FPS)}>
-                <BeatView scene={s} beat={b} index={i} at={s.start + b.start} total={total} />
-              </Sequence>
-            );
-          })}
-          {s.kind !== "outro" && <LowerThird scene={s} />}
-        </Sequence>
-      ))}
+      <Sequence durationInFrames={INTRO * FPS}><Intro title={title} date={date} /></Sequence>
+      <Sequence from={INTRO * FPS}>
+        {scenes.map((s, si) => (
+          <Sequence key={si} from={Math.round(s.start * FPS)} durationInFrames={Math.round(s.duration * FPS)}>
+            {s.beats.map((b, bi) => {
+              const i = index++;
+              // The same article twice reads as a loop: its second showing becomes kinetic text.
+              const key = b.visual.type === "article" ? String(b.visual.url ?? b.visual.headline) : "";
+              const repeat = !!key && shown.has(key);
+              if (key) shown.add(key);
+              return (
+                <Sequence key={bi} from={Math.round(b.start * FPS)} durationInFrames={Math.round(b.duration * FPS)}>
+                  <BeatView scene={s} beat={b} index={i} at={s.start + b.start} total={total} repeat={repeat} />
+                </Sequence>
+              );
+            })}
+            {s.kind !== "outro" && <LowerThird scene={s} />}
+          </Sequence>
+        ))}
+      </Sequence>
+      <Sequence from={end}><Outro sources={sources} /></Sequence>
+      {music && <Audio src={staticFile(music)} loop volume={(f) => interpolate(f, [0, 30, end, end + OUTRO * FPS - 30, end + OUTRO * FPS], [0, 0.07, 0.07, 0.16, 0], { extrapolateRight: "clamp" })} />}
     </AbsoluteFill>
   );
 };

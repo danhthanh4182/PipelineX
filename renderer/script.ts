@@ -44,7 +44,7 @@ Style: spoken English, short sentences, plain words, no markdown, no emojis. Eac
 
 Structure: scenes = hook (15-20 s: the single most surprising fact and the question the video answers), 4-6 story scenes (what happened, background, reactions, what is disputed, what comes next), outro.
 Every scene is split into 2-4 BEATS. A beat is 1-3 sentences of narration (about 5-12 seconds) with ONE visual.
-Total narration ${minWords}-${maxWords} words. Change the visual type often; never use the same type more than twice in a row.
+Total narration ${minWords}-${maxWords} words. Change the visual type often; never use the same type more than twice in a row. Show each report as an "article" at most once.
 
 Visual types (pick what best fits the beat):
 - {"type":"article","source":n} show the headline of report n.${dossier ? ` Optional "quote": one of the QUOTES from report n, copied exactly.` : ` Optional "quote": a SHORT exact sentence fragment (max 20 words) copied verbatim from that article's excerpt.`}
@@ -53,7 +53,8 @@ Visual types (pick what best fits the beat):
 - {"type":"chart","title":"...","unit":"$","points":[{"label":"Oct 6","value":239.24},...]} only when there are at least 2 dated values of the same measure.
 - {"type":"timeline","events":[{"date":"Nov 8","text":"max 8 words"},...]} 3-5 dated events.
 - {"type":"photo","query":"..."} a real photo of a named person, company headquarters or product, e.g. "Jensen Huang", "Nvidia headquarters".
-- {"type":"broll","query":"..."} a generic illustrative image or clip: 2-4 concrete, visible words, e.g. "server racks blue light", "courtroom gavel", "stock ticker screen".
+- {"type":"broll","query":"..."} a generic illustrative image or clip: 2-4 concrete, visible words, e.g. "server racks blue light", "courtroom gavel", "stock ticker screen". Never a person's name (use "photo"); never something whose mood clashes with the narration.
+- {"type":"card"} the narration itself as large animated text: for a beat no picture can show honestly.
 
 Return ONLY JSON:
 {"title": string (YouTube title, max 70 chars),
@@ -89,7 +90,8 @@ for (const scene of json.scenes) {
     }
     if (v.type === "quote" && !corpus.includes(` ${words(v.text ?? "")} `)) {
       dropped.push(`quote: ${v.text}`);
-      beat.visual = { type: "broll", query: v.speaker ? String(v.speaker).split(",")[0] : "press conference" };
+      // A person's name as stock search finds random pictures: look for their photo, else the beat shows kinetic text.
+      beat.visual = v.speaker ? { type: "photo", query: String(v.speaker).split(",")[0] } : { type: "card" };
     }
     if (v.type === "stat" && !numbersIn(String(v.value)).every((n) => corpusNumbers.has(n))) {
       dropped.push(`stat: ${v.value}`); beat.visual = { type: "broll", query: "stock ticker screen" };

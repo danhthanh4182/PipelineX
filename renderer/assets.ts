@@ -85,18 +85,20 @@ async function pixabay(query: string, videos: boolean): Promise<Cand[]> {
 }
 
 /** Vision check: does the picture really show the query, and is it fit for a neutral news video on this story? */
-async function fits(c: Cand, query: string, kind: string, context: string): Promise<boolean> {
+async function fits(c: Cand, query: string, kind: string, context: string, narration: string): Promise<boolean> {
   const base = (process.env.LLM_BASE_URL ?? "").replace(/\/$/, "");
   const wanted = kind === "photo" ? `"${query}" as the main subject` : `something a viewer would recognise as "${query}"`;
   const what = c.kind === "video" ? "still frame from a stock video clip" : kind === "photo" ? "photo of a specific subject" : "generic illustrative b-roll image";
   const prompt = `A ${what} is needed for a news video.
 Story: ${context}
 Wanted: "${query}".
+Spoken over the picture: "${narration}"
 Answer YES only if ALL hold: (1) the image clearly shows ${wanted};
 (2) it is a photograph, not a chart, diagram, map, logo or text screenshot;
 (3) no other recognisable public figure appears who could mislead viewers about the story;
 (4) nothing offensive or unrelated dominates the picture;
-(5) it is not a photo of a document, letter, sign or screen with legible text, and shows no private person's name or signature.
+(5) it is not a photo of a document, letter, sign or screen with legible text, and shows no private person's name or signature;
+(6) its mood fits what is spoken (no celebration, smiling crowds or luxury over a scandal, lawsuit or loss) and it does not suggest a person, brand or product the narration is not about.
 Reply with one word: YES or NO.`;
   // Send the picture itself: providers cannot always fetch Wikimedia/Openverse URLs.
   let pic = await fetch(c.thumb, { headers: { "user-agent": UA } });
@@ -127,7 +129,7 @@ for (const scene of script.scenes) for (const beat of scene.beats) {
   let found: Cand | null = null, tried = 0;
   for (const c of cands.slice(0, 8)) {
     tried++;
-    if (await fits(c, v.query, v.type, script.title)) { found = c; used.add(c.url); break; }
+    if (await fits(c, v.query, v.type, script.title, beat.narration)) { found = c; used.add(c.url); break; }
   }
   if (!found) { missing++; console.log(`beat ${i} ${v.type} "${v.query}": nothing fitting (${tried} checked) -> text card`); v.type = "card"; continue; }
   const ext = found.kind === "video" ? "mp4" : (found.url.split("?")[0].match(/\.(jpe?g|png|webp)$/i)?.[1] ?? "jpg").toLowerCase();

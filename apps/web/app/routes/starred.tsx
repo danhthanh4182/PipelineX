@@ -142,7 +142,7 @@ export default function StarredPage() {
           <IconBookmark size={20} className="text-ink-4" />
           <p className="mt-3 text-[13px] text-ink-3">No bookmarks yet. Click the bookmark icon on any article to save it here.</p>
           <Link to="/" className="mt-4 text-[12.5px] font-medium text-accent hover:text-accent-ink">
-            Browse Featured →
+            Browse Curated →
           </Link>
         </div>
       ) : (

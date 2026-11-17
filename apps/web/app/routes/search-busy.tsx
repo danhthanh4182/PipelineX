@@ -34,7 +34,7 @@ export default function SearchBusy() {
   const button = "inline-flex h-9 items-center rounded-full px-4 text-[13.5px]";
   return (
     <>
-    <PhoneBar back={{ to: base, label: base === "/all" ? "All" : "Featured" }} />
+    <PhoneBar back={{ to: base, label: base === "/all" ? "All" : "Curated" }} />
     <div className="mx-auto max-w-sm py-24 text-center" aria-live="polite">
       <RingMark className="mx-auto mb-5 size-10 text-accent" spinning />
       <h1 className="text-[20px] font-bold text-ink">Search is Busy</h1>
@@ -47,7 +47,7 @@ export default function SearchBusy() {
             <Link to={retry} className={`${button} bg-accent font-medium text-accent-contrast hover:bg-accent-ink`}>Retry Search</Link>
           ))}
         <Link to="/all" className={`${button} ${hasSearch ? "border border-line-strong bg-surface text-ink-2 hover:border-ink-4" : "bg-accent font-medium text-accent-contrast hover:bg-accent-ink"}`}>Browse All Updates</Link>
-        <Link to="/" className={`${button} border border-line-strong bg-surface text-ink-2 hover:border-ink-4`}>Back to Featured</Link>
+        <Link to="/" className={`${button} border border-line-strong bg-surface text-ink-2 hover:border-ink-4`}>Back to Curated</Link>
       </div>
     </div>
     </>

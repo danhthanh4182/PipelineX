@@ -68,7 +68,7 @@ export function PhoneBar({ back, title, large = false, sub, leading, center, act
   );
 }
 
-/** "‹ Featured": back through the reader's history, or to the page's parent when it was opened directly. */
+/** "‹ Curated": back through the reader's history, or to the page's parent when it was opened directly. */
 function BackButton({ to, label }: BackTarget) {
   const navigate = useNavigate();
   const { key } = useLocation();

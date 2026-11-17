@@ -327,7 +327,7 @@ export default function StoryPage() {
               items={[
                 { key: "all", label: "All Reports", count: counts.all },
                 { key: "official", label: "Official Sources", count: counts.official },
-                { key: "selected", label: "Featured Reports", count: counts.selected },
+                { key: "selected", label: "Curated Reports", count: counts.selected },
               ]}
             />
             {days.length === 0 ? (

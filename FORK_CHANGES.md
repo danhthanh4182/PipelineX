@@ -31,3 +31,14 @@ Mọi thay đổi ngoài `modules/`, `site/`, `industry/` ghi ở đây để kh
 Ghi chú: `tests/outbound-protocol.standalone.test.ts` (route secure-proxy) lỗi trên **Node 26** nhưng đạt trên Node 24, kể cả với bản AIHOT gốc chưa sửa. Production phải chạy **Node 24 LTS**, đúng như AIHOT yêu cầu (`engines: node >=24.22.1`).
 
 Test web (`npm run test:web`) cần trình duyệt Playwright đúng phiên bản: chạy `npx playwright install chromium webkit` một lần. Thiếu trình duyệt thì 23 test báo "Executable doesn't exist", còn `article-outline.test.ts` treo không có kết quả. `apps/web/tests/navigation-performance.test.ts` chờ tiêu đề trang chủ "Curated". Lưu ý: "精选" đang được dịch lẫn lộn thành "Curated" (menu, tiêu đề) và "Featured" (nút quay lại, badge), cần thống nhất khi làm cấu hình site.
+
+## Cấu hình PipelineX (Phase 1)
+
+| File | Thay đổi | Lý do |
+|---|---|---|
+| `industry/selection.ts` | Hạ cả thang: T1 60→**55**, T1_5 65→**58**, T2 76→**60**; class ecosystem 70→**58**, leaderboard 76→**60** (giữ thứ tự T1 < class < T2 mà framework và test yêu cầu) | Model chấm tin AI tiếng Anh thấp hơn feed tiếng Trung của AIHOT. Trên mẫu 103 bài T2 (17/11/2026), ngưỡng 76 chỉ chọn 3 bài (cùng một sự kiện), bỏ sót cả tin Anthropic ra model mới (69). Ở 60 có 27 bài / 11 sự kiện, đa số là tin thật. Hiệu chỉnh lại khi có bộ gold có nhãn. |
+| `apps/web/app/**` (trừ admin) | "Featured" → "Curated" | Thống nhất tên trang tuyển chọn (gốc "精选"). Trong admin, "Featured" vẫn là tên chế độ nguồn `editorial`. |
+| `apps/web/tests/cache.test.ts`, `navigation-performance.test.ts` | Mong đợi "Curated" | Theo thay đổi trên |
+| `.env` (không commit) | `COLLECT_ENABLED=true` | Bắt đầu thu tin hằng ngày. Các công tắc Feishu/DingTalk/IndexNow/Baidu vẫn `false`; không có nguồn WeChat/X. |
+
+Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cập nhật bằng `git fetch upstream && git merge upstream/main`).

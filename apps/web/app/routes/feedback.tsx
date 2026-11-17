@@ -204,7 +204,7 @@ export default function FeedbackPage() {
             Feedback ID <span className="mono font-semibold text-ink">#{state.id}</span>; we will reference this ID if replying.
           </p>
           <Link to="/" className="mt-8 inline-flex h-10 items-center rounded-full bg-ink px-6 text-[14px] font-medium text-bg transition-opacity hover:opacity-90">
-            Back to Featured
+            Back to Curated
           </Link>
         </div>
       </ReadingLayout>

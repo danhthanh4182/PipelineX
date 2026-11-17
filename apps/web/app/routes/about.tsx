@@ -95,7 +95,7 @@ function stagesOf(stats: SiteStats | null): Stage[] {
     },
     {
       no: "03",
-      title: "Featured",
+      title: "Curated",
       figure: stats && <Figure n={stats.selected} unit={REPORTS.metricUnits.selectedCount} />,
       text: ABOUT.steps.select,
       note: stats && <>Past 24 hours: {stats.day.selected} items selected as featured</>,
@@ -181,7 +181,7 @@ function Latest({ item, className = "" }: { item: SiteStats["latest"][number] | 
   if (!item) return null;
   return (
     <IntentLink viewTransition to={`/items/${item.id}`} className={`group block ${className}`}>
-      <span className="text-[11px] font-semibold tracking-[0.2em] text-accent">Recent Featured</span>
+      <span className="text-[11px] font-semibold tracking-[0.2em] text-accent">Recent Curated</span>
       <span key={item.id} className="animate-fade-up mt-1.5 block">
         <span className="line-clamp-2 text-[13.5px] font-semibold leading-[1.55] text-ink transition-colors group-hover:text-accent">{item.title}</span>
         <span className="mt-1 block truncate text-[12px] text-ink-4">{item.source}</span>
@@ -228,7 +228,7 @@ export default function AboutPage() {
         </div>
         <div className="flex flex-wrap gap-3 lg:pb-2">
           <IntentLink to="/" className={buttonClass("primary", "lg")}>
-            Today's Featured <IconArrowRight size={15} />
+            Today's Curated <IconArrowRight size={15} />
           </IntentLink>
           <IntentLink to="/daily" className={buttonClass("secondary", "lg")}>
             Read Latest Report

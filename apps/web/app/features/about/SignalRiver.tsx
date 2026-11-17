@@ -503,7 +503,7 @@ export function SignalRiver({
       } else {
         hover = { s: null, bundle: s.bundle, paper: false };
         if (x < L.gate) place(x, y, "Same event", `Synthesized from ${b.n} reports`);
-        else if (b.kept) place(x, y, "Featured", "High information density, meets threshold");
+        else if (b.kept) place(x, y, "Curated", "High information density, meets threshold");
         else place(x, y, "Not selected", "Insufficient signal, duplicate, or marketing");
       }
       redraw();

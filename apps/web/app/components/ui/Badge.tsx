@@ -25,7 +25,7 @@ export function Badge({ tone = "neutral", dot = false, children, className = "",
 export function SelectedBadge() {
   return (
     <Badge tone="selected" dot>
-      Featured
+      Curated
     </Badge>
   );
 }

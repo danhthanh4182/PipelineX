@@ -68,7 +68,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
   const crumbs = breadcrumbLd([{ name: SITE.name, path: "/" }, ...UP.crumbs, { name: topic.name, path: `/topics/${topic.slug}` }]);
   return pageMeta({
     title: page > 1
-      ? `${topic.name} Featured · Page ${page}`
+      ? `${topic.name} Curated · Page ${page}`
       : SEO_TITLES.topic(topic.name, topic.group, topic.latest ? monthDay(beijingDate(topic.latest.at)) : null),
     description: text,
     path,
@@ -140,7 +140,7 @@ export default function TopicRoute() {
         </div>
       ))}
 
-      <h2 className="sr-only">{page === 1 ? `${topic.name} Featured` : `Featured Archives · Page ${page}`}</h2>
+      <h2 className="sr-only">{page === 1 ? `${topic.name} Curated` : `Curated Archives · Page ${page}`}</h2>
       {items.length === 0 ? (
         <div className="lg:card">
           <EmptyState title="No featured items in this topic yet" />

@@ -184,7 +184,7 @@ export function siteLd() {
       creator: orgRef(),
       publisher: orgRef(),
       distribution: [
-        { "@type": "DataDownload", name: "Featured RSS", encodingFormat: "application/rss+xml", contentUrl: `${base}/feed.xml` },
+        { "@type": "DataDownload", name: "Curated RSS", encodingFormat: "application/rss+xml", contentUrl: `${base}/feed.xml` },
         { "@type": "DataDownload", name: "All Updates RSS", encodingFormat: "application/rss+xml", contentUrl: `${base}/feed/all.xml` },
         { "@type": "DataDownload", name: `${withSubject("Daily Report")} RSS`, encodingFormat: "application/rss+xml", contentUrl: `${base}/feed/daily.xml` },
         { "@type": "DataDownload", name: `${withSubject("Weekly Report")} RSS`, encodingFormat: "application/rss+xml", contentUrl: `${base}/feed/weekly.xml` },

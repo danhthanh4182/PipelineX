@@ -75,7 +75,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
       articleLd({ path: `/items/${item.id}`, headline: item.title, description: item.summary, publishedAt: item.publishedAt ?? item.discoveredAt, image: `/og/items/${item.id}.png`, basedOn: item.links.original }),
       breadcrumbLd([
         { name: SITE.name, path: "/" },
-        { name: item.selected ? "Featured" : "All Updates", path: item.selected ? "/" : "/all" },
+        { name: item.selected ? "Curated" : "All Updates", path: item.selected ? "/" : "/all" },
         { name: item.title, path: `/items/${item.id}` },
       ]),
     ],
@@ -242,7 +242,7 @@ function ItemPreview({ preview }: { preview: FeedItemSummary }) {
   const shownAt = preview.publishedAt ?? preview.timelineAt;
   return (
     <div className="mx-auto max-w-[var(--page-max-reading)] pb-8">
-      <PhoneBar back={{ to: preview.selected ? "/" : "/all", label: preview.selected ? "Featured" : "All" }} title={isPost ? preview.x!.authorName : preview.title} />
+      <PhoneBar back={{ to: preview.selected ? "/" : "/all", label: preview.selected ? "Curated" : "All" }} title={isPost ? preview.x!.authorName : preview.title} />
       <article className="pb-6 pt-3" aria-busy="true">
         <div className="mb-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] text-ink-3">
           <span className="font-semibold text-ink-2">{isX ? preview.x!.authorName : preview.source.name}</span>
@@ -295,7 +295,7 @@ function ItemGone() {
   const gone = isRouteErrorResponse(error) && error.status === 404;
   return (
     <div className="mx-auto max-w-sm pb-8">
-      <PhoneBar back={{ to: "/", label: "Featured" }} />
+      <PhoneBar back={{ to: "/", label: "Curated" }} />
       <div className="py-24 text-center">
         <div className="text-[20px] font-bold text-ink">{gone ? "Content Not Found" : "Temporarily Unavailable"}</div>
         <p className="mt-2 text-[13.5px] leading-relaxed text-ink-3">{gone ? "The link may be broken, or this content has been withdrawn." : "Service is temporarily busy. Please try again later."}</p>
@@ -497,7 +497,7 @@ function ItemView({ item, followups }: Loaded) {
 
       {/* Phones: back to where the reader came from, the title once it has scrolled away, more actions. */}
       <PhoneBar
-        back={{ to: item.selected ? "/" : "/all", label: item.selected ? "Featured" : "All" }}
+        back={{ to: item.selected ? "/" : "/all", label: item.selected ? "Curated" : "All" }}
         title={isPost ? item.x!.authorName : item.title}
         actions={
           <BarButton label="More Actions" onClick={() => setActionsOpen(true)}>

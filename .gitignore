@@ -14,3 +14,12 @@ apps/web/.react-router/
 # Font package unpacked to regenerate the report nameplates (docs/customize.md)
 package/
 fontsource-noto-sans-sc-*.tgz
+
+# PipelineX video renderer: dependencies, per-video work and outputs stay local
+renderer/node_modules/
+renderer/.venv/
+renderer/.env
+renderer/out/
+renderer/data/
+renderer/public/
+renderer/work/

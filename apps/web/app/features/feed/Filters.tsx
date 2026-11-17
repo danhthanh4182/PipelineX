@@ -25,7 +25,7 @@ function hrefWith(base: string, params: URLSearchParams, patch: Record<string, s
 }
 
 /**
- * The feed's one filter (Featured and All feed alike): none, one hand, or a category. One choice at a time: picking
+ * The feed's one filter (Curated and All feed alike): none, one hand, or a category. One choice at a time: picking
  * one hand clears the category and picking a category clears one hand. Older information / X links still filter; the
  * choice then shows as none.
  */
@@ -48,7 +48,7 @@ export function CategoryTabs({ base, category, channel = "all", layoutId, classN
 }
 
 /**
- * The phone bar of Featured and All: the brand, the Featured | All switch (a filter in use carries over), and
+ * The phone bar of Curated and All: the brand, the Curated | All switch (a filter in use carries over), and
  * buttons for the filter sheet and search.
  */
 export function FeedBar({ base, category, channel }: { base: "/" | "/all"; category: CategoryKey | null; channel: ChannelKey }) {

@@ -174,7 +174,7 @@ export default function AgentPage() {
       <header className="lg:pt-5">
         <Kicker>AGENT ACCESS</Kicker>
         <h1 data-page-title="" className="mt-4 text-[28px] font-semibold leading-[1.3] text-ink sm:text-[32px]">{`Connect ${SITE.name} to Your Agent`}</h1>
-        <p className="mt-3 max-w-[40em] text-[15px] leading-[1.8] text-ink-3">`${WAYS} protocols (${TRACKS.map((t) => t.short).join(", ")}) share the same data: Featured, Hot, Daily, Weekly, and Monthly reports. Pick the tool that fits your workflow. Fully anonymous, read-only, no API key required.`</p>
+        <p className="mt-3 max-w-[40em] text-[15px] leading-[1.8] text-ink-3">`${WAYS} protocols (${TRACKS.map((t) => t.short).join(", ")}) share the same data: Curated, Hot, Daily, Weekly, and Monthly reports. Pick the tool that fits your workflow. Fully anonymous, read-only, no API key required.`</p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <span className={`${chip} ${healthy ? "text-ok" : "text-hot"}`}>
             <span className={`size-1.5 rounded-full ${healthy ? "bg-ok" : "bg-hot"}`} aria-hidden="true" />

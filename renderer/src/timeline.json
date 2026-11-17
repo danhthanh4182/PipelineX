@@ -1,0 +1,2753 @@
+{
+  "title": "Nvidia CEO Jensen Huang Resigns Amid Spy and Affair Scandal",
+  "voice": "en-US-AndrewMultilingualNeural",
+  "total": 203.188,
+  "scenes": [
+    {
+      "kind": "hook",
+      "kicker": "THE STORY",
+      "headline": "Huang Out at Nvidia",
+      "start": 0.0,
+      "duration": 22.886,
+      "beats": [
+        {
+          "narration": "Nvidia co-founder and CEO Jensen Huang has resigned. The departure follows a widening scandal involving affairs and alleged ties to Chinese intelligence.",
+          "visual": {
+            "type": "photo",
+            "query": "Jensen Huang",
+            "asset": {
+              "file": "assets/beat-00.jpg",
+              "credit": "Anderseidesvik",
+              "license": "CC BY-SA 4.0",
+              "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jensen_Huang_Stanford_2026-04-30_010_(cropped).jpg",
+              "kind": "image"
+            }
+          },
+          "audio": "audio/s00b00.mp3",
+          "start": 0.0,
+          "duration": 10.978,
+          "words": [
+            {
+              "text": "Nvidia",
+              "start": 0.084,
+              "end": 0.481
+            },
+            {
+              "text": "co-founder",
+              "start": 0.481,
+              "end": 1.238
+            },
+            {
+              "text": "and",
+              "start": 1.478,
+              "end": 1.575
+            },
+            {
+              "text": "CEO",
+              "start": 1.587,
+              "end": 2.308
+            },
+            {
+              "text": "Jensen",
+              "start": 2.392,
+              "end": 2.8
+            },
+            {
+              "text": "Huang",
+              "start": 2.8,
+              "end": 3.305
+            },
+            {
+              "text": "has",
+              "start": 3.305,
+              "end": 3.462
+            },
+            {
+              "text": "resigned",
+              "start": 3.462,
+              "end": 3.978
+            },
+            {
+              "text": "The",
+              "start": 4.375,
+              "end": 4.423
+            },
+            {
+              "text": "departure",
+              "start": 4.435,
+              "end": 4.904
+            },
+            {
+              "text": "follows",
+              "start": 4.904,
+              "end": 5.457
+            },
+            {
+              "text": "a",
+              "start": 5.577,
+              "end": 5.673
+            },
+            {
+              "text": "widening",
+              "start": 5.673,
+              "end": 6.25
+            },
+            {
+              "text": "scandal",
+              "start": 6.25,
+              "end": 6.815
+            },
+            {
+              "text": "involving",
+              "start": 6.815,
+              "end": 7.26
+            },
+            {
+              "text": "affairs",
+              "start": 7.26,
+              "end": 7.897
+            },
+            {
+              "text": "and",
+              "start": 8.089,
+              "end": 8.209
+            },
+            {
+              "text": "alleged",
+              "start": 8.209,
+              "end": 8.606
+            },
+            {
+              "text": "ties",
+              "start": 8.606,
+              "end": 9.171
+            },
+            {
+              "text": "to",
+              "start": 9.183,
+              "end": 9.279
+            },
+            {
+              "text": "Chinese",
+              "start": 9.279,
+              "end": 9.663
+            },
+            {
+              "text": "intelligence",
+              "start": 9.675,
+              "end": 10.373
+            }
+          ]
+        },
+        {
+          "narration": "A public letter demanding his reinstatement has drawn more than 115,000 signatures. Signers include Elon Musk and other tech executives, according to TechCrunch.",
+          "visual": {
+            "type": "article",
+            "source": 1,
+            "name": "TechCrunch",
+            "headline": "Elon Musk, other tech execs sign petition calling on Nvidia to reinstate Jensen Huang",
+            "date": "2026-11-15T04:41:22+07:00",
+            "url": "https://techcrunch.com/2026/11/14/elon-musk-other-tech-execs-sign-petition-calling-on-nvidia-to-reinstate-jensen-huang/"
+          },
+          "audio": "audio/s00b01.mp3",
+          "start": 10.978,
+          "duration": 11.908,
+          "words": [
+            {
+              "text": "A",
+              "start": 0.084,
+              "end": 0.144
+            },
+            {
+              "text": "public",
+              "start": 0.144,
+              "end": 0.469
+            },
+            {
+              "text": "letter",
+              "start": 0.469,
+              "end": 0.745
+            },
+            {
+              "text": "demanding",
+              "start": 0.805,
+              "end": 1.358
+            },
+            {
+              "text": "his",
+              "start": 1.358,
+              "end": 1.49
+            },
+            {
+              "text": "reinstatement",
+              "start": 1.49,
+              "end": 2.188
+            },
+            {
+              "text": "has",
+              "start": 2.2,
+              "end": 2.356
+            },
+            {
+              "text": "drawn",
+              "start": 2.356,
+              "end": 2.74
+            },
+            {
+              "text": "more",
+              "start": 2.74,
+              "end": 3.077
+            },
+            {
+              "text": "than",
+              "start": 3.089,
+              "end": 3.233
+            },
+            {
+              "text": "115,000",
+              "start": 3.245,
+              "end": 4.94
+            },
+            {
+              "text": "signatures",
+              "start": 4.94,
+              "end": 5.625
+            },
+            {
+              "text": "Signers",
+              "start": 6.022,
+              "end": 6.418
+            },
+            {
+              "text": "include",
+              "start": 6.43,
+              "end": 6.851
+            },
+            {
+              "text": "Elon",
+              "start": 6.983,
+              "end": 7.332
+            },
+            {
+              "text": "Musk",
+              "start": 7.332,
+              "end": 7.764
+            },
+            {
+              "text": "and",
+              "start": 8.137,
+              "end": 8.377
+            },
+            {
+              "text": "other",
+              "start": 8.389,
+              "end": 8.618
+            },
+            {
+              "text": "tech",
+              "start": 8.63,
+              "end": 8.834
+            },
+            {
+              "text": "executives",
+              "start": 8.834,
+              "end": 9.519
+            },
+            {
+              "text": "according",
+              "start": 9.772,
+              "end": 10.108
+            },
+            {
+              "text": "to",
+              "start": 10.108,
+              "end": 10.168
+            },
+            {
+              "text": "TechCrunch",
+              "start": 10.168,
+              "end": 10.853
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "story",
+      "kicker": "WHAT HAPPENED",
+      "headline": "Resignation and Interim CEO",
+      "start": 22.886,
+      "duration": 32.064,
+      "beats": [
+        {
+          "narration": "Huang stepped down on Thursday after confessing to an affair with a chip executive suspected by U.S. intelligence of being a Chinese spy.",
+          "visual": {
+            "type": "broll",
+            "query": "computer chip",
+            "asset": {
+              "file": "assets/beat-02.mp4",
+              "credit": "Danil_Shostak on Pixabay",
+              "license": "Pixabay License",
+              "sourceUrl": "https://pixabay.com/videos/id-27593/",
+              "kind": "video",
+              "duration": 5
+            }
+          },
+          "audio": "audio/s01b00.mp3",
+          "start": 0.0,
+          "duration": 8.122,
+          "words": [
+            {
+              "text": "Huang",
+              "start": 0.132,
+              "end": 0.337
+            },
+            {
+              "text": "stepped",
+              "start": 0.349,
+              "end": 0.589
+            },
+            {
+              "text": "down",
+              "start": 0.589,
+              "end": 0.817
+            },
+            {
+              "text": "on",
+              "start": 0.829,
+              "end": 0.962
+            },
+            {
+              "text": "Thursday",
+              "start": 0.962,
+              "end": 1.599
+            },
+            {
+              "text": "after",
+              "start": 1.611,
+              "end": 1.863
+            },
+            {
+              "text": "confessing",
+              "start": 1.875,
+              "end": 2.392
+            },
+            {
+              "text": "to",
+              "start": 2.392,
+              "end": 2.512
+            },
+            {
+              "text": "an",
+              "start": 2.524,
+              "end": 2.608
+            },
+            {
+              "text": "affair",
+              "start": 2.608,
+              "end": 3.053
+            },
+            {
+              "text": "with",
+              "start": 3.257,
+              "end": 3.389
+            },
+            {
+              "text": "a",
+              "start": 3.401,
+              "end": 3.437
+            },
+            {
+              "text": "chip",
+              "start": 3.45,
+              "end": 3.714
+            },
+            {
+              "text": "executive",
+              "start": 3.726,
+              "end": 4.291
+            },
+            {
+              "text": "suspected",
+              "start": 4.495,
+              "end": 4.988
+            },
+            {
+              "text": "by",
+              "start": 4.988,
+              "end": 5.084
+            },
+            {
+              "text": "U.S.",
+              "start": 5.096,
+              "end": 5.565
+            },
+            {
+              "text": "intelligence",
+              "start": 5.565,
+              "end": 6.202
+            },
+            {
+              "text": "of",
+              "start": 6.214,
+              "end": 6.31
+            },
+            {
+              "text": "being",
+              "start": 6.31,
+              "end": 6.611
+            },
+            {
+              "text": "a",
+              "start": 6.623,
+              "end": 6.671
+            },
+            {
+              "text": "Chinese",
+              "start": 6.671,
+              "end": 7.103
+            },
+            {
+              "text": "spy",
+              "start": 7.103,
+              "end": 7.524
+            }
+          ]
+        },
+        {
+          "narration": "Nvidia appointed CFO Colette Kress as interim CEO while it searches for a permanent replacement. The board also named Harvey Jones as its first board chair, according to The Verge.",
+          "visual": {
+            "type": "broll",
+            "query": "Nvidia headquarters",
+            "asset": {
+              "file": "assets/beat-03.jpg",
+              "credit": "Coolcaesar",
+              "license": "CC BY-SA 4.0",
+              "sourceUrl": "https://commons.wikimedia.org/w/index.php?curid=74676142",
+              "kind": "image"
+            }
+          },
+          "audio": "audio/s01b01.mp3",
+          "start": 8.122,
+          "duration": 12.634,
+          "words": [
+            {
+              "text": "Nvidia",
+              "start": 0.084,
+              "end": 0.709
+            },
+            {
+              "text": "appointed",
+              "start": 0.781,
+              "end": 1.31
+            },
+            {
+              "text": "CFO",
+              "start": 1.322,
+              "end": 2.067
+            },
+            {
+              "text": "Colette",
+              "start": 2.272,
+              "end": 2.68
+            },
+            {
+              "text": "Kress",
+              "start": 2.68,
+              "end": 3.245
+            },
+            {
+              "text": "as",
+              "start": 3.413,
+              "end": 3.618
+            },
+            {
+              "text": "interim",
+              "start": 3.702,
+              "end": 4.026
+            },
+            {
+              "text": "CEO",
+              "start": 4.026,
+              "end": 4.748
+            },
+            {
+              "text": "while",
+              "start": 4.964,
+              "end": 5.144
+            },
+            {
+              "text": "it",
+              "start": 5.144,
+              "end": 5.204
+            },
+            {
+              "text": "searches",
+              "start": 5.216,
+              "end": 5.793
+            },
+            {
+              "text": "for",
+              "start": 5.805,
+              "end": 5.974
+            },
+            {
+              "text": "a",
+              "start": 5.974,
+              "end": 6.01
+            },
+            {
+              "text": "permanent",
+              "start": 6.01,
+              "end": 6.43
+            },
+            {
+              "text": "replacement",
+              "start": 6.442,
+              "end": 7.067
+            },
+            {
+              "text": "The",
+              "start": 7.476,
+              "end": 7.536
+            },
+            {
+              "text": "board",
+              "start": 7.536,
+              "end": 7.8
+            },
+            {
+              "text": "also",
+              "start": 7.801,
+              "end": 8.089
+            },
+            {
+              "text": "named",
+              "start": 8.089,
+              "end": 8.353
+            },
+            {
+              "text": "Harvey",
+              "start": 8.353,
+              "end": 8.714
+            },
+            {
+              "text": "Jones",
+              "start": 8.726,
+              "end": 9.303
+            },
+            {
+              "text": "as",
+              "start": 9.423,
+              "end": 9.543
+            },
+            {
+              "text": "its",
+              "start": 9.543,
+              "end": 9.663
+            },
+            {
+              "text": "first",
+              "start": 9.663,
+              "end": 10.012
+            },
+            {
+              "text": "board",
+              "start": 10.012,
+              "end": 10.252
+            },
+            {
+              "text": "chair",
+              "start": 10.252,
+              "end": 10.589
+            },
+            {
+              "text": "according",
+              "start": 11.022,
+              "end": 11.394
+            },
+            {
+              "text": "to",
+              "start": 11.406,
+              "end": 11.454
+            },
+            {
+              "text": "The",
+              "start": 11.454,
+              "end": 11.514
+            },
+            {
+              "text": "Verge",
+              "start": 11.514,
+              "end": 12.031
+            }
+          ]
+        },
+        {
+          "narration": "The New York Times reported in late October that Huang appeared to be the target of a Chinese spy plot. The report centered on Alice Huang, an executive at Singapore-based Megaspeed.",
+          "visual": {
+            "type": "article",
+            "source": 2,
+            "name": "The Verge",
+            "headline": "An overview of Jensen Huang\u2019s messy days",
+            "date": "2026-11-15T20:00:00+07:00",
+            "url": "https://www.theverge.com/column/1033943/jensen-huang-nvidia-china-spying-scandal-resignation"
+          },
+          "audio": "audio/s01b02.mp3",
+          "start": 20.756,
+          "duration": 11.308,
+          "words": [
+            {
+              "text": "The",
+              "start": 0.096,
+              "end": 0.144
+            },
+            {
+              "text": "New",
+              "start": 0.144,
+              "end": 0.3
+            },
+            {
+              "text": "York",
+              "start": 0.3,
+              "end": 0.481
+            },
+            {
+              "text": "Times",
+              "start": 0.481,
+              "end": 0.769
+            },
+            {
+              "text": "reported",
+              "start": 0.769,
+              "end": 1.154
+            },
+            {
+              "text": "in",
+              "start": 1.154,
+              "end": 1.274
+            },
+            {
+              "text": "late",
+              "start": 1.274,
+              "end": 1.49
+            },
+            {
+              "text": "October",
+              "start": 1.502,
+              "end": 2.127
+            },
+            {
+              "text": "that",
+              "start": 2.332,
+              "end": 2.428
+            },
+            {
+              "text": "Huang",
+              "start": 2.428,
+              "end": 2.764
+            },
+            {
+              "text": "appeared",
+              "start": 2.764,
+              "end": 3.125
+            },
+            {
+              "text": "to",
+              "start": 3.125,
+              "end": 3.173
+            },
+            {
+              "text": "be",
+              "start": 3.173,
+              "end": 3.281
+            },
+            {
+              "text": "the",
+              "start": 3.281,
+              "end": 3.377
+            },
+            {
+              "text": "target",
+              "start": 3.377,
+              "end": 3.858
+            },
+            {
+              "text": "of",
+              "start": 3.858,
+              "end": 3.93
+            },
+            {
+              "text": "a",
+              "start": 3.942,
+              "end": 3.99
+            },
+            {
+              "text": "Chinese",
+              "start": 3.99,
+              "end": 4.471
+            },
+            {
+              "text": "spy",
+              "start": 4.471,
+              "end": 4.736
+            },
+            {
+              "text": "plot",
+              "start": 4.748,
+              "end": 5.228
+            },
+            {
+              "text": "The",
+              "start": 5.613,
+              "end": 5.673
+            },
+            {
+              "text": "report",
+              "start": 5.673,
+              "end": 6.058
+            },
+            {
+              "text": "centered",
+              "start": 6.058,
+              "end": 6.478
+            },
+            {
+              "text": "on",
+              "start": 6.49,
+              "end": 6.647
+            },
+            {
+              "text": "Alice",
+              "start": 6.659,
+              "end": 6.995
+            },
+            {
+              "text": "Huang",
+              "start": 7.007,
+              "end": 7.44
+            },
+            {
+              "text": "an",
+              "start": 7.897,
+              "end": 7.933
+            },
+            {
+              "text": "executive",
+              "start": 7.933,
+              "end": 8.498
+            },
+            {
+              "text": "at",
+              "start": 8.498,
+              "end": 8.558
+            },
+            {
+              "text": "Singapore-based",
+              "start": 8.558,
+              "end": 9.543
+            },
+            {
+              "text": "Megaspeed",
+              "start": 9.543,
+              "end": 10.264
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "story",
+      "kicker": "THE BACKGROUND",
+      "headline": "Spy Allegations and Megaspeed",
+      "start": 54.95,
+      "duration": 35.016,
+      "beats": [
+        {
+          "narration": "Some U.S. officials believed she was passing information to Beijing. Megaspeed now says Alice Huang left the company in August 2025 and holds no role there.",
+          "visual": {
+            "type": "article",
+            "source": 2,
+            "name": "The Verge",
+            "headline": "An overview of Jensen Huang\u2019s messy days",
+            "date": "2026-11-15T20:00:00+07:00",
+            "url": "https://www.theverge.com/column/1033943/jensen-huang-nvidia-china-spying-scandal-resignation"
+          },
+          "audio": "audio/s02b00.mp3",
+          "start": 0.0,
+          "duration": 11.026,
+          "words": [
+            {
+              "text": "Some",
+              "start": 0.096,
+              "end": 0.324
+            },
+            {
+              "text": "U.S.",
+              "start": 0.325,
+              "end": 0.709
+            },
+            {
+              "text": "officials",
+              "start": 0.709,
+              "end": 1.178
+            },
+            {
+              "text": "believed",
+              "start": 1.19,
+              "end": 1.743
+            },
+            {
+              "text": "she",
+              "start": 1.947,
+              "end": 2.091
+            },
+            {
+              "text": "was",
+              "start": 2.091,
+              "end": 2.212
+            },
+            {
+              "text": "passing",
+              "start": 2.212,
+              "end": 2.692
+            },
+            {
+              "text": "information",
+              "start": 2.692,
+              "end": 3.245
+            },
+            {
+              "text": "to",
+              "start": 3.257,
+              "end": 3.329
+            },
+            {
+              "text": "Beijing",
+              "start": 3.341,
+              "end": 3.882
+            },
+            {
+              "text": "Megaspeed",
+              "start": 4.267,
+              "end": 4.796
+            },
+            {
+              "text": "now",
+              "start": 4.796,
+              "end": 5.18
+            },
+            {
+              "text": "says",
+              "start": 5.276,
+              "end": 5.637
+            },
+            {
+              "text": "Alice",
+              "start": 5.649,
+              "end": 5.962
+            },
+            {
+              "text": "Huang",
+              "start": 5.962,
+              "end": 6.358
+            },
+            {
+              "text": "left",
+              "start": 6.358,
+              "end": 6.599
+            },
+            {
+              "text": "the",
+              "start": 6.599,
+              "end": 6.671
+            },
+            {
+              "text": "company",
+              "start": 6.671,
+              "end": 7.139
+            },
+            {
+              "text": "in",
+              "start": 7.308,
+              "end": 7.476
+            },
+            {
+              "text": "August 2025",
+              "start": 7.572,
+              "end": 8.882
+            },
+            {
+              "text": "and",
+              "start": 9.207,
+              "end": 9.279
+            },
+            {
+              "text": "holds",
+              "start": 9.279,
+              "end": 9.519
+            },
+            {
+              "text": "no",
+              "start": 9.519,
+              "end": 9.784
+            },
+            {
+              "text": "role",
+              "start": 9.784,
+              "end": 10.06
+            },
+            {
+              "text": "there",
+              "start": 10.072,
+              "end": 10.421
+            }
+          ]
+        },
+        {
+          "narration": "The petition says its signers are concerned that Huang was removed without meaningful due process. It demands that the board bring him back while an independent investigation establishes the facts.",
+          "visual": {
+            "type": "card",
+            "query": "Petition text"
+          },
+          "audio": "audio/s02b01.mp3",
+          "start": 11.026,
+          "duration": 12.01,
+          "words": [
+            {
+              "text": "The",
+              "start": 0.096,
+              "end": 0.144
+            },
+            {
+              "text": "petition",
+              "start": 0.144,
+              "end": 0.601
+            },
+            {
+              "text": "says",
+              "start": 0.601,
+              "end": 0.841
+            },
+            {
+              "text": "its",
+              "start": 0.841,
+              "end": 0.974
+            },
+            {
+              "text": "signers",
+              "start": 0.974,
+              "end": 1.346
+            },
+            {
+              "text": "are",
+              "start": 1.346,
+              "end": 1.406
+            },
+            {
+              "text": "concerned",
+              "start": 1.406,
+              "end": 2.055
+            },
+            {
+              "text": "that",
+              "start": 2.272,
+              "end": 2.392
+            },
+            {
+              "text": "Huang",
+              "start": 2.392,
+              "end": 2.873
+            },
+            {
+              "text": "was",
+              "start": 3.089,
+              "end": 3.257
+            },
+            {
+              "text": "removed",
+              "start": 3.269,
+              "end": 3.858
+            },
+            {
+              "text": "without",
+              "start": 4.062,
+              "end": 4.495
+            },
+            {
+              "text": "meaningful",
+              "start": 4.495,
+              "end": 4.988
+            },
+            {
+              "text": "due",
+              "start": 5.0,
+              "end": 5.156
+            },
+            {
+              "text": "process",
+              "start": 5.156,
+              "end": 5.901
+            },
+            {
+              "text": "It",
+              "start": 6.286,
+              "end": 6.346
+            },
+            {
+              "text": "demands",
+              "start": 6.346,
+              "end": 6.743
+            },
+            {
+              "text": "that",
+              "start": 6.755,
+              "end": 6.851
+            },
+            {
+              "text": "the",
+              "start": 6.851,
+              "end": 6.935
+            },
+            {
+              "text": "board",
+              "start": 6.947,
+              "end": 7.296
+            },
+            {
+              "text": "bring",
+              "start": 7.296,
+              "end": 7.56
+            },
+            {
+              "text": "him",
+              "start": 7.56,
+              "end": 7.716
+            },
+            {
+              "text": "back",
+              "start": 7.716,
+              "end": 8.173
+            },
+            {
+              "text": "while",
+              "start": 8.293,
+              "end": 8.438
+            },
+            {
+              "text": "an",
+              "start": 8.438,
+              "end": 8.51
+            },
+            {
+              "text": "independent",
+              "start": 8.522,
+              "end": 9.111
+            },
+            {
+              "text": "investigation",
+              "start": 9.123,
+              "end": 9.892
+            },
+            {
+              "text": "establishes",
+              "start": 10.024,
+              "end": 10.697
+            },
+            {
+              "text": "the",
+              "start": 10.697,
+              "end": 10.769
+            },
+            {
+              "text": "facts",
+              "start": 10.769,
+              "end": 11.406
+            }
+          ]
+        },
+        {
+          "narration": "President Trump said he does not believe the affair threatened national security. He also doubted that Alice Huang is a spy, contradicting prior U.S. official findings.",
+          "visual": {
+            "type": "quote",
+            "speaker": "Donald Trump, U.S. President",
+            "text": "Nobody's proven that she's a spy. She may not be a spy."
+          },
+          "audio": "audio/s02b02.mp3",
+          "start": 23.036,
+          "duration": 11.98,
+          "words": [
+            {
+              "text": "President",
+              "start": 0.096,
+              "end": 0.505
+            },
+            {
+              "text": "Trump",
+              "start": 0.505,
+              "end": 0.877
+            },
+            {
+              "text": "said",
+              "start": 1.07,
+              "end": 1.334
+            },
+            {
+              "text": "he",
+              "start": 1.346,
+              "end": 1.442
+            },
+            {
+              "text": "does",
+              "start": 1.454,
+              "end": 1.599
+            },
+            {
+              "text": "not",
+              "start": 1.599,
+              "end": 1.851
+            },
+            {
+              "text": "believe",
+              "start": 1.851,
+              "end": 2.224
+            },
+            {
+              "text": "the",
+              "start": 2.224,
+              "end": 2.32
+            },
+            {
+              "text": "affair",
+              "start": 2.32,
+              "end": 2.812
+            },
+            {
+              "text": "threatened",
+              "start": 3.041,
+              "end": 3.618
+            },
+            {
+              "text": "national",
+              "start": 3.714,
+              "end": 4.159
+            },
+            {
+              "text": "security",
+              "start": 4.171,
+              "end": 4.724
+            },
+            {
+              "text": "He",
+              "start": 5.144,
+              "end": 5.216
+            },
+            {
+              "text": "also",
+              "start": 5.228,
+              "end": 5.529
+            },
+            {
+              "text": "doubted",
+              "start": 5.529,
+              "end": 5.925
+            },
+            {
+              "text": "that",
+              "start": 5.938,
+              "end": 6.118
+            },
+            {
+              "text": "Alice",
+              "start": 6.13,
+              "end": 6.43
+            },
+            {
+              "text": "Huang",
+              "start": 6.43,
+              "end": 6.959
+            },
+            {
+              "text": "is",
+              "start": 7.055,
+              "end": 7.151
+            },
+            {
+              "text": "a",
+              "start": 7.151,
+              "end": 7.199
+            },
+            {
+              "text": "spy",
+              "start": 7.199,
+              "end": 7.788
+            },
+            {
+              "text": "contradicting",
+              "start": 8.197,
+              "end": 8.774
+            },
+            {
+              "text": "prior",
+              "start": 8.774,
+              "end": 9.171
+            },
+            {
+              "text": "U.S.",
+              "start": 9.183,
+              "end": 9.7
+            },
+            {
+              "text": "official",
+              "start": 9.784,
+              "end": 10.204
+            },
+            {
+              "text": "findings",
+              "start": 10.216,
+              "end": 10.925
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "story",
+      "kicker": "THE REACTIONS",
+      "headline": "Petition and Political Response",
+      "start": 89.966,
+      "duration": 52.594,
+      "beats": [
+        {
+          "narration": "OpenAI CEO Sam Altman said the AI industry will be fine without Huang. He called Huang a hero with flaws and said he does not know enough to judge whether Huang should return.",
+          "visual": {
+            "type": "article",
+            "source": 6,
+            "name": "TechCrunch",
+            "headline": "Sam Altman on Nvidia without Jensen Huang: The industry will be \u2018fine\u2019",
+            "date": "2026-11-17T01:11:10+07:00",
+            "url": "https://techcrunch.com/2026/11/16/sam-altman-on-nvidia-without-jensen-huang-the-industry-will-be-fine/"
+          },
+          "audio": "audio/s03b00.mp3",
+          "start": 0.0,
+          "duration": 12.034,
+          "words": [
+            {
+              "text": "OpenAI",
+              "start": 0.084,
+              "end": 0.709
+            },
+            {
+              "text": "CEO",
+              "start": 0.721,
+              "end": 1.43
+            },
+            {
+              "text": "Sam",
+              "start": 1.538,
+              "end": 1.899
+            },
+            {
+              "text": "Altman",
+              "start": 1.911,
+              "end": 2.344
+            },
+            {
+              "text": "said",
+              "start": 2.548,
+              "end": 2.752
+            },
+            {
+              "text": "the",
+              "start": 2.764,
+              "end": 2.861
+            },
+            {
+              "text": "AI",
+              "start": 2.933,
+              "end": 3.377
+            },
+            {
+              "text": "industry",
+              "start": 3.389,
+              "end": 3.93
+            },
+            {
+              "text": "will",
+              "start": 3.942,
+              "end": 4.038
+            },
+            {
+              "text": "be",
+              "start": 4.038,
+              "end": 4.135
+            },
+            {
+              "text": "fine",
+              "start": 4.135,
+              "end": 4.603
+            },
+            {
+              "text": "without",
+              "start": 4.784,
+              "end": 5.12
+            },
+            {
+              "text": "Huang",
+              "start": 5.132,
+              "end": 5.517
+            },
+            {
+              "text": "He",
+              "start": 5.913,
+              "end": 5.974
+            },
+            {
+              "text": "called",
+              "start": 5.974,
+              "end": 6.31
+            },
+            {
+              "text": "Huang",
+              "start": 6.31,
+              "end": 6.647
+            },
+            {
+              "text": "a",
+              "start": 6.647,
+              "end": 6.683
+            },
+            {
+              "text": "hero",
+              "start": 6.695,
+              "end": 7.139
+            },
+            {
+              "text": "with",
+              "start": 7.139,
+              "end": 7.26
+            },
+            {
+              "text": "flaws",
+              "start": 7.26,
+              "end": 7.957
+            },
+            {
+              "text": "and",
+              "start": 8.089,
+              "end": 8.281
+            },
+            {
+              "text": "said",
+              "start": 8.293,
+              "end": 8.546
+            },
+            {
+              "text": "he",
+              "start": 8.546,
+              "end": 8.606
+            },
+            {
+              "text": "does",
+              "start": 8.606,
+              "end": 8.738
+            },
+            {
+              "text": "not",
+              "start": 8.738,
+              "end": 9.026
+            },
+            {
+              "text": "know",
+              "start": 9.038,
+              "end": 9.255
+            },
+            {
+              "text": "enough",
+              "start": 9.255,
+              "end": 9.519
+            },
+            {
+              "text": "to",
+              "start": 9.531,
+              "end": 9.615
+            },
+            {
+              "text": "judge",
+              "start": 9.615,
+              "end": 10.06
+            },
+            {
+              "text": "whether",
+              "start": 10.06,
+              "end": 10.433
+            },
+            {
+              "text": "Huang",
+              "start": 10.433,
+              "end": 10.865
+            },
+            {
+              "text": "should",
+              "start": 10.865,
+              "end": 11.058
+            },
+            {
+              "text": "return",
+              "start": 11.058,
+              "end": 11.442
+            }
+          ]
+        },
+        {
+          "narration": "Nvidia accounts for roughly 80 percent of the AI GPU market. The company has also reported billions in AI investments and commitments.",
+          "visual": {
+            "type": "stat",
+            "value": "80%",
+            "label": "share of AI GPU market"
+          },
+          "audio": "audio/s03b01.mp3",
+          "start": 12.034,
+          "duration": 9.802,
+          "words": [
+            {
+              "text": "Nvidia",
+              "start": 0.084,
+              "end": 0.481
+            },
+            {
+              "text": "accounts",
+              "start": 0.481,
+              "end": 0.925
+            },
+            {
+              "text": "for",
+              "start": 0.938,
+              "end": 1.178
+            },
+            {
+              "text": "roughly",
+              "start": 1.178,
+              "end": 1.671
+            },
+            {
+              "text": "80 percent",
+              "start": 1.815,
+              "end": 2.692
+            },
+            {
+              "text": "of",
+              "start": 2.849,
+              "end": 2.945
+            },
+            {
+              "text": "the",
+              "start": 2.957,
+              "end": 3.053
+            },
+            {
+              "text": "AI",
+              "start": 3.161,
+              "end": 3.678
+            },
+            {
+              "text": "GPU",
+              "start": 3.69,
+              "end": 4.231
+            },
+            {
+              "text": "market",
+              "start": 4.231,
+              "end": 4.651
+            },
+            {
+              "text": "The",
+              "start": 5.06,
+              "end": 5.108
+            },
+            {
+              "text": "company",
+              "start": 5.12,
+              "end": 5.409
+            },
+            {
+              "text": "has",
+              "start": 5.409,
+              "end": 5.601
+            },
+            {
+              "text": "also",
+              "start": 5.613,
+              "end": 5.986
+            },
+            {
+              "text": "reported",
+              "start": 5.986,
+              "end": 6.538
+            },
+            {
+              "text": "billions",
+              "start": 6.551,
+              "end": 7.031
+            },
+            {
+              "text": "in",
+              "start": 7.043,
+              "end": 7.236
+            },
+            {
+              "text": "AI",
+              "start": 7.38,
+              "end": 7.8
+            },
+            {
+              "text": "investments",
+              "start": 7.801,
+              "end": 8.425
+            },
+            {
+              "text": "and",
+              "start": 8.425,
+              "end": 8.51
+            },
+            {
+              "text": "commitments",
+              "start": 8.51,
+              "end": 9.219
+            }
+          ]
+        },
+        {
+          "narration": "Shares closed at 162 dollars and 85 cents on November 13. That is down from an October 6 high of 239 dollars and 24 cents, according to The Verge. The Verge also reported that shares dropped 14 percent since the resignation.",
+          "visual": {
+            "type": "chart",
+            "title": "Nvidia stock",
+            "unit": "$",
+            "points": [
+              {
+                "label": "Oct 6",
+                "value": 239.24
+              },
+              {
+                "label": "Nov 13",
+                "value": 162.85
+              }
+            ]
+          },
+          "audio": "audio/s03b02.mp3",
+          "start": 21.836,
+          "duration": 18.058,
+          "words": [
+            {
+              "text": "Shares",
+              "start": 0.096,
+              "end": 0.349
+            },
+            {
+              "text": "closed",
+              "start": 0.361,
+              "end": 0.781
+            },
+            {
+              "text": "at",
+              "start": 0.853,
+              "end": 1.034
+            },
+            {
+              "text": "162 dollars",
+              "start": 1.118,
+              "end": 2.692
+            },
+            {
+              "text": "and",
+              "start": 2.837,
+              "end": 3.101
+            },
+            {
+              "text": "85 cents",
+              "start": 3.221,
+              "end": 4.267
+            },
+            {
+              "text": "on",
+              "start": 4.387,
+              "end": 4.531
+            },
+            {
+              "text": "November 13",
+              "start": 4.531,
+              "end": 5.613
+            },
+            {
+              "text": "That",
+              "start": 5.998,
+              "end": 6.106
+            },
+            {
+              "text": "is",
+              "start": 6.106,
+              "end": 6.238
+            },
+            {
+              "text": "down",
+              "start": 6.238,
+              "end": 6.551
+            },
+            {
+              "text": "from",
+              "start": 6.562,
+              "end": 6.659
+            },
+            {
+              "text": "an",
+              "start": 6.659,
+              "end": 6.719
+            },
+            {
+              "text": "October 6",
+              "start": 6.731,
+              "end": 7.572
+            },
+            {
+              "text": "high",
+              "start": 7.584,
+              "end": 8.077
+            },
+            {
+              "text": "of",
+              "start": 8.365,
+              "end": 8.486
+            },
+            {
+              "text": "239 dollars",
+              "start": 8.63,
+              "end": 9.916
+            },
+            {
+              "text": "and",
+              "start": 9.916,
+              "end": 9.964
+            },
+            {
+              "text": "24 cents",
+              "start": 9.964,
+              "end": 10.998
+            },
+            {
+              "text": "according",
+              "start": 11.394,
+              "end": 11.923
+            },
+            {
+              "text": "to",
+              "start": 11.923,
+              "end": 12.031
+            },
+            {
+              "text": "The",
+              "start": 12.031,
+              "end": 12.115
+            },
+            {
+              "text": "Verge",
+              "start": 12.127,
+              "end": 12.656
+            },
+            {
+              "text": "The",
+              "start": 13.041,
+              "end": 13.101
+            },
+            {
+              "text": "Verge",
+              "start": 13.113,
+              "end": 13.413
+            },
+            {
+              "text": "also",
+              "start": 13.413,
+              "end": 13.75
+            },
+            {
+              "text": "reported",
+              "start": 13.75,
+              "end": 14.231
+            },
+            {
+              "text": "that",
+              "start": 14.243,
+              "end": 14.351
+            },
+            {
+              "text": "shares",
+              "start": 14.363,
+              "end": 14.82
+            },
+            {
+              "text": "dropped",
+              "start": 14.832,
+              "end": 15.192
+            },
+            {
+              "text": "14 percent",
+              "start": 15.192,
+              "end": 16.298
+            },
+            {
+              "text": "since",
+              "start": 16.514,
+              "end": 16.731
+            },
+            {
+              "text": "the",
+              "start": 16.731,
+              "end": 16.803
+            },
+            {
+              "text": "resignation",
+              "start": 16.803,
+              "end": 17.452
+            }
+          ]
+        },
+        {
+          "narration": "Nvidia has agreed to guarantee up to 105 billion dollars for OpenAI's Ohio data center project. This is one of many circular deals Nvidia has made to bankroll the AI boom.",
+          "visual": {
+            "type": "stat",
+            "value": "$105 billion",
+            "label": "OpenAI Ohio data center guarantee"
+          },
+          "audio": "audio/s03b03.mp3",
+          "start": 39.894,
+          "duration": 12.7,
+          "words": [
+            {
+              "text": "Nvidia",
+              "start": 0.084,
+              "end": 0.541
+            },
+            {
+              "text": "has",
+              "start": 0.541,
+              "end": 0.697
+            },
+            {
+              "text": "agreed",
+              "start": 0.709,
+              "end": 1.142
+            },
+            {
+              "text": "to",
+              "start": 1.154,
+              "end": 1.262
+            },
+            {
+              "text": "guarantee",
+              "start": 1.262,
+              "end": 1.839
+            },
+            {
+              "text": "up",
+              "start": 1.839,
+              "end": 2.079
+            },
+            {
+              "text": "to",
+              "start": 2.236,
+              "end": 2.452
+            },
+            {
+              "text": "105 billion dollars",
+              "start": 2.464,
+              "end": 4.267
+            },
+            {
+              "text": "for",
+              "start": 4.483,
+              "end": 4.736
+            },
+            {
+              "text": "OpenAI's",
+              "start": 4.856,
+              "end": 5.601
+            },
+            {
+              "text": "Ohio",
+              "start": 5.721,
+              "end": 6.094
+            },
+            {
+              "text": "data",
+              "start": 6.094,
+              "end": 6.334
+            },
+            {
+              "text": "center",
+              "start": 6.334,
+              "end": 6.562
+            },
+            {
+              "text": "project",
+              "start": 6.562,
+              "end": 7.103
+            },
+            {
+              "text": "This",
+              "start": 7.488,
+              "end": 7.656
+            },
+            {
+              "text": "is",
+              "start": 7.656,
+              "end": 7.728
+            },
+            {
+              "text": "one",
+              "start": 7.728,
+              "end": 7.824
+            },
+            {
+              "text": "of",
+              "start": 7.824,
+              "end": 7.897
+            },
+            {
+              "text": "many",
+              "start": 7.909,
+              "end": 8.221
+            },
+            {
+              "text": "circular",
+              "start": 8.233,
+              "end": 8.702
+            },
+            {
+              "text": "deals",
+              "start": 8.702,
+              "end": 9.014
+            },
+            {
+              "text": "Nvidia",
+              "start": 9.026,
+              "end": 9.507
+            },
+            {
+              "text": "has",
+              "start": 9.519,
+              "end": 9.663
+            },
+            {
+              "text": "made",
+              "start": 9.663,
+              "end": 9.904
+            },
+            {
+              "text": "to",
+              "start": 9.904,
+              "end": 10.0
+            },
+            {
+              "text": "bankroll",
+              "start": 10.06,
+              "end": 10.685
+            },
+            {
+              "text": "the",
+              "start": 10.685,
+              "end": 10.781
+            },
+            {
+              "text": "AI",
+              "start": 10.793,
+              "end": 11.238
+            },
+            {
+              "text": "boom",
+              "start": 11.25,
+              "end": 11.647
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "story",
+      "kicker": "THE BUSINESS IMPACT",
+      "headline": "Stock and AI Investments",
+      "start": 142.56,
+      "duration": 31.512,
+      "beats": [
+        {
+          "narration": "Nvidia's planned acquisition of Hugging Face is valued at nearly 13 billion dollars, according to MIT Technology Review.",
+          "visual": {
+            "type": "stat",
+            "value": "$13 billion",
+            "label": "Nvidia planned acquisition of Hugging Face"
+          },
+          "audio": "audio/s04b00.mp3",
+          "start": 0.0,
+          "duration": 8.626,
+          "words": [
+            {
+              "text": "Nvidia's",
+              "start": 0.084,
+              "end": 0.625
+            },
+            {
+              "text": "planned",
+              "start": 0.637,
+              "end": 1.058
+            },
+            {
+              "text": "acquisition",
+              "start": 1.142,
+              "end": 1.791
+            },
+            {
+              "text": "of",
+              "start": 1.791,
+              "end": 1.863
+            },
+            {
+              "text": "Hugging",
+              "start": 1.875,
+              "end": 2.224
+            },
+            {
+              "text": "Face",
+              "start": 2.224,
+              "end": 2.668
+            },
+            {
+              "text": "is",
+              "start": 2.8,
+              "end": 2.933
+            },
+            {
+              "text": "valued",
+              "start": 2.945,
+              "end": 3.486
+            },
+            {
+              "text": "at",
+              "start": 3.498,
+              "end": 3.606
+            },
+            {
+              "text": "nearly",
+              "start": 3.606,
+              "end": 4.014
+            },
+            {
+              "text": "13 billion dollars",
+              "start": 4.099,
+              "end": 5.625
+            },
+            {
+              "text": "according",
+              "start": 6.01,
+              "end": 6.454
+            },
+            {
+              "text": "to",
+              "start": 6.466,
+              "end": 6.55
+            },
+            {
+              "text": "MIT",
+              "start": 6.562,
+              "end": 7.067
+            },
+            {
+              "text": "Technology",
+              "start": 7.067,
+              "end": 7.608
+            },
+            {
+              "text": "Review",
+              "start": 7.608,
+              "end": 8.017
+            }
+          ]
+        },
+        {
+          "narration": "Lawmakers have begun investigations into alleged chip smuggling. Nvidia's quarterly earnings are expected soon, and the future of the company remains in flux.",
+          "visual": {
+            "type": "broll",
+            "query": "stock market screen",
+            "asset": {
+              "file": "assets/beat-13.mp4",
+              "credit": "MuhammadAhmad10 on Pixabay",
+              "license": "Pixabay License",
+              "sourceUrl": "https://pixabay.com/videos/id-349089/",
+              "kind": "video",
+              "duration": 15
+            }
+          },
+          "audio": "audio/s04b01.mp3",
+          "start": 8.626,
+          "duration": 9.922,
+          "words": [
+            {
+              "text": "Lawmakers",
+              "start": 0.084,
+              "end": 0.637
+            },
+            {
+              "text": "have",
+              "start": 0.637,
+              "end": 0.733
+            },
+            {
+              "text": "begun",
+              "start": 0.733,
+              "end": 1.046
+            },
+            {
+              "text": "investigations",
+              "start": 1.046,
+              "end": 1.971
+            },
+            {
+              "text": "into",
+              "start": 2.103,
+              "end": 2.332
+            },
+            {
+              "text": "alleged",
+              "start": 2.344,
+              "end": 2.812
+            },
+            {
+              "text": "chip",
+              "start": 2.825,
+              "end": 3.137
+            },
+            {
+              "text": "smuggling",
+              "start": 3.149,
+              "end": 3.738
+            },
+            {
+              "text": "Nvidia's",
+              "start": 4.123,
+              "end": 4.615
+            },
+            {
+              "text": "quarterly",
+              "start": 4.627,
+              "end": 5.192
+            },
+            {
+              "text": "earnings",
+              "start": 5.204,
+              "end": 5.541
+            },
+            {
+              "text": "are",
+              "start": 5.553,
+              "end": 5.697
+            },
+            {
+              "text": "expected",
+              "start": 5.697,
+              "end": 6.25
+            },
+            {
+              "text": "soon",
+              "start": 6.262,
+              "end": 6.695
+            },
+            {
+              "text": "and",
+              "start": 7.103,
+              "end": 7.139
+            },
+            {
+              "text": "the",
+              "start": 7.139,
+              "end": 7.199
+            },
+            {
+              "text": "future",
+              "start": 7.199,
+              "end": 7.548
+            },
+            {
+              "text": "of",
+              "start": 7.548,
+              "end": 7.596
+            },
+            {
+              "text": "the",
+              "start": 7.596,
+              "end": 7.668
+            },
+            {
+              "text": "company",
+              "start": 7.668,
+              "end": 7.993
+            },
+            {
+              "text": "remains",
+              "start": 8.005,
+              "end": 8.534
+            },
+            {
+              "text": "in",
+              "start": 8.546,
+              "end": 8.618
+            },
+            {
+              "text": "flux",
+              "start": 8.63,
+              "end": 9.315
+            }
+          ]
+        },
+        {
+          "narration": "Reports say Huang is assembling a war room of allies to lobby for a comeback. Not everyone believes he should return, and one ally called an affair with a subordinate a fireable offense.",
+          "visual": {
+            "type": "article",
+            "source": 3,
+            "name": "The Verge",
+            "headline": "Jensen Huang might be plotting a return and more of the latest Nvidia drama",
+            "date": "2026-11-16T03:43:49+07:00",
+            "url": "https://www.theverge.com/tech/1033999/jensen-huang-return-nvidia-megaspeed"
+          },
+          "audio": "audio/s04b02.mp3",
+          "start": 18.548,
+          "duration": 12.964,
+          "words": [
+            {
+              "text": "Reports",
+              "start": 0.072,
+              "end": 0.457
+            },
+            {
+              "text": "say",
+              "start": 0.613,
+              "end": 0.901
+            },
+            {
+              "text": "Huang",
+              "start": 0.901,
+              "end": 1.442
+            },
+            {
+              "text": "is",
+              "start": 1.575,
+              "end": 1.683
+            },
+            {
+              "text": "assembling",
+              "start": 1.683,
+              "end": 2.175
+            },
+            {
+              "text": "a",
+              "start": 2.175,
+              "end": 2.26
+            },
+            {
+              "text": "war",
+              "start": 2.272,
+              "end": 2.692
+            },
+            {
+              "text": "room",
+              "start": 2.692,
+              "end": 2.945
+            },
+            {
+              "text": "of",
+              "start": 2.957,
+              "end": 3.041
+            },
+            {
+              "text": "allies",
+              "start": 3.053,
+              "end": 3.642
+            },
+            {
+              "text": "to",
+              "start": 3.654,
+              "end": 3.762
+            },
+            {
+              "text": "lobby",
+              "start": 3.774,
+              "end": 4.327
+            },
+            {
+              "text": "for",
+              "start": 4.579,
+              "end": 4.748
+            },
+            {
+              "text": "a",
+              "start": 4.76,
+              "end": 4.796
+            },
+            {
+              "text": "comeback",
+              "start": 4.808,
+              "end": 5.385
+            },
+            {
+              "text": "Not",
+              "start": 5.781,
+              "end": 5.986
+            },
+            {
+              "text": "everyone",
+              "start": 5.998,
+              "end": 6.382
+            },
+            {
+              "text": "believes",
+              "start": 6.394,
+              "end": 6.827
+            },
+            {
+              "text": "he",
+              "start": 6.827,
+              "end": 6.887
+            },
+            {
+              "text": "should",
+              "start": 6.887,
+              "end": 7.067
+            },
+            {
+              "text": "return",
+              "start": 7.067,
+              "end": 7.584
+            },
+            {
+              "text": "and",
+              "start": 8.065,
+              "end": 8.185
+            },
+            {
+              "text": "one",
+              "start": 8.185,
+              "end": 8.425
+            },
+            {
+              "text": "ally",
+              "start": 8.438,
+              "end": 8.93
+            },
+            {
+              "text": "called",
+              "start": 8.93,
+              "end": 9.171
+            },
+            {
+              "text": "an",
+              "start": 9.171,
+              "end": 9.219
+            },
+            {
+              "text": "affair",
+              "start": 9.219,
+              "end": 9.651
+            },
+            {
+              "text": "with",
+              "start": 9.663,
+              "end": 9.796
+            },
+            {
+              "text": "a",
+              "start": 9.808,
+              "end": 9.844
+            },
+            {
+              "text": "subordinate",
+              "start": 9.856,
+              "end": 10.553
+            },
+            {
+              "text": "a",
+              "start": 10.697,
+              "end": 10.745
+            },
+            {
+              "text": "fireable",
+              "start": 10.757,
+              "end": 11.31
+            },
+            {
+              "text": "offense",
+              "start": 11.31,
+              "end": 11.923
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "story",
+      "kicker": "WHAT COMES NEXT",
+      "headline": "Comeback Rumors and Investigations",
+      "start": 174.072,
+      "duration": 26.52,
+      "beats": [
+        {
+          "narration": "One analyst says Nvidia's market share, chips, and ecosystem will not change with one person. He says the fallout could take years to play out.",
+          "visual": {
+            "type": "quote",
+            "speaker": "Stephen Straus, CEO of KUNGFU.AI",
+            "text": "None of that changes with one person."
+          },
+          "audio": "audio/s05b00.mp3",
+          "start": 0.0,
+          "duration": 9.61,
+          "words": [
+            {
+              "text": "One",
+              "start": 0.096,
+              "end": 0.252
+            },
+            {
+              "text": "analyst",
+              "start": 0.252,
+              "end": 0.637
+            },
+            {
+              "text": "says",
+              "start": 0.637,
+              "end": 0.962
+            },
+            {
+              "text": "Nvidia's",
+              "start": 0.974,
+              "end": 1.418
+            },
+            {
+              "text": "market",
+              "start": 1.418,
+              "end": 1.767
+            },
+            {
+              "text": "share",
+              "start": 1.767,
+              "end": 2.224
+            },
+            {
+              "text": "chips",
+              "start": 2.464,
+              "end": 3.017
+            },
+            {
+              "text": "and",
+              "start": 3.245,
+              "end": 3.425
+            },
+            {
+              "text": "ecosystem",
+              "start": 3.546,
+              "end": 4.255
+            },
+            {
+              "text": "will",
+              "start": 4.435,
+              "end": 4.555
+            },
+            {
+              "text": "not",
+              "start": 4.555,
+              "end": 4.844
+            },
+            {
+              "text": "change",
+              "start": 4.844,
+              "end": 5.288
+            },
+            {
+              "text": "with",
+              "start": 5.301,
+              "end": 5.421
+            },
+            {
+              "text": "one",
+              "start": 5.421,
+              "end": 5.649
+            },
+            {
+              "text": "person",
+              "start": 5.649,
+              "end": 6.094
+            },
+            {
+              "text": "He",
+              "start": 6.502,
+              "end": 6.562
+            },
+            {
+              "text": "says",
+              "start": 6.574,
+              "end": 6.779
+            },
+            {
+              "text": "the",
+              "start": 6.779,
+              "end": 6.851
+            },
+            {
+              "text": "fallout",
+              "start": 6.851,
+              "end": 7.452
+            },
+            {
+              "text": "could",
+              "start": 7.56,
+              "end": 7.692
+            },
+            {
+              "text": "take",
+              "start": 7.692,
+              "end": 7.921
+            },
+            {
+              "text": "years",
+              "start": 7.921,
+              "end": 8.329
+            },
+            {
+              "text": "to",
+              "start": 8.329,
+              "end": 8.401
+            },
+            {
+              "text": "play",
+              "start": 8.413,
+              "end": 8.714
+            },
+            {
+              "text": "out",
+              "start": 8.714,
+              "end": 8.99
+            }
+          ]
+        },
+        {
+          "narration": "The petition count is disputed. TechCrunch reported more than 115,000 signatures, while The Verge later reported over 150,000.",
+          "visual": {
+            "type": "broll",
+            "query": "AI chip factory",
+            "asset": {
+              "file": "assets/beat-16.mp4",
+              "credit": "don89gfx on Pixabay",
+              "license": "Pixabay License",
+              "sourceUrl": "https://pixabay.com/videos/id-84086/",
+              "kind": "video",
+              "duration": 20
+            }
+          },
+          "audio": "audio/s05b01.mp3",
+          "start": 9.61,
+          "duration": 10.258,
+          "words": [
+            {
+              "text": "The",
+              "start": 0.096,
+              "end": 0.156
+            },
+            {
+              "text": "petition",
+              "start": 0.156,
+              "end": 0.589
+            },
+            {
+              "text": "count",
+              "start": 0.589,
+              "end": 0.974
+            },
+            {
+              "text": "is",
+              "start": 1.118,
+              "end": 1.238
+            },
+            {
+              "text": "disputed",
+              "start": 1.238,
+              "end": 1.935
+            },
+            {
+              "text": "TechCrunch",
+              "start": 2.332,
+              "end": 2.8
+            },
+            {
+              "text": "reported",
+              "start": 2.812,
+              "end": 3.257
+            },
+            {
+              "text": "more",
+              "start": 3.269,
+              "end": 3.618
+            },
+            {
+              "text": "than",
+              "start": 3.63,
+              "end": 3.762
+            },
+            {
+              "text": "115,000",
+              "start": 3.762,
+              "end": 5.288
+            },
+            {
+              "text": "signatures",
+              "start": 5.288,
+              "end": 5.986
+            },
+            {
+              "text": "while",
+              "start": 6.346,
+              "end": 6.49
+            },
+            {
+              "text": "The",
+              "start": 6.49,
+              "end": 6.562
+            },
+            {
+              "text": "Verge",
+              "start": 6.562,
+              "end": 6.983
+            },
+            {
+              "text": "later",
+              "start": 6.995,
+              "end": 7.296
+            },
+            {
+              "text": "reported",
+              "start": 7.308,
+              "end": 7.873
+            },
+            {
+              "text": "over",
+              "start": 8.005,
+              "end": 8.281
+            },
+            {
+              "text": "150,000",
+              "start": 8.281,
+              "end": 9.651
+            }
+          ]
+        },
+        {
+          "narration": "The future of Nvidia and the wider AI industry remains in flux as the story develops.",
+          "visual": {
+            "type": "article",
+            "source": 5,
+            "name": "The Verge",
+            "headline": "The Nvidia scandal isn\u2019t slowing down",
+            "date": "2026-11-16T20:00:00+07:00",
+            "url": "https://www.theverge.com/ai-artificial-intelligence/1031740/jensen-huang-nvidia-scandal-isnt-slowing-down"
+          },
+          "audio": "audio/s05b02.mp3",
+          "start": 19.868,
+          "duration": 6.652,
+          "words": [
+            {
+              "text": "The",
+              "start": 0.096,
+              "end": 0.156
+            },
+            {
+              "text": "future",
+              "start": 0.168,
+              "end": 0.577
+            },
+            {
+              "text": "of",
+              "start": 0.589,
+              "end": 0.673
+            },
+            {
+              "text": "Nvidia",
+              "start": 0.673,
+              "end": 1.31
+            },
+            {
+              "text": "and",
+              "start": 1.43,
+              "end": 1.514
+            },
+            {
+              "text": "the",
+              "start": 1.514,
+              "end": 1.635
+            },
+            {
+              "text": "wider",
+              "start": 1.635,
+              "end": 2.055
+            },
+            {
+              "text": "AI",
+              "start": 2.151,
+              "end": 2.572
+            },
+            {
+              "text": "industry",
+              "start": 2.584,
+              "end": 3.137
+            },
+            {
+              "text": "remains",
+              "start": 3.149,
+              "end": 3.57
+            },
+            {
+              "text": "in",
+              "start": 3.57,
+              "end": 3.666
+            },
+            {
+              "text": "flux",
+              "start": 3.666,
+              "end": 4.255
+            },
+            {
+              "text": "as",
+              "start": 4.507,
+              "end": 4.639
+            },
+            {
+              "text": "the",
+              "start": 4.639,
+              "end": 4.712
+            },
+            {
+              "text": "story",
+              "start": 4.712,
+              "end": 4.988
+            },
+            {
+              "text": "develops",
+              "start": 5.0,
+              "end": 5.601
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "outro",
+      "kicker": "NEXT STEPS",
+      "headline": "Story Still Developing",
+      "start": 200.592,
+      "duration": 2.596,
+      "beats": [
+        {
+          "narration": "We will keep following this story.",
+          "visual": {
+            "type": "broll",
+            "query": "AI chip factory",
+            "asset": {
+              "file": "assets/beat-18.jpg",
+              "credit": "Quanlecntt2004 on Pixabay",
+              "license": "Pixabay License",
+              "sourceUrl": "https://pixabay.com/photos/worker-woman-mask-face-mask-6322029/",
+              "kind": "image"
+            }
+          },
+          "audio": "audio/s06b00.mp3",
+          "start": 0.0,
+          "duration": 2.596,
+          "words": [
+            {
+              "text": "We",
+              "start": 0.096,
+              "end": 0.168
+            },
+            {
+              "text": "will",
+              "start": 0.18,
+              "end": 0.264
+            },
+            {
+              "text": "keep",
+              "start": 0.264,
+              "end": 0.445
+            },
+            {
+              "text": "following",
+              "start": 0.445,
+              "end": 0.998
+            },
+            {
+              "text": "this",
+              "start": 0.998,
+              "end": 1.13
+            },
+            {
+              "text": "story",
+              "start": 1.13,
+              "end": 1.55
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "n": 1,
+      "name": "TechCrunch",
+      "url": "https://techcrunch.com/2026/11/14/elon-musk-other-tech-execs-sign-petition-calling-on-nvidia-to-reinstate-jensen-huang/",
+      "title": "Elon Musk, other tech execs sign petition calling on Nvidia to reinstate Jensen Huang"
+    },
+    {
+      "n": 2,
+      "name": "The Verge",
+      "url": "https://www.theverge.com/column/1033943/jensen-huang-nvidia-china-spying-scandal-resignation",
+      "title": "An overview of Jensen Huang\u2019s messy days"
+    },
+    {
+      "n": 3,
+      "name": "The Verge",
+      "url": "https://www.theverge.com/tech/1033999/jensen-huang-return-nvidia-megaspeed",
+      "title": "Jensen Huang might be plotting a return and more of the latest Nvidia drama"
+    },
+    {
+      "n": 4,
+      "name": "TechCrunch",
+      "url": "https://techcrunch.com/2026/11/15/is-bad-news-for-jensen-huang-also-bad-news-for-the-ai-industry/",
+      "title": "Is bad news for Jensen Huang also bad news for the AI industry?"
+    },
+    {
+      "n": 5,
+      "name": "The Verge",
+      "url": "https://www.theverge.com/ai-artificial-intelligence/1031740/jensen-huang-nvidia-scandal-isnt-slowing-down",
+      "title": "The Nvidia scandal isn\u2019t slowing down"
+    },
+    {
+      "n": 6,
+      "name": "TechCrunch",
+      "url": "https://techcrunch.com/2026/11/16/sam-altman-on-nvidia-without-jensen-huang-the-industry-will-be-fine/",
+      "title": "Sam Altman on Nvidia without Jensen Huang: The industry will be \u2018fine\u2019"
+    },
+    {
+      "n": 7,
+      "name": "MIT Technology Review",
+      "url": "https://www.technologyreview.com/2026/11/16/1148624/the-open-source-movement-wants-jensen-huang-back/",
+      "title": "The open-source movement wants Jensen Huang back"
+    },
+    {
+      "n": 8,
+      "name": "TechCrunch",
+      "url": "https://techcrunch.com/2026/11/16/trump-says-ex-nvidia-ceo-jensen-huangs-affair-with-an-alleged-chinese-spy-did-not-threaten-national-security/",
+      "title": "Trump says ex-Nvidia CEO Jensen Huang\u2019s affair with an alleged Chinese spy did not threaten national security"
+    }
+  ]
+}

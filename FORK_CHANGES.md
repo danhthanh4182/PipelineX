@@ -42,3 +42,10 @@ Test web (`npm run test:web`) cần trình duyệt Playwright đúng phiên bả
 | `.env` (không commit) | `COLLECT_ENABLED=true` | Bắt đầu thu tin hằng ngày. Các công tắc Feishu/DingTalk/IndexNow/Baidu vẫn `false`; không có nguồn WeChat/X. |
 
 Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cập nhật bằng `git fetch upstream && git merge upstream/main`).
+
+## Module video (`modules/video`, `renderer/`)
+
+- Trang admin **/admin/videos** (module page `admin: true`): câu chuyện ứng viên, nút "Make video", danh sách video, trình phát, kịch bản, nguồn ảnh, log; Duyệt / Bỏ / Làm lại từ một bước.
+- Bảng `video_jobs` (migration `2001`), hàng đợi `video.make` (1 video một lúc), lịch `video-daily` 09:30 khi `VIDEO_AUTO_ENABLED=true` (mặc định tắt).
+- `renderer/`: các bước script (LLM) → assets (Pixabay/Openverse/Commons + kiểm tra bằng AI nhìn hình) → voice (edge-tts) → render (Remotion), mỗi video một thư mục `.data/videos/<id>/`. Phụ thuộc riêng (`renderer/node_modules`, `renderer/.venv`, `renderer/.env` chứa PIXABAY_API_KEY) không commit.
+- Còn nợ: các lượt gọi LLM của video chưa ghi biên nhận (receipts) của AIHOT; edge-tts không có giấy phép thương mại (xem RESEARCH-PROCESS.md).

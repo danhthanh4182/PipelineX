@@ -49,3 +49,4 @@ Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cậ
 - Bảng `video_jobs` (migration `2001`), hàng đợi `video.make` (1 video một lúc), lịch `video-daily` 09:30 khi `VIDEO_AUTO_ENABLED=true` (mặc định tắt).
 - `renderer/`: các bước script (LLM) → assets (Pixabay/Openverse/Commons + kiểm tra bằng AI nhìn hình) → voice (edge-tts) → render (Remotion), mỗi video một thư mục `.data/videos/<id>/`. Phụ thuộc riêng (`renderer/node_modules`, `renderer/.venv`, `renderer/.env` chứa PIXABAY_API_KEY) không commit.
 - Còn nợ: các lượt gọi LLM của video chưa ghi biên nhận (receipts) của AIHOT; edge-tts không có giấy phép thương mại (xem RESEARCH-PROCESS.md).
+- Bước `dossier` (hồ sơ sự kiện từ toàn văn, có kiểm tra trích dẫn/con số) và `verify` (kiểm chứng từng câu, hiện trên trang Videos; lỗi kiểm chứng không làm hỏng video). Kết quả thử A/B: RESEARCH-PROCESS.md ở thư mục PipelineX.

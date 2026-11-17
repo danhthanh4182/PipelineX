@@ -1,7 +1,7 @@
 // Videos made from stories: the rows the admin page lists and the pipeline (pipeline.ts) moves along.
 import { sql, type Db } from "@aihot/backend/db";
 
-export const STEPS = ["story", "script", "assets", "voice", "render"] as const;
+export const STEPS = ["story", "dossier", "script", "verify", "assets", "voice", "render"] as const;
 export type Step = (typeof STEPS)[number];
 export type VideoStatus = "queued" | "running" | "ready" | "failed" | "approved" | "rejected";
 
@@ -117,7 +117,7 @@ export async function storyMaterial(storyId: number, db: Db = sql) {
   return db<{ id: string; title: string; source: string; url: string; published_at: Date | null; headline: string | null; summary: string | null; body: string }[]>`
     SELECT x.* FROM (
       SELECT DISTINCT ON (a.id) a.id, a.title, s.name AS source, a.url, a.published_at,
-        an.title_zh AS headline, an.summary_zh AS summary, left(coalesce(a.body_text, ''), 3000) AS body
+        an.title_zh AS headline, an.summary_zh AS summary, left(coalesce(a.body_text, ''), 12000) AS body
       FROM facts f
       JOIN fact_articles fa ON fa.fact_id = f.id
       JOIN articles a ON a.id = fa.article_id

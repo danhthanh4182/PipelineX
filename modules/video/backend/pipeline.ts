@@ -16,13 +16,15 @@ export const workDir = (id: number) => path.join(WORK_ROOT, String(id));
 export const videoFile = (id: number) => path.join(workDir(id), "video.mp4");
 
 const MINUTE = 60_000;
-const LIMITS: Record<Exclude<Step, "story">, number> = { script: 10 * MINUTE, assets: 20 * MINUTE, voice: 15 * MINUTE, render: 40 * MINUTE };
+const LIMITS: Record<Exclude<Step, "story">, number> = { dossier: 10 * MINUTE, script: 10 * MINUTE, verify: 10 * MINUTE, assets: 20 * MINUTE, voice: 15 * MINUTE, render: 40 * MINUTE };
 
 function command(step: Exclude<Step, "story">, dir: string): [string, string[]] {
   // Node reads the app's .env and the renderer's own (PIXABAY_API_KEY); the worker's env already carries the app's.
   const node = (file: string): [string, string[]] => [process.execPath, ["--env-file-if-exists=.env", file]];
   switch (step) {
+    case "dossier": return node("dossier.ts");
     case "script": return node("script.ts");
+    case "verify": return node("verify.ts");
     case "assets": return node("assets.ts");
     case "voice": return [path.join(RENDERER, ".venv", "bin", "python"), ["tts.py"]];
     case "render": return [path.join(RENDERER, "node_modules", ".bin", "remotion"), [
@@ -87,6 +89,9 @@ export async function makeVideo(id: number, from: Step = "story"): Promise<void>
       if (step === "story") {
         if (!video.story_id) throw new Error("story: the story was deleted");
         await recordStep(id, step, await writeStory(video.story_id, dir));
+      } else if (step === "verify") {
+        // The fact-check informs the reviewer; a failed check does not stop the video.
+        await recordStep(id, step, await run(step, dir).catch((error: Error) => ({ error: error.message.slice(0, 300) })));
       } else {
         await recordStep(id, step, await run(step, dir));
       }
@@ -105,7 +110,17 @@ export function videoFiles(id: number) {
     title: string; description: string; sources?: Array<{ n: number; name: string; url: string; title: string }>;
     scenes: Array<{ kind: string; kicker: string; headline: string; beats: Array<{ narration: string; visual: { type: string; [k: string]: unknown } }> }>;
   };
+  const dossier = JSON.parse(read("dossier.json") ?? "null") as null | {
+    angle: string; summary: string; facts: unknown[]; quotes: unknown[]; open_questions: string[];
+    conflicts: Array<{ topic: string; versions: Array<{ claim: string; sources: number[] }> }>;
+  };
+  const verify = JSON.parse(read("verify.json") ?? "null") as null | {
+    summary: Record<string, number>; checks: Array<{ id: string; text: string; verdict: string; note: string; sources: number[] }>;
+  };
   return {
+    dossier: dossier && { angle: dossier.angle, summary: dossier.summary, facts: dossier.facts.length, quotes: dossier.quotes.length,
+      conflicts: dossier.conflicts, openQuestions: dossier.open_questions },
+    verify: verify && { summary: verify.summary, flagged: verify.checks.filter((c) => c.verdict === "partial" || c.verdict === "unsupported") },
     script: script && {
       title: script.title, description: script.description, sources: script.sources ?? [],
       scenes: script.scenes.map((s) => ({ kind: s.kind, kicker: s.kicker, headline: s.headline,

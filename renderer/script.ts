@@ -1,97 +1,109 @@
-// Step 2 prototype (v2): story articles -> video script whose scenes are split into beats, each with its own visual.
-// Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env script.ts   (reads <dir>/story.json, writes <dir>/script.json)
-import { readFileSync, writeFileSync } from "node:fs";
+// Step "script": the story -> a narrated video script whose scenes are split into beats, each with its own visual.
+// With <dir>/dossier.json (step "dossier") the script is written from the fact sheet and every beat names the facts
+// it uses; without one (or VIDEO_DOSSIER=off) from the reports' first VIDEO_MATERIAL_CHARS characters, as before.
+// Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env script.ts   (reads <dir>/story.json [+ dossier.json], writes <dir>/script.json)
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { chatJson, materialOf, numbersIn, outlet, readArticles, W, words } from "./lib.ts";
 
-const W = process.env.VIDEO_WORKDIR ?? "work";
+const articles = readArticles();
+const useDossier = process.env.VIDEO_DOSSIER !== "off" && existsSync(`${W}/dossier.json`);
+const dossier = useDossier ? JSON.parse(readFileSync(`${W}/dossier.json`, "utf8")) : null;
+const [minWords, maxWords] = (process.env.VIDEO_SCRIPT_WORDS || "430-500").split("-").map(Number) as [number, number];
 
-const articles = JSON.parse(readFileSync(`${W}/story.json`, "utf8")) as Array<{
-  title: string; source: string; url: string; published_at: string; headline: string; summary: string; body: string;
-}>;
+const list = (title: string, rows: string[]) => (rows.length ? `${title}\n${rows.join("\n")}` : "");
+const names = (ns: number[]) => ns.map((n) => `${n} ${articles[n - 1] ? outlet(articles[n - 1]!) : "?"}`).join(", ");
+const dossierText = (d: any) => [
+  `ANGLE: ${d.angle}`, `SUMMARY: ${d.summary}`,
+  list("FACTS (id [reports that state it] text):", d.facts.map((f: any) => `${f.id} [${names(f.sources)}] (${f.kind}${f.date ? `, ${f.date}` : ""}) ${f.text}`)),
+  list("QUOTES (verbatim; speaker; report):", d.quotes.map((q: any, i: number) => `Q${i + 1} "${q.text}" — ${q.speaker} [${names([q.source])}]`)),
+  list("NUMBERS (as written; report):", d.numbers.map((x: any) => `${x.value} = ${x.what} [${names([x.source])}]`)),
+  list("TIMELINE:", d.timeline.map((t: any) => `${t.date}: ${t.event} [${t.sources.join(",")}]`)),
+  list("CONFLICTS (reports disagree; never pick one silently):", d.conflicts.map((c: any) => `- ${c.topic}: ${c.versions.map((v: any) => `${v.claim} [${names(v.sources)}]`).join(" | ")}`)),
+  list("OPEN QUESTIONS:", d.open_questions.map((q: string) => `- ${q}`)),
+  list("REPORTS:", articles.map((a, i) => `[${i + 1}] ${outlet(a)}, ${a.published_at.slice(0, 10)}: ${a.title}`)),
+].filter(Boolean).join("\n\n");
 
-const base = process.env.LLM_BASE_URL!;
-const key = process.env.LLM_API_KEY!;
-const model = process.env.VIDEO_SCRIPT_MODEL || process.env.LLM_MODEL!;
-
-const material = articles.map((a, i) =>
-  `[${i + 1}] ${a.source} — ${a.published_at}\nOriginal headline: ${a.title}\nSummary: ${a.summary}\nExcerpt: ${a.body}`).join("\n\n");
-
-const system = `You are the head writer of an English-language YouTube news channel about AI.
-Write a narrated news explainer video from the source material only.
-
-Facts:
+const facts = dossier
+  ? `Facts:
+- Use ONLY the dossier. Every beat lists in "facts" the ids (F1, F2…) of the facts its narration states; a beat that states something no fact supports is not allowed.
+- Attribute claims to their outlets ("according to The Verge"), and name ONLY an outlet listed on the fact you state. A sentence that combines facts names only outlets listed on all of them, or none. Never write "X told outlet Y" unless the fact says so.
+- Allegations stay allegations.
+- Where the dossier lists a CONFLICT, say that reports differ (or give the latest attributed figure with its date). Never mix versions silently.
+- Use OPEN QUESTIONS for "what comes next", phrased as open ("it is not yet clear whether…"), not attributed to an outlet; do not speculate beyond them or about wider consequences.`
+  : `Facts:
 - Use ONLY facts stated in the material. Never invent numbers, quotes, dates or names. Attribute claims ("according to The Verge").
 - When sources disagree (different figures at different times), say so or use the latest attributed figure. Never mix them silently.
-- Allegations stay allegations. Neutral and precise.
+- Allegations stay allegations. Neutral and precise.`;
 
-Style: spoken English, short sentences, plain words, no markdown, no emojis.
+const system = `You are the head writer of an English-language YouTube news channel about AI.
+Write a narrated news explainer video${dossier ? " from the research dossier" : " from the source material"} only.
 
-Structure: scenes = hook (15-20 s), 4-5 story scenes (what happened, background, reactions, what comes next), outro.
+${facts}
+
+Style: spoken English, short sentences, plain words, no markdown, no emojis. Each beat must add something new: never restate an earlier beat in softer words.
+
+Structure: scenes = hook (15-20 s: the single most surprising fact and the question the video answers), 4-6 story scenes (what happened, background, reactions, what is disputed, what comes next), outro.
 Every scene is split into 2-4 BEATS. A beat is 1-3 sentences of narration (about 5-12 seconds) with ONE visual.
-Total narration 430-500 words. Change the visual type often; never use the same type more than twice in a row.
+Total narration ${minWords}-${maxWords} words. Change the visual type often; never use the same type more than twice in a row.
 
 Visual types (pick what best fits the beat):
-- {"type":"article","source":n} show the headline of material article n. Optional "quote": a SHORT exact sentence fragment (max 20 words) copied verbatim from that article's excerpt.
-- {"type":"quote","speaker":"Name, role","text":"..."} a direct quote that appears verbatim in the material (inside quotation marks there). Max 25 words.
-- {"type":"stat","value":"$105B","label":"what the number is"} one striking number from the material.
-- {"type":"chart","title":"...","unit":"$","points":[{"label":"Oct 6","value":239.24},...]} only when the material gives at least 2 dated values of the same measure.
-- {"type":"timeline","events":[{"date":"Nov 8","text":"max 8 words"},...]} 3-5 dated events from the material.
-- {"type":"photo","query":"..."} a real photo of a named person, company headquarters or product, e.g. "Jensen Huang", "Nvidia headquarters". Searched on Wikimedia Commons.
-- {"type":"broll","query":"..."} a generic illustrative image, 2-4 plain words, e.g. "data center servers", "computer chip", "stock market screen".
+- {"type":"article","source":n} show the headline of report n.${dossier ? ` Optional "quote": one of the QUOTES from report n, copied exactly.` : ` Optional "quote": a SHORT exact sentence fragment (max 20 words) copied verbatim from that article's excerpt.`}
+- {"type":"quote","speaker":"Name, role","text":"..."} ${dossier ? "one of the QUOTES, copied exactly." : "a direct quote that appears verbatim in the material (inside quotation marks there). Max 25 words."}
+- {"type":"stat","value":"$105B","label":"what the number is"} one striking number${dossier ? " from NUMBERS" : " from the material"}.
+- {"type":"chart","title":"...","unit":"$","points":[{"label":"Oct 6","value":239.24},...]} only when there are at least 2 dated values of the same measure.
+- {"type":"timeline","events":[{"date":"Nov 8","text":"max 8 words"},...]} 3-5 dated events.
+- {"type":"photo","query":"..."} a real photo of a named person, company headquarters or product, e.g. "Jensen Huang", "Nvidia headquarters".
+- {"type":"broll","query":"..."} a generic illustrative image or clip: 2-4 concrete, visible words, e.g. "server racks blue light", "courtroom gavel", "stock ticker screen".
 
 Return ONLY JSON:
 {"title": string (YouTube title, max 70 chars),
  "description": string (2-3 sentences),
  "scenes": [{"kind": "hook"|"story"|"outro", "kicker": string (2-4 words, e.g. "WHAT HAPPENED"),
    "headline": string (max 60 chars),
-   "beats": [{"narration": string, "visual": {...}}]}]}`;
+   "beats": [{"narration": string, ${dossier ? `"facts": ["F1"], ` : ""}"visual": {...}}]}]}`;
 
-const res = await fetch(`${base.replace(/\/$/, "")}/chat/completions`, {
-  method: "POST",
-  headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-  body: JSON.stringify({
-    model, temperature: 0.4, max_tokens: 30000,
-    reasoning: { max_tokens: Number(process.env.LLM_REASONING_TOKENS || 6000) },
-    response_format: { type: "json_object" },
-    messages: [{ role: "system", content: system }, { role: "user", content: `Material:\n\n${material}` }],
-  }),
-  signal: AbortSignal.timeout(400_000),
-});
-const data = await res.json() as any;
-if (!res.ok) throw new Error(`LLM ${res.status}: ${JSON.stringify(data).slice(0, 500)}`);
-const text: string = data.choices[0].message.content; writeFileSync(`${W}/script-raw.txt`, text); if (data.choices[0].finish_reason === "length") throw new Error("output truncated (finish_reason=length)");
-const json = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+const material = dossier ? `Dossier:\n\n${dossierText(dossier)}` : `Material:\n\n${materialOf(articles, Number(process.env.VIDEO_MATERIAL_CHARS || 3000))}`;
+const { json, text, cost } = await chatJson(system, material, { temperature: 0.4 });
+writeFileSync(`${W}/script-raw.txt`, text);
 
-// ── Grounding checks: anything shown on screen as a quote or number must be in the material. ──
-const norm = (s: string) => s.toLowerCase().replace(/[“”"‘’']/g, "").replace(/\s+/g, " ").trim();
-const corpus = norm(articles.map((a) => `${a.title} ${a.summary} ${a.body}`).join(" "));
-const numbersIn = (s: string) => (s.match(/\d[\d,.]*/g) ?? []).map((n) => n.replace(/,/g, "").replace(/\.$/, ""));
-const corpusNumbers = new Set(numbersIn(articles.map((a) => `${a.title} ${a.summary} ${a.body}`).join(" ")));
+// ── Grounding checks: anything shown on screen as a quote or number must be in the reports. ──
+const reportText = (a: (typeof articles)[number]) => `${a.title} ${a.summary} ${a.body}`;
+const corpus = ` ${words(articles.map(reportText).join(" "))} `;
+const corpusNumbers = new Set(numbersIn(articles.map(reportText).join(" ")));
+const verbatim = (hay: string, needle: string) => words(needle).length > 0 && ` ${words(hay)} `.includes(` ${words(needle)} `);
+const knownFacts = new Set((dossier?.facts ?? []).map((f: any) => f.id));
 const dropped: string[] = [];
+let unfounded = 0;
 for (const scene of json.scenes) {
   for (const beat of scene.beats) {
     const v = beat.visual ?? {};
+    if (dossier) {
+      beat.facts = (Array.isArray(beat.facts) ? beat.facts : []).filter((id: string) => knownFacts.has(id));
+      if (!beat.facts.length && scene.kind === "story") unfounded++;
+    }
     if (v.type === "article") {
       const a = articles[v.source - 1];
       if (!a) { beat.visual = { type: "broll", query: "news headlines" }; dropped.push(`article #${v.source} missing`); continue; }
-      if (v.quote && !norm(a.body + " " + a.summary).includes(norm(v.quote))) { dropped.push(`article quote: ${v.quote}`); delete v.quote; }
-      Object.assign(v, { name: a.source.replace(/\s*·.*$/, ""), headline: a.title, date: a.published_at, url: a.url });
+      if (v.quote && !verbatim(a.body + " " + a.summary, v.quote)) { dropped.push(`article quote: ${v.quote}`); delete v.quote; }
+      Object.assign(v, { name: outlet(a), headline: a.title, date: a.published_at, url: a.url });
     }
-    if (v.type === "quote" && !corpus.includes(norm(v.text))) {
+    if (v.type === "quote" && !corpus.includes(` ${words(v.text ?? "")} `)) {
       dropped.push(`quote: ${v.text}`);
       beat.visual = { type: "broll", query: v.speaker ? String(v.speaker).split(",")[0] : "press conference" };
     }
-    if (v.type === "stat" && !numbersIn(v.value).every((n) => corpusNumbers.has(n))) {
-      dropped.push(`stat: ${v.value}`); beat.visual = { type: "broll", query: "stock market screen" };
+    if (v.type === "stat" && !numbersIn(String(v.value)).every((n) => corpusNumbers.has(n))) {
+      dropped.push(`stat: ${v.value}`); beat.visual = { type: "broll", query: "stock ticker screen" };
     }
     if (v.type === "chart" && !(v.points?.length >= 2 && v.points.every((p: any) => corpusNumbers.has(String(p.value))))) {
-      dropped.push(`chart: ${v.title}`); beat.visual = { type: "broll", query: "stock market screen" };
+      dropped.push(`chart: ${v.title}`); beat.visual = { type: "broll", query: "stock ticker screen" };
     }
   }
 }
-json.sources = articles.map((a, i) => ({ n: i + 1, name: a.source.replace(/\s*·.*$/, ""), url: a.url, title: a.title }));
+json.sources = articles.map((a, i) => ({ n: i + 1, name: outlet(a), url: a.url, title: a.title }));
+json.mode = dossier ? "dossier" : "material";
 writeFileSync(`${W}/script.json`, JSON.stringify(json, null, 2));
 const beats = json.scenes.flatMap((s: any) => s.beats);
-const words = beats.reduce((n: number, b: any) => n + b.narration.split(/\s+/).length, 0);
-const types = beats.map((b: any) => b.visual.type).join(" ");
-console.log(`title: ${json.title}\nscenes: ${json.scenes.length}, beats: ${beats.length}, words: ${words}\nvisuals: ${types}\ndropped (not grounded): ${dropped.length ? dropped.join(" | ") : "none"}\ncost: $${data.usage?.cost}`);
-console.log(`RESULT ${JSON.stringify({ cost: Number(data.usage?.cost ?? 0), title: json.title, words, beats: beats.length, dropped: dropped.length })}`);
+const wordCount = beats.reduce((n: number, b: any) => n + b.narration.split(/\s+/).length, 0);
+console.log(`mode: ${json.mode}\ntitle: ${json.title}\nscenes: ${json.scenes.length}, beats: ${beats.length}, words: ${wordCount}${dossier ? `, story beats without facts: ${unfounded}` : ""}`);
+console.log(`visuals: ${beats.map((b: any) => b.visual.type).join(" ")}\ndropped (not grounded): ${dropped.length ? dropped.join(" | ") : "none"}`);
+console.log(`RESULT ${JSON.stringify({ cost, mode: json.mode, title: json.title, words: wordCount, beats: beats.length, dropped: dropped.length, unfounded })}`);

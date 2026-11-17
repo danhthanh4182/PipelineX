@@ -8,7 +8,7 @@ import { ago, num } from "../../../apps/web/app/features/admin/format";
 import { toast, Toaster } from "../../../apps/web/app/features/admin/toast";
 import { AdminPage, Badge, Button, Card, DataTable, Empty, Select } from "../../../apps/web/app/features/admin/ui";
 
-type Step = "story" | "script" | "assets" | "voice" | "render";
+type Step = "story" | "dossier" | "script" | "verify" | "assets" | "voice" | "render";
 type Status = "queued" | "running" | "ready" | "failed" | "approved" | "rejected";
 
 interface Video {
@@ -50,6 +50,18 @@ interface Overview {
 
 interface Detail {
   video: Video;
+  dossier: null | {
+    angle: string;
+    summary: string;
+    facts: number;
+    quotes: number;
+    conflicts: Array<{ topic: string; versions: Array<{ claim: string; sources: number[] }> }>;
+    openQuestions: string[];
+  };
+  verify: null | {
+    summary: Record<string, number>;
+    flagged: Array<{ id: string; text: string; verdict: string; note: string }>;
+  };
   script: null | {
     title: string;
     description: string;
@@ -74,7 +86,7 @@ export const headers = () => GRAY_HEADERS;
 
 export const meta = () => [{ title: `Videos · ${SITE.name} Admin` }];
 
-const STEP_LABEL: Record<Step, string> = { story: "Story", script: "Script", assets: "Pictures", voice: "Voice", render: "Render" };
+const STEP_LABEL: Record<Step, string> = { story: "Story", dossier: "Research", script: "Script", verify: "Fact-check", assets: "Pictures", voice: "Voice", render: "Render" };
 const STATUS: Record<Status, { label: string; tone: "ok" | "warn" | "bad" | "muted" | "accent" | "info" }> = {
   queued: { label: "Queued", tone: "muted" },
   running: { label: "Making", tone: "accent" },
@@ -261,7 +273,7 @@ function VideoDetail({ d, steps, run, busy, close }: {
             )}
           </div>
           <p className="text-[12px] leading-relaxed text-ink-4">
-            "From Pictures" keeps the script and finds new pictures; "from Script" writes a new script (about $0.01).
+            "From Pictures" keeps the script and finds new pictures; "from Script" writes a new script from the same research (about $0.02).
           </p>
 
           {d.script && d.script.sources.length > 0 && (
@@ -277,8 +289,59 @@ function VideoDetail({ d, steps, run, busy, close }: {
         </div>
       </div>
 
+      {d.verify && (
+        <div className="mt-5 rounded-control p-3 ring-1 ring-line">
+          <div className="flex flex-wrap items-center gap-2 text-[13px]">
+            <span className="font-medium text-ink-2">Fact-check</span>
+            <Badge tone="ok">{d.verify.summary.supported ?? 0} supported</Badge>
+            {(d.verify.summary.partial ?? 0) > 0 && <Badge tone="warn">{d.verify.summary.partial} partly</Badge>}
+            {(d.verify.summary.unsupported ?? 0) > 0 && <Badge tone="bad">{d.verify.summary.unsupported} unsupported</Badge>}
+            <span className="text-[12px] text-ink-4">of {d.verify.summary.sentences} sentences, checked against the reports' full text</span>
+          </div>
+          {d.verify.flagged.length > 0 ? (
+            <ul className="mt-2 space-y-2">
+              {d.verify.flagged.map((c) => (
+                <li key={c.id} className="text-[13px] leading-relaxed">
+                  <Badge tone={c.verdict === "unsupported" ? "bad" : "warn"}>{c.verdict === "unsupported" ? "Unsupported" : "Partly"}</Badge>{" "}
+                  <span className="text-ink-2">{c.text}</span>
+                  {c.note && <div className="pl-1 text-[12px] text-ink-3">→ {c.note}</div>}
+                </li>
+              ))}
+            </ul>
+          ) : <p className="mt-2 text-[12.5px] text-ink-3">No sentence was flagged. The checker is a model too: spot-check names and numbers.</p>}
+        </div>
+      )}
+
+      {d.dossier && (
+        <details className="mt-3 rounded-control ring-1 ring-line">
+          <summary className="cursor-pointer px-3 py-2 text-[13px] font-medium text-ink-2">
+            Research · {d.dossier.facts} facts, {d.dossier.quotes} quotes, {d.dossier.conflicts.length} points where reports differ
+          </summary>
+          <div className="space-y-3 border-t border-line p-3 text-[13px] leading-relaxed">
+            <p className="text-ink-2"><b>Angle:</b> {d.dossier.angle}</p>
+            <p className="text-ink-3">{d.dossier.summary}</p>
+            {d.dossier.conflicts.length > 0 && (
+              <div>
+                <div className="mb-1 font-medium text-ink-2">Reports differ on</div>
+                <ul className="space-y-1.5">
+                  {d.dossier.conflicts.map((c, i) => (
+                    <li key={i}><span className="text-ink-2">{c.topic}:</span> <span className="text-ink-3">{c.versions.map((v) => `${v.claim} [${v.sources.join(", ")}]`).join(" · ")}</span></li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {d.dossier.openQuestions.length > 0 && (
+              <div>
+                <div className="mb-1 font-medium text-ink-2">Open questions</div>
+                <ul className="list-disc space-y-1 pl-5 text-ink-3">{d.dossier.openQuestions.map((q) => <li key={q}>{q}</li>)}</ul>
+              </div>
+            )}
+          </div>
+        </details>
+      )}
+
       {d.script && (
-        <details className="mt-5 rounded-control ring-1 ring-line">
+        <details className="mt-3 rounded-control ring-1 ring-line">
           <summary className="cursor-pointer px-3 py-2 text-[13px] font-medium text-ink-2">Script · {d.script.scenes.reduce((n, s) => n + s.beats.length, 0)} beats</summary>
           <div className="space-y-4 border-t border-line p-3">
             {d.script.scenes.map((s, i) => (

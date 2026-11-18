@@ -50,7 +50,8 @@ async function create(name: string, type: string, title?: string) {
   if (!/^[a-z][a-z0-9-]{1,30}$/.test(name)) die("A channel name is 2-31 lowercase letters, digits or dashes, starting with a letter.");
   if (registry().some((c) => c.name === name)) die(`Channel "${name}" already exists.`);
   const pack = packDir(type);
-  if (out("git", ["status", "--porcelain", "--untracked-files=no"])) die("Commit or stash this checkout's changes first: a channel starts from the last commit.");
+  // A channel starts from the last commit: changes not committed yet (yours or another agent's) are not in it.
+  if (out("git", ["status", "--porcelain", "--untracked-files=no"])) console.log("Note: this checkout has uncommitted changes; the new channel starts from the last commit without them.");
   const branch = `channel/${name}`;
   const dir = path.join(CHANNELS, name);
   const database = `pipelinex_${name.replace(/-/g, "_")}`;

@@ -18,3 +18,12 @@ A pack has the same files as `industry/` (see `docs/customize.en.md`):
 
 Rules (AGENTS.md): a human decides the channel's name, sources, what counts as signal or noise, and its categories.
 Selection thresholds are calibrated on labelled examples, not guessed.
+
+## Packs
+
+| Type | Status | Notes |
+|---|---|---|
+| `ai` | running | the main checkout's `industry/` |
+| `finance` | ready (2026-11-18) | 25 sources checked by hand (4 official, 8 market media, 4 paywalled as summary-only, 4 crypto, 3 analysis, 2 heat signals); 7 categories; 8 item types; styles markets/earnings/macro/crypto; thresholds copied from AI, to calibrate |
+| `world` | planned | |
+| `crime` | planned | |

@@ -1,0 +1,287 @@
+{
+  "groups": [
+    {
+      "key": "company",
+      "name": "Institutions & Companies",
+      "blurb": "Follow central banks, regulators and the most watched companies"
+    },
+    {
+      "key": "field",
+      "name": "Markets & Assets",
+      "blurb": "Explore by market: stocks, rates, inflation, crypto, commodities..."
+    },
+    {
+      "key": "genre",
+      "name": "Story Types",
+      "blurb": "Browse by kind: earnings, deals, regulation, analysis..."
+    }
+  ],
+  "topics": [
+    {
+      "slug": "federal-reserve",
+      "name": "Federal Reserve",
+      "group": "company",
+      "entityId": "fed",
+      "definition": "Fed rate decisions, FOMC minutes, Powell and governors' speeches, balance sheet and bank supervision.",
+      "aliases": [
+        "FOMC",
+        "the Fed"
+      ]
+    },
+    {
+      "slug": "ecb",
+      "name": "European Central Bank",
+      "group": "company",
+      "entityId": "ecb",
+      "definition": "ECB rate decisions, Lagarde's statements, euro-area monetary policy."
+    },
+    {
+      "slug": "sec",
+      "name": "SEC",
+      "group": "company",
+      "entityId": "sec",
+      "definition": "SEC rules, enforcement actions, fines and investigations."
+    },
+    {
+      "slug": "us-treasury",
+      "name": "US Treasury",
+      "group": "company",
+      "entityId": "treasury",
+      "definition": "Treasury auctions, debt, sanctions and fiscal statements."
+    },
+    {
+      "slug": "nvidia",
+      "name": "Nvidia",
+      "group": "company",
+      "entityId": "nvidia",
+      "definition": "Nvidia earnings, guidance, stock moves and market weight."
+    },
+    {
+      "slug": "apple",
+      "name": "Apple",
+      "group": "company",
+      "entityId": "apple",
+      "definition": "Apple earnings, buybacks, stock moves and major decisions."
+    },
+    {
+      "slug": "microsoft",
+      "name": "Microsoft",
+      "group": "company",
+      "entityId": "microsoft",
+      "definition": "Microsoft earnings, cloud growth, AI spending and stock moves."
+    },
+    {
+      "slug": "tesla",
+      "name": "Tesla",
+      "group": "company",
+      "entityId": "tesla",
+      "definition": "Tesla deliveries, earnings, Musk decisions and stock swings."
+    },
+    {
+      "slug": "jpmorgan",
+      "name": "JPMorgan Chase",
+      "group": "company",
+      "entityId": "jpmorgan",
+      "definition": "JPMorgan results, Jamie Dimon's views and the banking sector."
+    },
+    {
+      "slug": "berkshire",
+      "name": "Berkshire Hathaway",
+      "group": "company",
+      "entityId": "berkshire",
+      "definition": "Berkshire Hathaway results, holdings and Warren Buffett's letters."
+    },
+    {
+      "slug": "blackrock",
+      "name": "BlackRock",
+      "group": "company",
+      "entityId": "blackrock",
+      "definition": "BlackRock flows, ETFs and Larry Fink's views."
+    },
+    {
+      "slug": "stocks",
+      "name": "Stocks",
+      "group": "field",
+      "tags": [
+        "Stocks"
+      ],
+      "definition": "Equity markets: indices, records, sell-offs, sector moves."
+    },
+    {
+      "slug": "rates",
+      "name": "Rates & Bonds",
+      "group": "field",
+      "tags": [
+        "Rates",
+        "Bonds"
+      ],
+      "definition": "Interest rates, Treasury yields, bond markets and borrowing costs."
+    },
+    {
+      "slug": "inflation",
+      "name": "Inflation",
+      "group": "field",
+      "tags": [
+        "Inflation"
+      ],
+      "definition": "CPI, PCE and price pressures, and what they mean for rates."
+    },
+    {
+      "slug": "jobs",
+      "name": "Jobs",
+      "group": "field",
+      "tags": [
+        "Jobs"
+      ],
+      "definition": "Payrolls, unemployment, wages and labour-market signals."
+    },
+    {
+      "slug": "housing",
+      "name": "Housing",
+      "group": "field",
+      "tags": [
+        "Housing"
+      ],
+      "definition": "Mortgage rates, home prices, sales and housing policy."
+    },
+    {
+      "slug": "banks",
+      "name": "Banks",
+      "group": "field",
+      "tags": [
+        "Banks"
+      ],
+      "definition": "Bank earnings, failures, capital rules and lending."
+    },
+    {
+      "slug": "tech-stocks",
+      "name": "Tech Stocks & the AI Trade",
+      "group": "field",
+      "tags": [
+        "Tech Stocks",
+        "AI Trade"
+      ],
+      "definition": "Big tech valuations, AI spending and the stocks that move with them."
+    },
+    {
+      "slug": "energy-commodities",
+      "name": "Energy & Commodities",
+      "group": "field",
+      "tags": [
+        "Energy",
+        "Commodities"
+      ],
+      "definition": "Oil, gas, gold, metals and agricultural prices."
+    },
+    {
+      "slug": "currencies",
+      "name": "Currencies",
+      "group": "field",
+      "tags": [
+        "Currencies"
+      ],
+      "definition": "The dollar, euro, yen, yuan and currency moves."
+    },
+    {
+      "slug": "trade",
+      "name": "Trade & Tariffs",
+      "group": "field",
+      "tags": [
+        "Trade / Tariffs"
+      ],
+      "definition": "Tariffs, trade deals and their market effects."
+    },
+    {
+      "slug": "bitcoin",
+      "name": "Bitcoin",
+      "group": "field",
+      "tags": [
+        "Bitcoin"
+      ],
+      "definition": "Bitcoin price, ETFs, mining and adoption."
+    },
+    {
+      "slug": "ethereum",
+      "name": "Ethereum",
+      "group": "field",
+      "tags": [
+        "Ethereum"
+      ],
+      "definition": "Ethereum price, upgrades and ecosystem."
+    },
+    {
+      "slug": "stablecoins",
+      "name": "Stablecoins",
+      "group": "field",
+      "tags": [
+        "Stablecoins"
+      ],
+      "definition": "Stablecoin issuers, reserves and regulation."
+    },
+    {
+      "slug": "earnings",
+      "name": "Earnings",
+      "group": "genre",
+      "tags": [
+        "Earnings"
+      ],
+      "definition": "Quarterly results, guidance and the reactions that follow."
+    },
+    {
+      "slug": "deals",
+      "name": "Deals & IPOs",
+      "group": "genre",
+      "tags": [
+        "Deal / M&A",
+        "IPO / Listing"
+      ],
+      "definition": "Mergers, acquisitions, buyouts and new listings."
+    },
+    {
+      "slug": "central-banks",
+      "name": "Central Banks",
+      "group": "genre",
+      "tags": [
+        "Central Bank"
+      ],
+      "definition": "Rate decisions and policy signals from central banks worldwide."
+    },
+    {
+      "slug": "economic-data",
+      "name": "Economic Data",
+      "group": "genre",
+      "tags": [
+        "Economic Data"
+      ],
+      "definition": "Releases that move markets: GDP, CPI, jobs, retail sales, PMIs."
+    },
+    {
+      "slug": "regulation",
+      "name": "Regulation & Enforcement",
+      "group": "genre",
+      "tags": [
+        "Regulation / Enforcement",
+        "Lawsuit / Fraud"
+      ],
+      "definition": "Rules, enforcement actions, fines, fraud and lawsuits."
+    },
+    {
+      "slug": "personal-finance",
+      "name": "Your Money",
+      "group": "genre",
+      "tags": [
+        "Personal Finance"
+      ],
+      "definition": "Rates, savings, mortgages, retirement and taxes for ordinary people."
+    },
+    {
+      "slug": "analysis",
+      "name": "Analysis & Forecasts",
+      "group": "genre",
+      "tags": [
+        "Opinion / Analysis"
+      ],
+      "definition": "Strategist and investor views, forecasts and commentary."
+    }
+  ]
+}

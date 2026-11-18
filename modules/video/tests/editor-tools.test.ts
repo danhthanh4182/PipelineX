@@ -87,3 +87,15 @@ test("a story's style follows its strongest topic signal, else its reports' cate
     if (s.sensitive) assert.ok(s.pictureRules.length && s.script.rules.some((x) => /graphic/.test(x)), `${k} has the sensitive-topic rules`);
   }
 });
+
+test("a finance channel picks its finer styles by category, and investigation only for legal stories", async () => {
+  const { chooseStyle } = await import("../backend/styles.ts");
+  const { readFileSync } = await import("node:fs");
+  const finance = JSON.parse(readFileSync(new URL("../../../packs/finance/channel.json", import.meta.url), "utf8"));
+  const pick = (reports: Array<{ text: string; category: string | null }>) => chooseStyle(reports, finance.styles.byCategory, finance.styles.allowed).style;
+  assert.equal(pick([{ text: "Nvidia revenue beats estimates, shares rise", category: "companies" }, { text: "Nvidia earnings: $57 billion revenue", category: "companies" }]), "earnings");
+  assert.equal(pick([{ text: "Fed cuts rates; White House welcomes the decision", category: "macro" }, { text: "Congress debates the budget bill", category: "macro" }]), "macro");
+  assert.equal(pick([{ text: "S&P 500 hits record as stocks rally", category: "markets" }]), "markets");
+  assert.equal(pick([{ text: "Bitcoin tops $120,000", category: "crypto" }]), "crypto");
+  assert.equal(pick([{ text: "SEC sues exchange over fraud", category: "policy" }, { text: "Court ruling on the lawsuit", category: "policy" }]), "investigation");
+});

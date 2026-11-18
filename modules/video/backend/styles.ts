@@ -2,7 +2,7 @@
 // story's reports (categories and words), changeable by the agent or the editor. Plain data with no imports: the
 // renderer reads it too (through style-preset.json in each video's folder).
 
-export type StyleKey = "news" | "launch" | "product" | "finance" | "investigation" | "crime" | "war" | "explainer" | "analysis";
+export type StyleKey = "news" | "launch" | "product" | "finance" | "markets" | "earnings" | "macro" | "crypto" | "investigation" | "crime" | "war" | "explainer" | "analysis";
 
 export interface VideoStyle {
   key: StyleKey;
@@ -84,6 +84,54 @@ export const STYLES: Record<StyleKey, VideoStyle> = {
     pictureRules: [], visual: { accent: "#f5b700", accent2: "#36d399", kicker: "#f5b700" },
     voice: { rate: "+3%", shortRate: "+8%" }, music: "calm",
   },
+  markets: {
+    key: "markets", label: "Markets", for: "Moves in stocks, bonds, rates, currencies and commodities (finance channels).",
+    script: {
+      structure: "hook (the move, its size and when, attributed), what moved and by how much, why (the causes sources give, attributed), who gains and who loses, what traders and strategists say, what to watch next (data, decisions, levels sources name), outro",
+      tone: "brisk, clear, numerate",
+      rules: ["Every move carries its size, its time (close, intraday, premarket) and the index or asset; causes are attributed, never asserted.", "This is not investment advice: never tell viewers to buy or sell."],
+      broll: ["stock ticker screen", "trading floor", "financial district skyline"],
+    },
+    short: { hook: "the move and its size, in under 12 words" },
+    pictureRules: [], visual: { accent: "#22c55e", accent2: "#ef4444", kicker: "#22c55e" },
+    voice: { rate: "+5%", shortRate: "+10%" }, music: "upbeat",
+  },
+  earnings: {
+    key: "earnings", label: "Earnings", for: "A company's results, guidance or profit warning (finance channels).",
+    script: {
+      structure: "hook (the headline result against expectations, attributed), the numbers (revenue, profit, guidance) with periods and whose estimates, what drove them, the stock's reaction with its time, what management said, risks and what to watch next quarter, outro",
+      tone: "precise, matter-of-fact",
+      rules: ["Say whose estimates a beat or miss is measured against; revenue is not profit; guidance is the company's own forecast.", "This is not investment advice: never tell viewers to buy or sell."],
+      broll: ["company headquarters exterior", "stock ticker screen", "factory production line"],
+    },
+    short: { hook: "beat or miss, by how much, and how the stock reacted" },
+    pictureRules: [], visual: { accent: "#38bdf8", accent2: "#f5b700", kicker: "#38bdf8" },
+    voice: { rate: "+4%", shortRate: "+10%" }, music: "calm",
+  },
+  macro: {
+    key: "macro", label: "Economy", for: "Central bank decisions, inflation, jobs, growth, tariffs and fiscal policy (finance channels).",
+    script: {
+      structure: "hook (the decision or the number, attributed and dated), what was decided or reported against expectations, why it matters for prices, rates and jobs, how markets reacted, what officials said, what it means for ordinary people's money (rates, mortgages, savings) as sources describe it, what comes next (next meeting or release), outro",
+      tone: "calm, clear, explanatory",
+      rules: ["Name the rate or measure exactly (federal funds rate, core CPI y/y); basis points are not percent.", "Effects on viewers' money are only as sources describe them; never advise."],
+      broll: ["federal reserve building", "grocery store prices", "city street shoppers"],
+    },
+    short: { hook: "the decision or number and what it means for your money" },
+    pictureRules: [], visual: { accent: "#f59e0b", accent2: "#38bdf8", kicker: "#f59e0b" },
+    voice: { rate: "+2%", shortRate: "+8%" }, music: "calm",
+  },
+  crypto: {
+    key: "crypto", label: "Crypto", for: "Bitcoin, Ethereum and other digital assets, ETFs, exchanges, hacks and rules (finance channels).",
+    script: {
+      structure: "hook (the move or event, attributed), what happened with numbers and times, why (causes sources give), what regulators, exchanges or issuers said, the risks, what to watch next, outro",
+      tone: "energetic but skeptical",
+      rules: ["Prices are volatile: every price carries its time and source.", "Never promote a token or tell viewers to buy; flag unverified claims and hacks as reported."],
+      broll: ["bitcoin coin closeup", "crypto trading chart screen", "server racks blue light"],
+    },
+    short: { hook: "the move or event and its size, attributed" },
+    pictureRules: [], visual: { accent: "#f7931a", accent2: "#8b5cf6", kicker: "#f7931a" },
+    voice: { rate: "+5%", shortRate: "+10%" }, music: "upbeat",
+  },
   investigation: {
     key: "investigation", label: "Investigation", for: "Lawsuits, regulation and policy, security incidents, scandals, official probes.",
     script: {
@@ -151,10 +199,13 @@ export const STYLE_KEYS = Object.keys(STYLES) as StyleKey[];
 /** Words in a story's titles and summaries that point to a style, strongest first. */
 const SIGNALS: Array<[StyleKey, RegExp]> = [
   ["war", /\b(war|wars|warfare|invasion|airstrikes?|missiles?|drone strikes?|military|troops|ceasefire|front ?line|armed conflict|ukraine|gaza|hamas|hezbollah|pentagon|defen[cs]e ministry)\b/i],
-  ["crime", /\b(arrest(ed)?|charged|indict(ed|ment)|convicted|sentenced|fraud|scam(mers?)?|police|prosecutors?|extortion|money laundering|criminal|deepfake (porn|abuse)|ransomware gang)\b/i],
+  ["crime", /\b(arrest(ed)?|charged|indict(ed|ment)|convicted|sentenced|scam(mers?)?|police|prosecutors?|extortion|money laundering|criminal|deepfake (porn|abuse)|ransomware gang)\b/i],
   ["investigation", /\b(lawsuit|sues?|sued|court|judge|ruling|regulat(e|es|ed|or|ors|ion|ions)|antitrust|ftc|sec probe|probe|investigat(e|es|ed|ion|ions)|attorney general|subpoena|breach|hack(ed|ing)?|security incident|scandal|fine[ds]?|ban(s|ned)?|export (controls?|rules?|curbs|restrictions)|sanctions?|licen[cs]e rule|lawmakers|congress|senate|legislation|bill|white house|commerce department|resign(s|ed|ation)?|ousted|ouster|fired|affair|spy|espionage|allegations?|alleged(ly)?|whistleblower)\b/i],
   ["finance", /\b(ipo|valuation|funding|raises?|raised|series [a-f]|acquisitions?|acquires?|merger|earnings|revenue|profit|shares|stock|market cap|investors?|billion|trillion)\b/i],
 ];
+/** Legal and enforcement words only: a finance channel's tariff or budget story is economy, not an investigation. */
+const LEGAL = /\b(lawsuit|sues?|sued|court|judge|ruling|indict(ed|ment)|charged|fraud|probe|investigat(e|es|ed|ion|ions)|subpoena|settle(s|d|ment)|fine[ds]?|penalt(y|ies)|enforcement|whistleblower|bank failure|collapsed?)\b/i;
+
 /** The channel's own category -> style map (industry/channel.json styles.byCategory), passed in by the caller. */
 
 /**
@@ -171,8 +222,11 @@ export function chooseStyle(reports: Array<{ text: string; category: string | nu
     const hits = share(re);
     if (enough(hits)) return { style, why: why(style, hits) };
   }
-  // Then the stronger of investigation and finance (a scandal moves shares; a funding round can draw a probe).
-  const ranked = SIGNALS.filter(([k]) => (k === "investigation" || k === "finance") && allowed.includes(k)).map(([style, re]) => ({ style, hits: share(re) }))
+  // Then the stronger of investigation and finance (a scandal moves shares; a funding round can draw a probe). A channel
+  // with finer finance styles (markets, earnings, macro, crypto) picks those by category instead of the generic finance one.
+  const fineFinance = allowed.includes("markets");
+  const ranked = SIGNALS.filter(([k]) => (k === "investigation" || (k === "finance" && !fineFinance)) && allowed.includes(k))
+    .map(([style, re]) => ({ style, hits: share(style === "investigation" && fineFinance ? LEGAL : re) }))
     .filter((x) => enough(x.hits)).sort((a, b) => b.hits - a.hits);
   if (ranked[0]) return { style: ranked[0].style, why: why(ranked[0].style, ranked[0].hits) };
   const counts = new Map<string, number>();

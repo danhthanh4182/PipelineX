@@ -1,0 +1,75 @@
+{
+  "$comment": "PipelineX channel profile (finance pack). Copied to industry/channel.json when a finance channel is created.",
+  "type": "finance",
+  "label": "Finance & markets",
+  "subject": "markets, money and the economy",
+  "audience": "people who follow markets, investors and anyone whose money is affected",
+  "brand": {
+    "name": "PipelineX Markets",
+    "label": "MARKETS",
+    "tagline": "The money news that matters, every day."
+  },
+  "tags": [
+    "finance news",
+    "stock market",
+    "economy"
+  ],
+  "hashtags": [
+    "#FinanceNews",
+    "#StockMarket"
+  ],
+  "officialSites": [
+    "federalreserve.gov",
+    "ecb.europa.eu",
+    "sec.gov",
+    "treasury.gov",
+    "home.treasury.gov",
+    "bls.gov",
+    "bea.gov",
+    "imf.org",
+    "worldbank.org",
+    "bankofengland.co.uk",
+    "boj.or.jp",
+    "cftc.gov",
+    "fdic.gov",
+    "reuters.com",
+    "apnews.com",
+    "investor.apple.com",
+    "nvidianews.nvidia.com",
+    "microsoft.com",
+    "ir.tesla.com"
+  ],
+  "paywalled": [
+    "bloomberg.com",
+    "ft.com",
+    "wsj.com",
+    "economist.com",
+    "barrons.com",
+    "nytimes.com",
+    "theinformation.com",
+    "businessinsider.com"
+  ],
+  "styles": {
+    "allowed": [
+      "news",
+      "markets",
+      "earnings",
+      "macro",
+      "crypto",
+      "finance",
+      "investigation",
+      "crime",
+      "explainer",
+      "analysis"
+    ],
+    "byCategory": {
+      "markets": "markets",
+      "macro": "macro",
+      "companies": "earnings",
+      "crypto": "crypto",
+      "policy": "investigation",
+      "money": "explainer",
+      "opinion": "analysis"
+    }
+  }
+}

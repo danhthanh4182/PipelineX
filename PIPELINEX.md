@@ -52,36 +52,37 @@ modules/video (shared code)                          renderer/ (one copy, shared
 ## Status (2026-11-18)
 
 Done: AI channel running (39 sources, free model chain, auto video daily 09:30 Shanghai); video module with
-background research, dossier, fact-check, styles, thumbnail, Short, publish kit; editor MCP with 22 tools
-(list/get/edit/remake/review videos, stories and make_video, system_status, retry_failed_articles, look_at_video,
-web_search/fetch_page, publish kit, style guide, list_styles/set_video_style); multi-channel tooling (tested with a
+background research, dossier, fact-check, styles, thumbnail, Short, publish kit; Remotion rendering optimized with Apple Silicon hardware acceleration, bundle caching, and concurrency=8; rich motion design (ambient lighting, comparison beats, code terminal beats, frosted glass captions, high-contrast thumbnails); editor MCP with 25 tools (list/get/edit/remake/review videos, rescue_video_script, stories and make_video, system_status, retry_failed_articles, list_stalled_articles, get_article_to_analyze, submit_article_analysis, look_at_video, web_search/fetch_page, publish kit, style guide, list_styles/set_video_style); multi-channel tooling (tested with a
 throwaway channel, then removed).
 
 Open items:
-- **Finance pack** (in progress, see below), then World, then Crime packs.
+- World and Crime packs (Finance is running, see below); a real name for the finance channel.
 - Unified studio: one admin page and one MCP across all channels (today each channel has its own).
-- Azure Speech key (voice code ready; edge-tts is unlicensed for commercial use and throttles).
+- Azure Speech key (voice code ready; edge-tts is unlicensed for commercial use and throttles — it failed a whole video's voice step twice on 2026-11-18).
 - OrcaRouter key is rejected as invalid (chain skips it).
 - ~20 failed articles from the old OpenRouter key limit (`retry_failed_articles`); `events.group` job failures to look at.
 - Music: add tracks to `renderer/music/<mood>/` (neutral, upbeat, calm, serious, somber, curious).
 - Longer videos (10–15 min): decide single deep story vs multi-story bulletin.
 - YouTube publishing automation (later; human click).
 
-## Finance pack — work in progress
+## Finance channel — running (2026-11-18)
 
-Feeds checked on 2026-11-18 (HTTP status, items, latest date). For the owner to approve before use:
+- Channel `markets` (type `finance`, "PipelineX Markets", placeholder name until the owner picks one): checkout
+  `PipelineX/channels/markets/`, web :3010, api :3011, database `pipelinex_markets`. Start/stop with
+  `npm run channel -- start|stop markets`.
+- Pack `packs/finance/`: 25 hand-checked sources (Fed press + speeches, SEC, ECB; CNBC markets/finance/earnings,
+  MarketWatch, Seeking Alpha, Axios, Reuters via Google News, Kiplinger; Bloomberg/FT/WSJ/Economist summary-only;
+  CoinDesk, Decrypt, The Block, Cointelegraph; Wolf Street, Abnormal Returns, The Big Picture; Google News "Federal
+  Reserve" and "stock market" as heat signals). 7 categories, 8 item types, finance prompts (no investment advice).
+- Finance video styles: markets, earnings, macro, crypto (chosen by category; investigation only on legal words).
+- First video (#1, Nvidia earnings, style earnings): 4 min + Short + thumbnail, fact-check 27/30 supported, 0 wrong, $0.
+- Selection taste fixed once on real scores: a large move with a stated cause is an event; evergreen advice
+  (Kiplinger-style tips) is not news. Thresholds are still the AI channel's: calibrate on labelled finance items.
+- In a channel checkout, `npm run typecheck` fails only in engine tests that use AI categories as fixtures
+  (expected per AGENTS.md); production code typechecks.
 
-- Working, recent: CNBC (markets, finance, earnings), MarketWatch top stories, Seeking Alpha market news, Axios,
-  Reuters via Google News query, Federal Reserve (press, speeches), SEC press releases, ECB press releases, CoinDesk,
-  Decrypt, The Block, Cointelegraph, Wolf Street, Abnormal Returns, The Big Picture (Ritholtz), Kiplinger,
-  Google News queries ("Federal Reserve", "stock market") as heat signals.
-- Working but **paywalled** (summary + link only, never fetched): Bloomberg Markets, FT Markets, WSJ Markets, The Economist.
-- Stale: MarketWatch market pulse (2025), Calculated Risk (Jan 2026), Apricitas (Sep 2026).
-- Not usable (404/403/blocked): Yahoo Finance, Investing.com, AP Business, BLS, US Treasury, IMF, Fortune feed URL, hnrss finance query.
-
-Still to do for the pack: owner approves sources and channel name; categories (e.g. markets, macro & central banks,
-companies & earnings, crypto, policy & regulation, analysis); finance prefilter and selection-score prompts; finance
-video styles (e.g. markets wrap, earnings, crypto, macro); `channel.json`; create the channel and make a first video.
+Next packs: `world`, then `crime` (same steps: sources checked and approved by the owner, taxonomy, prompts,
+channel.json, site.ts, styles).
 
 ## How to work here
 

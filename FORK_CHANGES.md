@@ -103,3 +103,16 @@ Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cậ
 - Rà nguồn tài chính theo số liệu thật của kênh `markets` (750 bài, 67 được chọn): bỏ Seeking Alpha, Abnormal Returns, The Big Picture, The Block, Cointelegraph (tắt trong database, giữ bài cũ); Bloomberg, FT, WSJ, Economist, Reuters (Google News) chỉ còn là tín hiệu độ nóng (`hot_signal`: báo trả phí/chỉ có tiêu đề, gần như không bài nào được chọn); thêm BEA, BLS và US Treasury (qua Google News), Bank of England, CFTC, NY Fed Liberty Street (T1), CNBC Economy, BBC Business, Guardian Business, NPR Business, NerdWallet (T2), AP qua Google News (`hot_signal`). Feed đã thử trước khi thêm; IMF, Yahoo Finance, Fortune, FDIC, Marketplace, Calculated Risk không dùng được. Thay đổi trong database qua `updateSource` (Audit Log).
 - `channel.json`: thêm newyorkfed.org, bbc.co.uk, theguardian.com, npr.org, nerdwallet.com, cnbc.com vào trang uy tín cho nghiên cứu.
 - Chỉ chạy một kênh tài chính (checkout chính :3000) cho tới khi kênh khả quan. Kênh thử `markets` (:3010) đã dừng, giữ checkout/nhánh/database; backup database và video #1 ở `PipelineX/backups/markets-channel-20261118/`.
+
+## Publish kit tối ưu cho YouTube (18/11)
+
+- `modules/video/backend/publishing.ts`:
+  - Tag: cụm từ người xem tìm cho chủ thể chính lấy từ danh mục thực thể của gói (`ENTITIES`, `IDENTITY_LEXICON`), ví dụ "nvidia earnings", "nvidia q3 earnings", "nvda stock", "nvidia earnings 2026". Sau đó là người được nhắc ≥ 2 lần trong lời đọc, các chủ thể khác, rồi tag của kênh; tối đa 15 tag và 500 ký tự. Chủ thể thứ hai không có mã cổ phiếu (cơ quan quản lý, người) chỉ có tên.
+  - Hashtag: chủ thể, mã cổ phiếu, phong cách (`#Nvidia #NVDA #Earnings`), rồi hashtag của kênh; tối đa 5.
+  - Mô tả: thêm mã cổ phiếu sau lần nhắc đầu ("Nvidia (NVDA)"), dòng mời đăng ký, câu miễn trừ của kênh. Nguồn bỏ trang chủ, tiêu đề rỗng và mục trùng; bài của câu chuyện lên trước, tối đa 4 trang nền.
+  - `titleOptions` (tối đa 3, cho "Test & compare" của YouTube): agent viết qua `edit_publish_kit`; trang Videos có nút sửa qua API.
+  - `settings`: danh mục, ngôn ngữ, "Made for kids: No", ghi chú về khai báo nội dung AI, hướng dẫn phụ đề.
+  - `captionsSrt(id, long|short)`: phụ đề SRT từ thời gian từng từ của giọng đọc, lấy lại dấu câu từ lời đọc gốc (engine bỏ dấu), mỗi dòng ≤ 42 ký tự, ≤ 3,5 giây, ngắt ở câu và chỗ nghỉ. Video dài lệch theo phần intro 3 giây.
+- `GET /api/admin/video/videos/:id/captions.srt[?variant=short]`; trang Videos hiện phương án tiêu đề, cài đặt upload và nút tải phụ đề.
+- `channel.json`: thêm `youtube` (category, language, subscribe, disclaimer). Gói finance: News & Politics, câu miễn trừ "not financial advice". Gói AI: Science & Technology.
+- `modules/video/package.json`: dùng `@aihot/industry` (danh mục thực thể của gói).

@@ -9,14 +9,74 @@
     "label": "AI NEWS",
     "tagline": "The AI news that matters, every day."
   },
-  "tags": ["AI news", "artificial intelligence", "tech news"],
-  "hashtags": ["#AINews"],
-  "officialSites": ["openai.com", "anthropic.com", "blog.google", "deepmind.google", "research.google", "ai.meta.com", "about.fb.com", "blogs.microsoft.com",
-    "news.microsoft.com", "nvidianews.nvidia.com", "blogs.nvidia.com", "machinelearning.apple.com", "x.ai", "mistral.ai", "huggingface.co",
-    "aws.amazon.com", "aboutamazon.com", "arxiv.org", "reuters.com", "apnews.com", "sec.gov", "ftc.gov", "oag.ca.gov", "whitehouse.gov", "commerce.gov"],
-  "paywalled": ["bloomberg.com", "theinformation.com", "wsj.com", "ft.com", "nytimes.com", "economist.com", "businessinsider.com"],
+  "tags": [
+    "AI news",
+    "artificial intelligence",
+    "tech news"
+  ],
+  "hashtags": [
+    "#AINews"
+  ],
+  "officialSites": [
+    "openai.com",
+    "anthropic.com",
+    "blog.google",
+    "deepmind.google",
+    "research.google",
+    "ai.meta.com",
+    "about.fb.com",
+    "blogs.microsoft.com",
+    "news.microsoft.com",
+    "nvidianews.nvidia.com",
+    "blogs.nvidia.com",
+    "machinelearning.apple.com",
+    "x.ai",
+    "mistral.ai",
+    "huggingface.co",
+    "aws.amazon.com",
+    "aboutamazon.com",
+    "arxiv.org",
+    "reuters.com",
+    "apnews.com",
+    "sec.gov",
+    "ftc.gov",
+    "oag.ca.gov",
+    "whitehouse.gov",
+    "commerce.gov"
+  ],
+  "paywalled": [
+    "bloomberg.com",
+    "theinformation.com",
+    "wsj.com",
+    "ft.com",
+    "nytimes.com",
+    "economist.com",
+    "businessinsider.com"
+  ],
   "styles": {
-    "allowed": ["news", "launch", "product", "finance", "investigation", "crime", "war", "explainer", "analysis"],
-    "byCategory": { "ai-models": "launch", "ai-products": "product", "paper": "explainer", "opinion": "analysis", "tip": "analysis", "industry": "news" }
+    "allowed": [
+      "news",
+      "launch",
+      "product",
+      "finance",
+      "investigation",
+      "crime",
+      "war",
+      "explainer",
+      "analysis"
+    ],
+    "byCategory": {
+      "ai-models": "launch",
+      "ai-products": "product",
+      "paper": "explainer",
+      "opinion": "analysis",
+      "tip": "analysis",
+      "industry": "news"
+    }
+  },
+  "youtube": {
+    "category": "Science & Technology",
+    "language": "English",
+    "subscribe": "Subscribe for AI news every day, checked against the sources."
   }
 }

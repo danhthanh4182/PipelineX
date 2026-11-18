@@ -11,7 +11,7 @@ import { config } from "@aihot/backend/config";
 import { pickCandidates } from "./backend/candidates.ts";
 import { registerEditorMcp } from "./backend/editor-mcp.ts";
 import { editHistory, recordEdit } from "./backend/editing.ts";
-import { editKit, publishKit } from "./backend/publishing.ts";
+import { captionsSrt, editKit, publishKit } from "./backend/publishing.ts";
 import { decideRule, StyleConflict, styleGuide } from "./backend/style.ts";
 import { STYLE_KEYS, STYLES } from "./backend/styles.ts";
 import { makeVideo, shortFile, thumbnailFile, videoFile, videoFiles } from "./backend/pipeline.ts";
@@ -117,6 +117,14 @@ export const videoServer: ServerModule = {
 
     app.get("/api/admin/video/videos/:id/video.mp4", guarded(async (req, reply) => sendVideo(req, reply, videoFile(idParam.parse(req.params).id))));
     app.get("/api/admin/video/videos/:id/short.mp4", guarded(async (req, reply) => sendVideo(req, reply, shortFile(idParam.parse(req.params).id))));
+    app.get("/api/admin/video/videos/:id/captions.srt", guarded(async (req, reply) => {
+      const { id } = idParam.parse(req.params);
+      const variant = z.object({ variant: z.enum(["long", "short"]).default("long") }).parse(req.query).variant;
+      const srt = captionsSrt(id, variant);
+      if (!srt) return reply.code(404).send({ error: "not_found", detail: "No timeline for this video yet." });
+      return reply.header("Content-Type", "application/x-subrip; charset=utf-8")
+        .header("Content-Disposition", `attachment; filename="video-${id}${variant === "short" ? "-short" : ""}.srt"`).send(srt);
+    }));
     app.get("/api/admin/video/videos/:id/thumbnail.jpg", guarded(async (req, reply) => sendVideo(req, reply, thumbnailFile(idParam.parse(req.params).id), "image/jpeg")));
 
     app.post("/api/admin/video/videos", guarded(async (req, _reply, admin) => {
@@ -140,6 +148,7 @@ export const videoServer: ServerModule = {
         redraft: z.boolean().optional(),
         longTitle: z.string().trim().min(10).max(100).optional(), longDescription: z.string().trim().min(50).max(5000).optional(),
         longTags: z.array(z.string().trim().min(2).max(60)).max(20).optional(),
+        titleOptions: z.array(z.string().trim().min(10).max(100)).min(1).max(3).optional(),
         shortTitle: z.string().trim().min(5).max(100).optional(), shortDescription: z.string().trim().min(10).max(5000).optional(),
       }).parse(req.body);
       if (input.redraft) return { publish: publishKit(id, true) };

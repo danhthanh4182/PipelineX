@@ -30,7 +30,7 @@ const token = () => process.env.VIDEO_EDITOR_TOKEN ?? "";
 const INSTRUCTIONS = `PipelineX operator and video editor. You run the daily video work for a human editor and improve AI-made news videos before they are published.
 Daily run: system_status (fix what you can: retry_failed_articles; report what needs the human: dead processes, spent keys, failing sources) -> list_videos (today's automatic video) -> list_candidates / search_stories / get_story to pick what deserves a video, then make_video with your reason -> for each finished video: get_video -> edit_script / edit_visual -> remake from the step the tool suggests -> review with a short note -> tell the human what waits for them.
 Checking: look_at_video to see the thumbnail and frames (pictures that do not fit the words, covered text, empty cards); web_search / fetch_page on trusted sites when a claim is flagged or doubtful.
-Before the human publishes: get_publish_kit, then edit_publish_kit (titles, description, tags) for both the video and the Short.
+Before the human publishes: get_publish_kit, then edit_publish_kit for both the video and the Short: 3 title options, description, tags.
 Learning: when you keep fixing the same kind of problem, propose_style_rule; the human decides, approved rules guide future scripts.
 Styles: each video has a style (news, launch, product, finance, investigation, crime, war, explainer, analysis) chosen from its story; it shapes the script's structure and tone, the pace, colours and music. list_styles explains them; set_video_style then remake from 'script' to rewrite in it. Crime and war are sensitive: no graphic words or pictures, attribute every claim and figure.
 Choosing stories: prefer events reported by several independent outlets, with real consequences for people following AI; avoid near-duplicates of recent videos and thin rumours. At most 3 new videos a day.
@@ -261,23 +261,24 @@ export function buildEditorServer(makeQueue: ModuleQueue<{ id: number; from: Ste
   }));
 
   server.registerTool("get_publish_kit", {
-    description: "What the human pastes into YouTube for the video and its Short: titles, description (summary, chapters with timestamps, sources with links, picture credits, AI disclosure, hashtags) and tags. Drafted from the video's files on first use; redraft:true starts over from the current script.",
+    description: "What the human pastes into YouTube for the video and its Short: titles and title options, description (summary, chapters with timestamps, sources with links, picture credits, AI disclosure, disclaimer, hashtags), tags and upload settings; captions come as SRT from the Videos page. Drafted from the video's files on first use; redraft:true starts over from the current script.",
     inputSchema: z.strictObject({ id: z.number().int().positive(), redraft: z.boolean().default(false) }),
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   }, async ({ id, redraft }) => safely(async () => {
     const kit = publishKit(id, redraft);
     if (!kit) return fail(`Video #${id} is not finished yet (no script or timeline).`);
-    const text = `LONG title: ${kit.long.title}\nLONG tags: ${kit.long.tags.join(", ")}\nLONG description:\n${kit.long.description}` +
+    const text = `LONG title: ${kit.long.title}\nTitle options (YouTube Test & compare): ${(kit.long.titleOptions ?? [kit.long.title]).join(" | ")}\nLONG tags: ${kit.long.tags.join(", ")}\nLONG description:\n${kit.long.description}` +
       (kit.short ? `\n\nSHORT title: ${kit.short.title}\nSHORT description:\n${kit.short.description}` : "");
     return ok(text, kit as unknown as Record<string, unknown>);
   }));
 
   server.registerTool("edit_publish_kit", {
-    description: "Edit the publish kit (YouTube limits: titles 100 characters, descriptions 5,000, tags 500 in all). Keep the sources, picture credits and AI disclosure in the long description. Nothing is published.",
+    description: "Edit the publish kit (YouTube limits: titles 100 characters, descriptions 5,000, tags 500 in all). Write 3 title options for every video. Keep the sources, picture credits, AI disclosure and the disclaimer in the long description; keep the first two lines about the main subject (they show in search). Nothing is published.",
     inputSchema: z.strictObject({
       id: z.number().int().positive(),
       longTitle: z.string().trim().min(10).max(100).optional(), longDescription: z.string().trim().min(50).max(5000).optional(),
       longTags: z.array(z.string().trim().min(2).max(60)).max(20).optional(),
+      titleOptions: z.array(z.string().trim().min(10).max(100)).min(1).max(3).optional().describe("Up to 3 titles for YouTube's Test & compare: the same facts, different angles (the number, the person, the consequence). Under 70 characters each, main subject first, no clickbait the video does not deliver."),
       shortTitle: z.string().trim().min(5).max(100).optional(), shortDescription: z.string().trim().min(10).max(5000).optional(),
       note: z.string().trim().max(500).optional(),
     }),

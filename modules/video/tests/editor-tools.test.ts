@@ -7,7 +7,7 @@ import { sql } from "@aihot/backend/db";
 
 process.env.VIDEO_WORK_DIR = mkdtempSync(path.join(tmpdir(), "pipelinex-tools-"));
 delete process.env.TINYFISH_API_KEY;
-const { chapters, draftKit, editKit, publishKit } = await import("../backend/publishing.ts");
+const { captionsSrt, chapters, cleanSources, draftKit, editKit, publishKit, tagsFor } = await import("../backend/publishing.ts");
 const { activeRules, decideRule, proposeRule, styleGuide } = await import("../backend/style.ts");
 const { fetchable } = await import("../backend/trusted.ts");
 const { fetchPage, ResearchUnavailable, webSearch } = await import("../backend/research.ts");
@@ -34,13 +34,49 @@ test("the publish kit is drafted from the video's files, keeps sources and credi
   assert.match(kit.long.description, /The Verge: Huang out — https:\/\/www\.theverge\.com\/x/);
   assert.match(kit.long.description, /Jane Doe, CC BY 4\.0/);
   assert.match(kit.long.description, /narrated with AI tools/);
-  assert.ok(kit.long.tags.includes("Nvidia") && kit.long.tags.includes(channelProfile().tags[0]!), "story words and the channel's own tags");
+  assert.ok(kit.long.tags.includes("nvidia news") && kit.long.tags.includes(channelProfile().tags[0]!), "search phrases for the subject and the channel's own tags");
   assert.equal(kit.short!.title, "Nvidia's CEO is out #Shorts");
   publishKit(77);
   const out = editKit(77, { longTitle: "x".repeat(150), longTags: Array.from({ length: 20 }, (_, i) => `tag number ${i} with words`) })!;
   assert.equal(out.kit.long.title.length, 100);
   assert.ok(out.kit.long.tags.join(",").length <= 500);
   assert.deepEqual(Object.keys(out.changes).sort(), ["longTags", "longTitle"]);
+  const options = editKit(77, { titleOptions: ["Nvidia CEO Out: What It Means", "Nvidia CEO Out: What It Means", "Who Runs Nvidia Now?"] })!;
+  assert.deepEqual(options.kit.long.titleOptions, ["Nvidia CEO Out: What It Means", "Who Runs Nvidia Now?"], "repeats dropped, at most 3");
+  assert.ok(options.kit.settings?.category && options.kit.settings.madeForKids === false, "upload settings come with the kit");
+});
+
+test("captions follow the narration's words with their punctuation, after the intro; the Short starts at once", () => {
+  const dir = path.join(process.env.VIDEO_WORK_DIR!, "78");
+  mkdirSync(dir, { recursive: true });
+  const beat = { start: 0, narration: "Shares rose 2%. Analysts, however, stayed cautious.", words: [
+    { text: "Shares", start: 0, end: 0.4 }, { text: "rose", start: 0.4, end: 0.7 }, { text: "2%", start: 0.7, end: 1.1 },
+    { text: "Analysts", start: 1.3, end: 1.8 }, { text: "however", start: 1.9, end: 2.3 }, { text: "stayed", start: 2.3, end: 2.6 }, { text: "cautious", start: 2.6, end: 3.2 }] };
+  const timeline = { total: 4, scenes: [{ start: 10, beats: [beat] }] };
+  writeFileSync(path.join(dir, "timeline.json"), JSON.stringify(timeline));
+  writeFileSync(path.join(dir, "timeline-short.json"), JSON.stringify(timeline));
+  const long = captionsSrt(78, "long")!.split("\n\n");
+  assert.deepEqual(long[0]!.split("\n"), ["1", "00:00:13,000 --> 00:00:14,100", "Shares rose 2%."], "intro (3 s) + scene start; a sentence ends a line");
+  assert.equal(long[1]!.split("\n")[2], "Analysts, however, stayed cautious.");
+  assert.match(captionsSrt(78, "short")!, /^1\n00:00:10,000 --> /);
+  assert.equal(captionsSrt(999, "long"), null, "no timeline, no captions");
+});
+
+test("tags lead with what people search for the main subject; sources drop home pages and repeats", () => {
+  const { tags, hashtags } = tagsFor("Nvidia Earnings Beat Expectations", "Nvidia reported third-quarter results. Jensen Huang spoke. Jensen Huang left. The SEC opened a probe.", "earnings", 2026);
+  const subject = tags.slice(0, 7);
+  assert.ok(["nvidia earnings", "nvidia q3 earnings", "nvda stock", "nvidia earnings 2026"].every((t) => subject.includes(t)), subject.join(", "));
+  assert.ok(tags.includes("jensen huang") && !tags.some((t) => t.startsWith("sec ")), "people named twice go in; a regulator gets no search phrase");
+  assert.ok(tags.join(",").length <= 500);
+  assert.deepEqual(hashtags.slice(0, 3), ["#Nvidia", "#NVDA", "#Earnings"]);
+  const sources = cleanSources([
+    { name: "Axios", title: "Nvidia posts strong earnings", url: "https://www.axios.com/a" },
+    { name: "Axios", title: "Nvidia posts strong earnings", url: "https://www.axios.com/a?utm=x" },
+    { name: "nvidianews.nvidia.com (background)", title: "Home", url: "https://nvidianews.nvidia.com" },
+    { name: "cnbc.com (background)", title: "Background piece one", url: "https://www.cnbc.com/b" },
+    { name: "CNBC", title: "Nvidia earnings: what to know", url: "https://www.cnbc.com/c" },
+  ]);
+  assert.deepEqual(sources.map((x) => x.url), ["https://www.axios.com/a", "https://www.cnbc.com/c", "https://www.cnbc.com/b"], "reports first, then background");
 });
 
 test("a proposed style rule reaches the writers only after the editor approves it", async () => {

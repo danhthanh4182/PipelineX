@@ -18,6 +18,8 @@ export interface ChannelProfile {
   officialSites: string[];
   paywalled: string[];
   styles: { allowed: string[]; byCategory: Record<string, string> };
+  /** The YouTube upload: category, language, the line asking to subscribe and the channel's disclaimer (if any). */
+  youtube?: { category: string; language: string; subscribe?: string; disclaimer?: string };
 }
 
 export const industryDir = () => process.env.VIDEO_INDUSTRY_DIR || fileURLToPath(new URL("../../../industry/", import.meta.url));

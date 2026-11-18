@@ -77,5 +77,11 @@
       "money": "explainer",
       "opinion": "analysis"
     }
+  },
+  "youtube": {
+    "category": "News & Politics",
+    "language": "English",
+    "subscribe": "Subscribe for fact-checked money news every day.",
+    "disclaimer": "For information only, not financial advice. Do your own research before making money decisions."
   }
 }

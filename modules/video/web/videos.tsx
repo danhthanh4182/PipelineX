@@ -44,8 +44,9 @@ interface Candidate {
 interface StyleRule { id: string; rule: string; why: string; example?: string; status: "proposed" | "active" | "rejected" | "retired"; proposedBy: string; proposedAt: string }
 
 interface PublishKit {
-  long: { title: string; description: string; tags: string[] };
+  long: { title: string; description: string; tags: string[]; titleOptions?: string[] };
   short: { title: string; description: string; tags: string[] } | null;
+  settings?: { category: string; language: string; madeForKids: false; alteredContent: string; captions: string };
   draftedAt: string;
   editedAt?: string;
 }
@@ -261,6 +262,24 @@ function PublishKitView({ id, kit, run, busy }: { id: number; kit: PublishKit; r
       <summary className="cursor-pointer px-3 py-2 text-[13px] font-medium text-ink-2">Publish kit (YouTube){kit.editedAt ? " · edited" : ""}</summary>
       <div className="space-y-3 border-t border-line p-3">
         <div className="flex flex-col gap-4 lg:flex-row">{block("Video", kit.long)}{kit.short && block("Short", kit.short)}</div>
+        {(kit.long.titleOptions?.length ?? 0) > 1 && (
+          <div className="space-y-1">
+            <div className="text-[12.5px] font-semibold text-ink-2">Title options (YouTube “Test &amp; compare”)</div>
+            {kit.long.titleOptions!.map((t) => <div key={t} className="flex items-start gap-2"><div className="min-w-0 flex-1 text-[13px] text-ink">{t}</div><CopyButton text={t} label="Copy" /></div>)}
+          </div>
+        )}
+        {kit.settings && (
+          <div className="space-y-1 text-[12px] text-ink-3">
+            <div className="text-[12.5px] font-semibold text-ink-2">Upload settings</div>
+            <div>Category: <b className="text-ink-2">{kit.settings.category}</b> · Language: <b className="text-ink-2">{kit.settings.language}</b> · Made for kids: <b className="text-ink-2">No</b></div>
+            <div>Altered or synthetic content: {kit.settings.alteredContent}</div>
+            <div>Captions: {kit.settings.captions}</div>
+          </div>
+        )}
+        <div className="flex flex-wrap gap-2 text-[12px]">
+          <a className="rounded-control px-2.5 py-1 ring-1 ring-line hover:bg-bg-sunk" href={`/api/admin/video/videos/${id}/captions.srt`}>Download captions.srt</a>
+          {kit.short && <a className="rounded-control px-2.5 py-1 ring-1 ring-line hover:bg-bg-sunk" href={`/api/admin/video/videos/${id}/captions.srt?variant=short`}>Download captions-short.srt</a>}
+        </div>
         <Button size="sm" busy={busy === "redraft"} onClick={() => run("redraft", `/api/admin/video/videos/${id}/publish-kit`, { redraft: true }, "Publish kit redrafted")}>Redraft from the script</Button>
       </div>
     </details>

@@ -61,12 +61,12 @@ function command(step: Exclude<Step, "story">, dir: string): [string, string[]] 
 }
 
 /** Runs one program; resolves with the parsed RESULT line, rejects with the end of its output. */
-function run(step: Exclude<Step, "story">, dir: string): Promise<Record<string, unknown>> {
+export function run(step: Exclude<Step, "story">, dir: string, extraEnv: Record<string, string> = {}): Promise<Record<string, unknown>> {
   const [bin, args] = command(step, dir);
   const log = path.join(dir, "log.txt");
   appendFileSync(log, `\n=== ${step} ${new Date().toISOString()}\n`);
   return new Promise((resolve, reject) => {
-    const variant = step === "shortvoice" ? { VIDEO_VARIANT: "short" } : {};
+    const variant = step === "shortvoice" ? { VIDEO_VARIANT: "short", ...extraEnv } : extraEnv;
     const child = spawn(bin, args, { cwd: RENDERER, env: { ...rendererEnv(), VIDEO_WORKDIR: dir, ...variant }, stdio: ["ignore", "pipe", "pipe"] });
     let tail = "";
     let result: Record<string, unknown> | null = null;

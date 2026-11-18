@@ -71,6 +71,7 @@ interface Detail {
   credits: string[];
   log: string;
   hasVideo: boolean;
+  history: Array<{ at: string; actor: string; kind: "edit" | "review" | "remake"; detail: Record<string, any>; note?: string }>;
   hasShort: boolean;
   hasThumbnail: boolean;
   short: null | {
@@ -414,6 +415,30 @@ function VideoDetail({ d, steps, run, busy, close }: {
         <details className="mt-3 rounded-control ring-1 ring-line">
           <summary className="cursor-pointer px-3 py-2 text-[13px] font-medium text-ink-2">Picture credits · {d.credits.length}</summary>
           <ul className="space-y-1 border-t border-line p-3 text-[12px] text-ink-3">{d.credits.map((c) => <li key={c} className="break-all">{c}</li>)}</ul>
+        </details>
+      )}
+
+      {d.history.length > 0 && (
+        <details className="mt-3 rounded-control ring-1 ring-line" open>
+          <summary className="cursor-pointer px-3 py-2 text-[13px] font-medium text-ink-2">Edit history · {d.history.length}</summary>
+          <ul className="space-y-2 border-t border-line p-3 text-[12.5px] leading-relaxed">
+            {[...d.history].reverse().map((h, i) => (
+              <li key={i}>
+                <span className="text-ink-4">{ago(h.at)} · {h.actor} · </span>
+                <b className="text-ink-2">{h.kind === "edit" ? `edited the ${h.detail.variant === "short" ? "Short" : "script"}` : h.kind === "remake" ? `made again from ${h.detail.from}` : `marked ${h.detail.verdict}`}</b>
+                {h.note && <span className="text-ink-3"> — {h.note}</span>}
+                {h.kind === "edit" && (h.detail.beats ?? []).map((b: any, j: number) => (
+                  <div key={j} className="mt-1 pl-3 text-ink-3">
+                    <div className="line-through decoration-hot/60">{b.before}</div>
+                    <div className="text-ink-2">{b.after}</div>
+                  </div>
+                ))}
+                {h.kind === "edit" && ["title", "description", "thumbnailText"].filter((k) => h.detail[k]).map((k) => (
+                  <div key={k} className="mt-1 pl-3 text-ink-3">{k}: <span className="line-through">{String(h.detail[k].before ?? "")}</span> → <span className="text-ink-2">{String(h.detail[k].after)}</span></div>
+                ))}
+              </li>
+            ))}
+          </ul>
         </details>
       )}
 

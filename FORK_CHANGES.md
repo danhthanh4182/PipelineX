@@ -66,3 +66,10 @@ Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cậ
 - Trang Videos: ảnh thumbnail, trình phát Short, nút tải video/thumbnail/Short, kết quả kiểm chứng của Short.
 - (18/11) `pipelinex-chain` chỉ còn model miễn phí: NVIDIA → OpenRouter `:free` → OrcaRouter free → `LLM_*` (`.env` đặt `LLM_MODEL=nvidia/nemotron-3.5-super-vl:free`, `LLM_VISION=true`). Bỏ tầng OpenRouter trả phí (đêm 17/11 nó đã nhận 103 lượt, $0,41, khi các tầng free bị giới hạn). Khi mọi tầng free bận, bước đó thất bại và được thử lại sau.
 - Giọng đọc: Azure AI Speech khi có `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION` (cùng giọng Andrew, mốc thời gian từng chữ), edge-tts cho beat Azure lỗi hoặc khi chưa có key. `renderer/requirements.txt`.
+
+## MCP biên tập cho agent trên máy (Antigravity…)
+
+- `modules/video/backend/editor-mcp.ts`: `http://127.0.0.1:3001/api/admin/video/mcp`, công cụ `list_videos`, `get_video`, `edit_script` (sửa lời, tiêu đề, mô tả, chữ thumbnail của bản dài hoặc Short, rồi kiểm chứng lại ngay), `remake`, `review`. Không đăng được video. Chỉ nhận kết nối trực tiếp trên máy (loopback, `Host` đúng cổng API, không `Via`/`X-Forwarded-*`/`Origin`) kèm `VIDEO_EDITOR_TOKEN` (≥ 24 ký tự; trống = tắt).
+- `modules/video/backend/editing.ts`: đọc/sửa kịch bản, lịch sử `edits.json` (trước/sau, ghi chú), hiện trên trang Videos ("Edit history").
+- `apps/web/app/lib/api-proxy.server.ts`: proxy web luôn gắn `Via: 1.1 pipelinex-web` (ghi đè giá trị client gửi) để API phân biệt yêu cầu đi qua web.
+- Test: `modules/video/tests/editor.test.ts`.

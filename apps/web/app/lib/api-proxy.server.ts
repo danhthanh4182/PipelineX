@@ -16,7 +16,9 @@ function endToEnd(headers: IncomingHttpHeaders): IncomingHttpHeaders {
 
 /** `set` replaces headers after the filter: the proxy's own facts, which a client cannot remove. */
 export function proxyToApi(req: IncomingMessage, res: ServerResponse, set: OutgoingHttpHeaders = {}): void {
-  const headers: OutgoingHttpHeaders = { ...endToEnd(req.headers), ...set };
+  // PipelineX: every proxied request says so (RFC 9110 Via, replacing any the client sent), so the api can keep
+  // local-only routes (the video editor MCP) away from anything that came in through the web server.
+  const headers: OutgoingHttpHeaders = { ...endToEnd(req.headers), via: "1.1 pipelinex-web", ...set };
   // A body without a length arrived chunked; it goes on chunked, since Node frames only some methods
   // that way by default (not DELETE, for one) and an unframed body would corrupt the pooled connection.
   if (req.headers["transfer-encoding"] && req.headers["content-length"] === undefined) headers["transfer-encoding"] = "chunked";

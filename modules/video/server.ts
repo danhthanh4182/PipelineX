@@ -9,6 +9,8 @@ import { enqueueOn } from "@aihot/backend/jobs/queue";
 import { actorOf, sessionPrincipal, type AdminPrincipal } from "@aihot/backend/admin/auth";
 import { config } from "@aihot/backend/config";
 import { pickCandidates } from "./backend/candidates.ts";
+import { registerEditorMcp } from "./backend/editor-mcp.ts";
+import { editHistory } from "./backend/editing.ts";
 import { makeVideo, shortFile, thumbnailFile, videoFile, videoFiles } from "./backend/pipeline.ts";
 import { autoPick, candidatesWithVideos, createVideo, getVideo, listVideos, requeueVideo, reviewVideo, STEPS, VideoConflict, type Step } from "./backend/videos.ts";
 
@@ -88,6 +90,9 @@ export const videoServer: ServerModule = {
     } },
   ],
   http(app) {
+    // The editor MCP for a local AI agent (Antigravity…): direct local connections with VIDEO_EDITOR_TOKEN only.
+    registerEditorMcp(app, makeQueue);
+
     app.get("/api/admin/video/overview", guarded(async (_req, _reply, admin) => ({
       csrf: admin.csrf,
       auto: AUTO_ENABLED(),
@@ -101,7 +106,7 @@ export const videoServer: ServerModule = {
       const { id } = idParam.parse(req.params);
       const video = await getVideo(id);
       if (!video) return reply.code(404).send({ error: "not_found", detail: "No such video." });
-      return { video, ...videoFiles(id) };
+      return { video, ...videoFiles(id), history: editHistory(id) };
     }));
 
     app.get("/api/admin/video/videos/:id/video.mp4", guarded(async (req, reply) => sendVideo(req, reply, videoFile(idParam.parse(req.params).id))));

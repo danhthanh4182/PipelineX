@@ -7,6 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config } from "@aihot/backend/config";
 import { EXTRAS, finishVideo, getVideo, markStep, recordStep, STEPS, storyMaterial, type Step } from "./videos.ts";
+import { activeRules } from "./style.ts";
 
 export const ROOT = fileURLToPath(new URL("../../../", import.meta.url));
 export const RENDERER = process.env.VIDEO_RENDERER_DIR || path.join(ROOT, "renderer");
@@ -115,6 +116,8 @@ export async function makeVideo(id: number, from: Step = "story"): Promise<void>
     if (!config.modelCallsEnabled) throw new Error("MODEL_CALLS_ENABLED is not true: the script and picture checks call paid models.");
     for (step of STEPS.slice(STEPS.indexOf(from))) {
       await markStep(id, step);
+      // The writers follow the channel's approved style rules (style.ts), as they stand when the words are written.
+      if (step === "script" || step === "short") writeFileSync(path.join(dir, "style.json"), JSON.stringify(await activeRules()));
       if (step === "story") {
         if (!video.story_id) throw new Error("story: the story was deleted");
         await recordStep(id, step, await writeStory(video.story_id, dir));

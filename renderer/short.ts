@@ -41,8 +41,11 @@ Rules:
 
 Return ONLY JSON: {"title": string (max 60 chars, no hashtags), "beats": [{"narration": string, "visual": {...}}]}`;
 
+// The channel's style rules, approved by the editor (modules/video/backend/style.ts), when the pipeline wrote them.
+const styleRules: string[] = existsSync(`${W}/style.json`) ? JSON.parse(readFileSync(`${W}/style.json`, "utf8")) : [];
+const styleText = styleRules.length ? `\n\nChannel style rules (approved by the editor; facts rules above still win):\n${styleRules.map((r) => `- ${r}`).join("\n")}` : "";
 const user = `${material}\nPICTURES (beat number: what it shows):\n${pictures.map(({ i, v }) => `${i}: ${describe(v)}`).join("\n")}`;
-const { json, cost, provider } = await chatJson(system, user, {
+const { json, cost, provider } = await chatJson(system + styleText, user, {
   temperature: 0.5, maxTokens: 12000,
   check: (j) => {
     const n = (j.beats ?? []).map((b: any) => String(b.narration ?? "")).join(" ").split(/\s+/).filter(Boolean).length;

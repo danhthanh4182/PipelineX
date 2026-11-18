@@ -6,6 +6,7 @@ import { SITE } from "@aihot/site";
 import { adminPageGet, GRAY_HEADERS } from "../../../apps/web/app/lib/admin.server";
 import { ago, num } from "../../../apps/web/app/features/admin/format";
 import { toast } from "../../../apps/web/app/features/admin/toast";
+import { copyText } from "../../../apps/web/app/lib/clipboard";
 import { AdminPage, Badge, Button, Card, DataTable, Empty, Select } from "../../../apps/web/app/features/admin/ui";
 
 type Step = "story" | "background" | "dossier" | "script" | "verify" | "assets" | "voice" | "render" | "thumbnail" | "short" | "shortvoice" | "shortrender";
@@ -39,7 +40,17 @@ interface Candidate {
   video_status: Status | null;
 }
 
+interface StyleRule { id: string; rule: string; why: string; example?: string; status: "proposed" | "active" | "rejected" | "retired"; proposedBy: string; proposedAt: string }
+
+interface PublishKit {
+  long: { title: string; description: string; tags: string[] };
+  short: { title: string; description: string; tags: string[] } | null;
+  draftedAt: string;
+  editedAt?: string;
+}
+
 interface Overview {
+  style: StyleRule[];
   csrf: string;
   auto: boolean;
   modelCalls: boolean;
@@ -49,6 +60,7 @@ interface Overview {
 }
 
 interface Detail {
+  publish: PublishKit | null;
   video: Video;
   dossier: null | {
     angle: string;
@@ -169,6 +181,7 @@ export default function VideosAdmin({ loaderData }: { loaderData: { overview: Ov
       }
     >
       {detail && <VideoDetail d={detail} steps={o.steps} run={run} busy={busy} close={() => setParams({}, { preventScrollReset: true })} />}
+      <StyleGuide rules={o.style} run={run} busy={busy} />
 
       <div className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
         <Card title="Videos" right={<span className="text-[12.5px] text-ink-3">{o.videos.length} latest</span>} pad={false}>
@@ -212,6 +225,78 @@ export default function VideosAdmin({ loaderData }: { loaderData: { overview: Ov
         </Card>
       </div>
     </AdminPage>
+  );
+}
+
+/** Copies a text and says so. */
+function CopyButton({ text, label }: { text: string; label: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <button type="button" className="rounded-control px-2 py-0.5 text-[12px] ring-1 ring-line hover:bg-bg-sunk"
+      onClick={() => copyText(text).then(() => { setDone(true); setTimeout(() => setDone(false), 1500); }, () => toast("Could not copy", "error"))}>
+      {done ? "Copied" : label}
+    </button>
+  );
+}
+
+function PublishKitView({ id, kit, run, busy }: { id: number; kit: PublishKit; run: (label: string, path: string, body: unknown, done: string) => Promise<Video | null>; busy: string | null }) {
+  const block = (name: string, part: { title: string; description: string; tags: string[] }) => (
+    <div className="min-w-0 flex-1 space-y-2">
+      <div className="text-[12.5px] font-semibold text-ink-2">{name}</div>
+      <div className="flex items-start gap-2"><div className="min-w-0 flex-1 text-[13px] text-ink">{part.title}</div><CopyButton text={part.title} label="Copy title" /></div>
+      <div className="flex items-start gap-2">
+        <pre className="max-h-48 min-w-0 flex-1 overflow-auto whitespace-pre-wrap rounded-control bg-bg-sunk p-2 text-[11.5px] text-ink-3">{part.description}</pre>
+        <CopyButton text={part.description} label="Copy description" />
+      </div>
+      <div className="flex items-start gap-2"><div className="min-w-0 flex-1 text-[12px] text-ink-3">{part.tags.join(", ")}</div><CopyButton text={part.tags.join(", ")} label="Copy tags" /></div>
+    </div>
+  );
+  return (
+    <details className="mt-3 rounded-control ring-1 ring-line">
+      <summary className="cursor-pointer px-3 py-2 text-[13px] font-medium text-ink-2">Publish kit (YouTube){kit.editedAt ? " · edited" : ""}</summary>
+      <div className="space-y-3 border-t border-line p-3">
+        <div className="flex flex-col gap-4 lg:flex-row">{block("Video", kit.long)}{kit.short && block("Short", kit.short)}</div>
+        <Button size="sm" busy={busy === "redraft"} onClick={() => run("redraft", `/api/admin/video/videos/${id}/publish-kit`, { redraft: true }, "Publish kit redrafted")}>Redraft from the script</Button>
+      </div>
+    </details>
+  );
+}
+
+/** The channel's style guide: the agent proposes, the editor decides; active rules guide every new script. */
+function StyleGuide({ rules, run, busy }: { rules: StyleRule[]; run: (label: string, path: string, body: unknown, done: string) => Promise<Video | null>; busy: string | null }) {
+  const proposed = rules.filter((r) => r.status === "proposed");
+  const active = rules.filter((r) => r.status === "active");
+  if (!proposed.length && !active.length) return null;
+  const decide = (r: StyleRule, status: "active" | "rejected" | "retired", done: string) => run(`style-${r.id}-${status}`, `/api/admin/video/style/${r.id}`, { status }, done);
+  return (
+    <Card className="mb-5" title="Style guide" right={<span className="text-[12.5px] text-ink-3">{active.length} active · {proposed.length} waiting for you</span>}>
+      <div className="space-y-3 text-[13px] leading-relaxed">
+        {proposed.map((r) => (
+          <div key={r.id} className="rounded-control p-3 ring-1 ring-amber/40">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="min-w-0 flex-1"><Badge tone="warn">Proposed</Badge> <span className="text-ink">{r.rule}</span></div>
+              <span className="flex gap-1.5">
+                <Button size="sm" tone="primary" busy={busy === `style-${r.id}-active`} onClick={() => decide(r, "active", "Rule approved")}>Approve</Button>
+                <Button size="sm" busy={busy === `style-${r.id}-rejected`} onClick={() => decide(r, "rejected", "Rule rejected")}>Reject</Button>
+              </span>
+            </div>
+            <div className="mt-1 text-[12.5px] text-ink-3">Why: {r.why}</div>
+            {r.example && <pre className="mt-1 whitespace-pre-wrap text-[12px] text-ink-3">{r.example}</pre>}
+            <div className="mt-1 text-[11.5px] text-ink-4">{r.proposedBy} · {ago(r.proposedAt)}</div>
+          </div>
+        ))}
+        {active.length > 0 && (
+          <ul className="space-y-1.5">
+            {active.map((r) => (
+              <li key={r.id} className="flex items-start justify-between gap-2">
+                <span className="min-w-0 flex-1"><Badge tone="ok">Active</Badge> {r.rule}</span>
+                <Button size="sm" tone="ghost" busy={busy === `style-${r.id}-retired`} onClick={() => decide(r, "retired", "Rule retired")}>Retire</Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </Card>
   );
 }
 
@@ -418,6 +503,8 @@ function VideoDetail({ d, steps, run, busy, close }: {
         </details>
       )}
 
+      {d.publish && <PublishKitView id={v.id} kit={d.publish} run={run} busy={busy} />}
+
       {d.history.length > 0 && (
         <details className="mt-3 rounded-control ring-1 ring-line" open>
           <summary className="cursor-pointer px-3 py-2 text-[13px] font-medium text-ink-2">Edit history · {d.history.length}</summary>
@@ -425,7 +512,7 @@ function VideoDetail({ d, steps, run, busy, close }: {
             {[...d.history].reverse().map((h, i) => (
               <li key={i}>
                 <span className="text-ink-4">{ago(h.at)} · {h.actor} · </span>
-                <b className="text-ink-2">{h.kind === "create" ? "started this video" : h.kind === "edit" ? (h.detail.visual ? "changed a picture" : `edited the ${h.detail.variant === "short" ? "Short" : "script"}`) : h.kind === "remake" ? `made again from ${h.detail.from}` : `marked ${h.detail.verdict}`}</b>
+                <b className="text-ink-2">{h.kind === "create" ? "started this video" : h.kind === "edit" ? (h.detail.variant === "publish" ? `edited the publish kit (${Object.keys(h.detail.kit ?? {}).join(", ")})` : h.detail.visual ? "changed a picture" : `edited the ${h.detail.variant === "short" ? "Short" : "script"}`) : h.kind === "remake" ? `made again from ${h.detail.from}` : `marked ${h.detail.verdict}`}</b>
                 {h.note && <span className="text-ink-3"> — {h.note}</span>}
                 {h.kind === "edit" && (h.detail.beats ?? []).map((b: any, j: number) => (
                   <div key={j} className="mt-1 pl-3 text-ink-3">

@@ -6,34 +6,12 @@
 // Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env background.ts
 import { readFileSync, writeFileSync } from "node:fs";
 import { chatJson, outlet, W, type Article } from "./lib.ts";
+import { hostOf, NOT_ARTICLE_PATHS, NOT_ARTICLES, paywalled, trustedDomains } from "../modules/video/backend/trusted.ts";
 
 const KEY = process.env.TINYFISH_API_KEY ?? "";
 const SEARCH = process.env.TINYFISH_SEARCH_URL || "https://api.search.tinyfish.ai";
 const FETCH = process.env.TINYFISH_FETCH_URL || "https://api.fetch.tinyfish.ai";
 const MAX_QUERIES = 6, MAX_PAGES = 8, PAGE_CHARS = 8000, SHORT = 1000;
-
-/** Outlets whose articles are behind a paywall: summary and link only, never fetched. */
-const PAYWALLED = ["bloomberg.com", "theinformation.com", "wsj.com", "ft.com", "nytimes.com", "economist.com", "businessinsider.com"];
-/** Official sites of the companies and labs the channel covers, besides the monitored sources. */
-const OFFICIAL = ["openai.com", "anthropic.com", "blog.google", "deepmind.google", "research.google", "ai.meta.com", "about.fb.com", "blogs.microsoft.com",
-  "news.microsoft.com", "nvidianews.nvidia.com", "blogs.nvidia.com", "machinelearning.apple.com", "x.ai", "mistral.ai", "huggingface.co",
-  "aws.amazon.com", "aboutamazon.com", "arxiv.org", "reuters.com", "apnews.com", "sec.gov", "ftc.gov", "oag.ca.gov", "whitehouse.gov", "commerce.gov"];
-/** Feed hosts that are aggregators or mirrors, not the outlet itself. */
-const NOT_OUTLETS = new Set(["hnrss.org", "news.google.com", "raw.githubusercontent.com", "github.com", "feeds.feedburner.com", "rsshub.app"]);
-const KEEP_FULL_HOST = /\.(substack|beehiiv|ghost)\.(com|io)$/;
-/** User-written or non-article parts of trusted sites: forums, communities, podcasts, app listings, help pages. */
-const NOT_ARTICLES = /^(discuss|forum|forums|community|communities|podcasts?|apps|support|help|status|jobs|careers|shop|store)\./;
-
-const hostOf = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return ""; } };
-/** The domain to search within: the host minus feed-only prefixes, the full host for newsletter platforms. */
-const siteOf = (host: string) => (KEEP_FULL_HOST.test(host) ? host : host.replace(/^(feeds?|rss|www)\./, ""));
-const paywalled = (url: string) => PAYWALLED.some((d) => hostOf(url) === d || hostOf(url).endsWith(`.${d}`));
-
-function trustedDomains(): string[] {
-  const sources = JSON.parse(readFileSync(new URL("../industry/sources.json", import.meta.url), "utf8"));
-  const hosts = (sources.sources ?? sources).flatMap((s: any) => [s.config?.feedUrl, s.config?.url, s.config?.siteUrl].filter(Boolean).map(hostOf));
-  return [...new Set([...hosts.filter((h: string) => h && !NOT_OUTLETS.has(h)).map(siteOf), ...OFFICIAL])].filter((d) => !PAYWALLED.includes(d));
-}
 
 async function tinyfish(url: string, init: RequestInit) {
   const res = await fetch(url, { ...init, headers: { ...(init.headers ?? {}), "X-API-Key": KEY }, signal: AbortSignal.timeout(150_000) });
@@ -95,7 +73,7 @@ if (!KEY) {
       (result.searched as number)++;
       for (const r of (data.results ?? []).slice(0, 4)) {
         const url = String(r.url ?? "").split("#")[0]!;
-        if (!url || paywalled(url) || NOT_ARTICLES.test(hostOf(url)) || have.has(url.split("?")[0]!) || picked.some((p) => p.url === url)) continue;
+        if (!url || paywalled(url) || NOT_ARTICLES.test(hostOf(url)) || NOT_ARTICLE_PATHS.test(new URL(url).pathname) || have.has(url.split("?")[0]!) || picked.some((p) => p.url === url)) continue;
         picked.push({ url, query: q });
         if (picked.filter((p) => p.query === q).length >= 2) break;
       }

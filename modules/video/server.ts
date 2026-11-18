@@ -10,7 +10,9 @@ import { actorOf, sessionPrincipal, type AdminPrincipal } from "@aihot/backend/a
 import { config } from "@aihot/backend/config";
 import { pickCandidates } from "./backend/candidates.ts";
 import { registerEditorMcp } from "./backend/editor-mcp.ts";
-import { editHistory } from "./backend/editing.ts";
+import { editHistory, recordEdit } from "./backend/editing.ts";
+import { editKit, publishKit } from "./backend/publishing.ts";
+import { decideRule, StyleConflict, styleGuide } from "./backend/style.ts";
 import { makeVideo, shortFile, thumbnailFile, videoFile, videoFiles } from "./backend/pipeline.ts";
 import { autoPick, candidatesWithVideos, createVideo, getVideo, listVideos, requeueVideo, reviewVideo, STEPS, VideoConflict, type Step } from "./backend/videos.ts";
 
@@ -44,7 +46,7 @@ function guarded(fn: Handler) {
     try {
       return await fn(req, reply, admin);
     } catch (error) {
-      if (error instanceof VideoConflict) return reply.code(409).send({ error: "conflict", detail: error.message });
+      if (error instanceof VideoConflict || error instanceof StyleConflict) return reply.code(409).send({ error: "conflict", detail: error.message });
       if (error instanceof z.ZodError) return reply.code(400).send({ error: "invalid_request", detail: error.issues.map((i) => i.message).join("; ") });
       req.log.error({ err: error }, "video admin error");
       return reply.code(500).send({ error: "internal_error", detail: String((error as Error).message).slice(0, 300) });
@@ -99,6 +101,7 @@ export const videoServer: ServerModule = {
       modelCalls: config.modelCallsEnabled,
       steps: STEPS,
       candidates: await candidatesWithVideos(),
+      style: await styleGuide(),
       videos: await listVideos(),
     })));
 
@@ -106,7 +109,8 @@ export const videoServer: ServerModule = {
       const { id } = idParam.parse(req.params);
       const video = await getVideo(id);
       if (!video) return reply.code(404).send({ error: "not_found", detail: "No such video." });
-      return { video, ...videoFiles(id), history: editHistory(id) };
+      const done = video.status === "ready" || video.status === "approved" || video.status === "rejected";
+      return { video, ...videoFiles(id), history: editHistory(id), publish: done ? publishKit(id) : null };
     }));
 
     app.get("/api/admin/video/videos/:id/video.mp4", guarded(async (req, reply) => sendVideo(req, reply, videoFile(idParam.parse(req.params).id))));
@@ -126,6 +130,28 @@ export const videoServer: ServerModule = {
       const video = await requeueVideo(id, from);
       await enqueue(id, from);
       return { video };
+    }));
+
+    app.post("/api/admin/video/videos/:id/publish-kit", guarded(async (req, _reply, admin) => {
+      const { id } = idParam.parse(req.params);
+      const input = z.object({
+        redraft: z.boolean().optional(),
+        longTitle: z.string().trim().min(10).max(100).optional(), longDescription: z.string().trim().min(50).max(5000).optional(),
+        longTags: z.array(z.string().trim().min(2).max(60)).max(20).optional(),
+        shortTitle: z.string().trim().min(5).max(100).optional(), shortDescription: z.string().trim().min(10).max(5000).optional(),
+      }).parse(req.body);
+      if (input.redraft) return { publish: publishKit(id, true) };
+      const { redraft: _r, ...edit } = input;
+      const out = editKit(id, edit);
+      if (!out) throw new VideoConflict("This video is not finished yet.");
+      recordEdit(id, { actor: actorOf(admin), kind: "edit", detail: { variant: "publish", kit: out.changes } });
+      return { publish: out.kit };
+    }));
+
+    app.post("/api/admin/video/style/:rule", guarded(async (req, _reply, admin) => {
+      const rule = z.object({ rule: z.string().regex(/^[a-f0-9-]{4,40}$/) }).parse(req.params).rule;
+      const { status } = z.object({ status: z.enum(["active", "rejected", "retired"]) }).parse(req.body);
+      return { rule: await decideRule(actorOf(admin), rule, status) };
     }));
 
     app.post("/api/admin/video/videos/:id/review", guarded(async (req) => {

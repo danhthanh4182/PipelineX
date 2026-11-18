@@ -8,6 +8,9 @@ import { chatJson, materialOf, numbersIn, outlet, readArticles, W, words } from 
 const articles = readArticles();
 const useDossier = process.env.VIDEO_DOSSIER !== "off" && existsSync(`${W}/dossier.json`);
 const dossier = useDossier ? JSON.parse(readFileSync(`${W}/dossier.json`, "utf8")) : null;
+// The channel's style rules, approved by the editor (modules/video/backend/style.ts), when the pipeline wrote them.
+const styleRules: string[] = existsSync(`${W}/style.json`) ? JSON.parse(readFileSync(`${W}/style.json`, "utf8")) : [];
+const styleText = styleRules.length ? `\n\nChannel style rules (approved by the editor; facts rules above still win):\n${styleRules.map((r) => `- ${r}`).join("\n")}` : "";
 const [minWords, maxWords] = (process.env.VIDEO_SCRIPT_WORDS || "430-500").split("-").map(Number) as [number, number];
 
 const list = (title: string, rows: string[]) => (rows.length ? `${title}\n${rows.join("\n")}` : "");
@@ -64,8 +67,9 @@ Return ONLY JSON:
    "headline": string (max 60 chars),
    "beats": [{"narration": string, ${dossier ? `"facts": ["F1"], ` : ""}"visual": {...}}]}]}`;
 
+const systemWithStyle = system + styleText;
 const material = dossier ? `Dossier:\n\n${dossierText(dossier)}` : `Material:\n\n${materialOf(articles, Number(process.env.VIDEO_MATERIAL_CHARS || 3000))}`;
-const { json, text, cost, provider } = await chatJson(system, material, {
+const { json, text, cost, provider } = await chatJson(systemWithStyle, material, {
   temperature: 0.4,
   check: (j) => {
     const beats = Array.isArray(j.scenes) ? j.scenes.flatMap((s: any) => (Array.isArray(s.beats) ? s.beats : [])) : [];

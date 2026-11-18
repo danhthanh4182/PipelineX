@@ -6,9 +6,8 @@
 
 export const SELECTION = {
   /** Source tier -> selection threshold (average score). */
-  // PipelineX: the whole scale moved down (T1 60->55, T1_5 65->58, T2 76->60; classes 70->58, 76->60). On English AI news
-  // the model scores lower than on AIHOT's Chinese feed: at T2 76 only 3 of 103 scored T2 items passed (one story),
-  // missing e.g. a major Anthropic model release (69). Official sources stay below media, classes in between. See FORK_CHANGES.md.
+  // PipelineX finance pack: starting values copied from the AI channel (official sources lower than media, classes in
+  // between). Calibrate with labelled finance examples (docs/selection.en.md) once the channel has a few days of data.
   thresholds: { T1: 55, T1_5: 58, T2: 60 } as Record<string, number>,
   /** Source class -> threshold floor. Raises the threshold for developer/infra heavy sources. */
   classes: {

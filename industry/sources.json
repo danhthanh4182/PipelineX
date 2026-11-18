@@ -2,134 +2,11 @@
   "$comment": "Demo seed sources: imported on initial boot (scripts/seed.ts). Existing sources are not overwritten. Managed thereafter in Admin > Sources. See docs/customize.md.",
   "sources": [
     {
-      "id": "rss-openai-news",
-      "name": "OpenAI News",
+      "id": "rss-fed-press",
+      "name": "Federal Reserve press releases",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://openai.com/news/rss.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "openai",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "Official"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-google-deepmind",
-      "name": "Google DeepMind",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://deepmind.google/blog/rss.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "google",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "Official"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-google-research",
-      "name": "Google Research",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://research.google/blog/rss/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "google",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "Official",
-        "Research"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-hugging-face",
-      "name": "Hugging Face Blog",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://huggingface.co/blog/feed.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "hugging-face",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "Official",
-        "Open Source"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-microsoft-research",
-      "name": "Microsoft Research",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.microsoft.com/en-us/research/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "microsoft",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "Official",
-        "Research"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-nvidia-blog",
-      "name": "NVIDIA Blog",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://blogs.nvidia.com/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "nvidia",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "Official"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-aws-ml",
-      "name": "AWS Machine Learning Blog",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://aws.amazon.com/blogs/machine-learning/feed/",
+        "feedUrl": "https://www.federalreserve.gov/feeds/press_all.xml",
         "_aihot": {
           "initialBackfillLimit": 8
         }
@@ -137,281 +14,41 @@
       "tier": "T1",
       "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 120,
+      "interval_minutes": 30,
       "tags": [
-        "Official",
-        "Tutorial"
+        "official",
+        "central-bank"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-github-ai",
-      "name": "GitHub Blog · AI & ML",
+      "id": "rss-fed-speeches",
+      "name": "Federal Reserve speeches",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://github.blog/ai-and-ml/feed/",
+        "feedUrl": "https://www.federalreserve.gov/feeds/speeches.xml",
         "_aihot": {
           "initialBackfillLimit": 8
         }
       },
       "tier": "T1",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "Official"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-mistral",
-      "name": "Mistral AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://mistral.ai/news/rss",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "Official"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-bair",
-      "name": "Berkeley AI Research",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://bair.berkeley.edu/blog/feed.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "Research"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-the-verge-ai",
-      "name": "The Verge · AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
       "owner_entity_id": null,
       "participation_mode": "editorial",
       "interval_minutes": 60,
       "tags": [
-        "Media"
+        "official",
+        "central-bank"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-techcrunch-ai",
-      "name": "TechCrunch · AI",
+      "id": "rss-sec-press",
+      "name": "SEC press releases",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://techcrunch.com/category/artificial-intelligence/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 60,
-      "tags": [
-        "Media"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-ars-technica-ai",
-      "name": "Ars Technica · AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://arstechnica.com/ai/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 60,
-      "tags": [
-        "Media"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-mit-tech-review-ai",
-      "name": "MIT Technology Review · AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "Media"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-the-decoder",
-      "name": "The Decoder",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://the-decoder.com/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 60,
-      "tags": [
-        "Media"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-simon-willison",
-      "name": "Simon Willison",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://simonwillison.net/atom/everything/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "Individual"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-import-ai",
-      "name": "Import AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://importai.substack.com/feed",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "Individual",
-        "Weekly"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-latent-space",
-      "name": "Latent Space",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.latent.space/feed",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "Individual"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-anthropic-news",
-      "name": "Anthropic News",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "anthropic",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "Official"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-google-ai",
-      "name": "Google AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://blog.google/technology/ai/rss/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "google",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "Official"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-apple-ml",
-      "name": "Apple Machine Learning Research",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://machinelearning.apple.com/rss.xml",
+        "feedUrl": "https://www.sec.gov/news/pressreleases.rss",
         "_aihot": {
           "initialBackfillLimit": 8
         }
@@ -419,40 +56,41 @@
       "tier": "T1",
       "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 120,
+      "interval_minutes": 60,
       "tags": [
-        "Official",
-        "Research"
+        "official",
+        "regulator"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-wired-ai",
-      "name": "Wired · AI",
+      "id": "rss-ecb-press",
+      "name": "ECB press releases",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://www.wired.com/feed/tag/ai/latest/rss",
+        "feedUrl": "https://www.ecb.europa.eu/rss/press.html",
         "_aihot": {
           "initialBackfillLimit": 8
         }
       },
-      "tier": "T2",
+      "tier": "T1",
       "owner_entity_id": null,
       "participation_mode": "editorial",
       "interval_minutes": 60,
       "tags": [
-        "Media"
+        "official",
+        "central-bank"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-zdnet-ai",
-      "name": "ZDNet · AI",
+      "id": "rss-cnbc-markets",
+      "name": "CNBC Markets",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://www.zdnet.com/topic/artificial-intelligence/rss.xml",
+        "feedUrl": "https://www.cnbc.com/id/20910258/device/rss/rss.html",
         "_aihot": {
           "initialBackfillLimit": 8
         }
@@ -460,19 +98,19 @@
       "tier": "T2",
       "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 60,
+      "interval_minutes": 20,
       "tags": [
-        "Media"
+        "markets"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-the-register-ai",
-      "name": "The Register · AI/ML",
+      "id": "rss-cnbc-finance",
+      "name": "CNBC Finance",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://www.theregister.com/software/ai_ml/headlines.atom",
+        "feedUrl": "https://www.cnbc.com/id/10000664/device/rss/rss.html",
         "_aihot": {
           "initialBackfillLimit": 8
         }
@@ -480,19 +118,19 @@
       "tier": "T2",
       "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 60,
+      "interval_minutes": 20,
       "tags": [
-        "Media"
+        "finance"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-404-media",
-      "name": "404 Media",
+      "id": "rss-cnbc-earnings",
+      "name": "CNBC Earnings",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://www.404media.co/rss/",
+        "feedUrl": "https://www.cnbc.com/id/15839135/device/rss/rss.html",
         "_aihot": {
           "initialBackfillLimit": 8
         }
@@ -500,19 +138,19 @@
       "tier": "T2",
       "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 120,
+      "interval_minutes": 30,
       "tags": [
-        "Media"
+        "earnings"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-bloomberg-tech",
-      "name": "Bloomberg Technology",
+      "id": "rss-marketwatch-top",
+      "name": "MarketWatch Top Stories",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://feeds.bloomberg.com/technology/news.rss",
+        "feedUrl": "https://feeds.content.dowjones.io/public/rss/mw_topstories",
         "_aihot": {
           "initialBackfillLimit": 8
         }
@@ -520,19 +158,19 @@
       "tier": "T2",
       "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 60,
+      "interval_minutes": 20,
       "tags": [
-        "Media"
+        "markets"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-cnbc-tech",
-      "name": "CNBC Tech",
+      "id": "rss-axios",
+      "name": "Axios",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=19854910",
+        "feedUrl": "https://api.axios.com/feed/",
         "_aihot": {
           "initialBackfillLimit": 8
         }
@@ -540,180 +178,19 @@
       "tier": "T2",
       "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 60,
+      "interval_minutes": 30,
       "tags": [
-        "Media"
+        "general"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-the-information",
-      "name": "The Information",
+      "id": "rss-reuters-business",
+      "name": "Reuters Business (Google News)",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://www.theinformation.com/feed",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "Media"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-interconnects",
-      "name": "Interconnects",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.interconnects.ai/feed",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "Individual"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-one-useful-thing",
-      "name": "One Useful Thing",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.oneusefulthing.org/feed",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "Individual"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-gary-marcus",
-      "name": "Gary Marcus",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://garymarcus.substack.com/feed",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "Individual"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-ahead-of-ai",
-      "name": "Ahead of AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://magazine.sebastianraschka.com/feed",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "Individual"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-tldr-ai",
-      "name": "TLDR AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://tldr.tech/api/rss/ai",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "Media",
-        "Weekly"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-the-rundown-ai",
-      "name": "The Rundown AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://rss.beehiiv.com/feeds/2R3C6Bt5wj.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "Media"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-bens-bites",
-      "name": "Ben's Bites",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.bensbites.com/feed",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "Media"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-hn-frontpage",
-      "name": "Hacker News · 200+ points",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://hnrss.org/frontpage?points=200",
+        "feedUrl": "https://news.google.com/rss/search?q=site:reuters.com+business&hl=en-US&gl=US&ceid=US:en",
         "_aihot": {
           "initialBackfillLimit": 8
         }
@@ -721,19 +198,39 @@
       "tier": "T2",
       "owner_entity_id": null,
       "participation_mode": "hot_signal",
-      "interval_minutes": 60,
+      "interval_minutes": 30,
       "tags": [
-        "Media"
+        "markets"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-hn-ai",
-      "name": "Hacker News · AI 100+ points",
+      "id": "rss-kiplinger",
+      "name": "Kiplinger",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://hnrss.org/newest?q=AI+OR+LLM+OR+OpenAI+OR+Anthropic&points=100",
+        "feedUrl": "https://www.kiplinger.com/feeds/all",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "personal-finance"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-bloomberg-markets",
+      "name": "Bloomberg Markets",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://feeds.bloomberg.com/markets/news.rss",
         "_aihot": {
           "initialBackfillLimit": 8
         }
@@ -741,19 +238,62 @@
       "tier": "T2",
       "owner_entity_id": null,
       "participation_mode": "hot_signal",
-      "interval_minutes": 60,
+      "interval_minutes": 30,
       "tags": [
-        "Media"
+        "markets",
+        "paywalled"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-gnews-openai",
-      "name": "Google News · OpenAI",
+      "id": "rss-ft-markets",
+      "name": "FT Markets",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://news.google.com/rss/search?q=OpenAI+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "feedUrl": "https://www.ft.com/markets?format=rss",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "hot_signal",
+      "interval_minutes": 30,
+      "tags": [
+        "markets",
+        "paywalled"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-wsj-markets",
+      "name": "WSJ Markets",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://feeds.content.dowjones.io/public/rss/RSSMarketsMain",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "hot_signal",
+      "interval_minutes": 30,
+      "tags": [
+        "markets",
+        "paywalled"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-economist-finance",
+      "name": "The Economist Finance & Economics",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.economist.com/finance-and-economics/rss.xml",
         "_aihot": {
           "initialBackfillLimit": 8
         }
@@ -763,17 +303,78 @@
       "participation_mode": "hot_signal",
       "interval_minutes": 120,
       "tags": [
-        "Media"
+        "macro",
+        "paywalled"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-gnews-anthropic",
-      "name": "Google News · Anthropic",
+      "id": "rss-coindesk",
+      "name": "CoinDesk",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://news.google.com/rss/search?q=Anthropic+Claude+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "feedUrl": "https://www.coindesk.com/arc/outboundfeeds/rss/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "crypto"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-decrypt",
+      "name": "Decrypt",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://decrypt.co/feed",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "crypto"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-wolf-street",
+      "name": "Wolf Street",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://wolfstreet.com/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "analysis"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-gnews-fed",
+      "name": "Google News: Federal Reserve",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://news.google.com/rss/search?q=%22Federal+Reserve%22+when:1d&hl=en-US&gl=US&ceid=US:en",
         "_aihot": {
           "initialBackfillLimit": 8
         }
@@ -781,9 +382,277 @@
       "tier": "T2",
       "owner_entity_id": null,
       "participation_mode": "hot_signal",
-      "interval_minutes": 120,
+      "interval_minutes": 30,
       "tags": [
-        "Media"
+        "signal"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-gnews-stocks",
+      "name": "Google News: stock market",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://news.google.com/rss/search?q=%22stock+market%22+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "hot_signal",
+      "interval_minutes": 30,
+      "tags": [
+        "signal"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-bea",
+      "name": "BEA news releases (GDP, PCE, income)",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://apps.bea.gov/rss/rss.xml",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "official",
+        "data"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-bls-gnews",
+      "name": "BLS releases: CPI, jobs (Google News)",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://news.google.com/rss/search?q=site:bls.gov&hl=en-US&gl=US&ceid=US:en",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "official",
+        "data"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-treasury-gnews",
+      "name": "US Treasury press releases (Google News)",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://news.google.com/rss/search?q=site:home.treasury.gov&hl=en-US&gl=US&ceid=US:en",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "official"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-boe-news",
+      "name": "Bank of England news",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.bankofengland.co.uk/rss/news",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "official",
+        "central-bank"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-cftc-press",
+      "name": "CFTC press releases",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.cftc.gov/RSS/RSSGP/rssgp.xml",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "official",
+        "regulator"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-liberty-street",
+      "name": "NY Fed Liberty Street Economics",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://libertystreeteconomics.newyorkfed.org/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 180,
+      "tags": [
+        "official",
+        "analysis"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-cnbc-economy",
+      "name": "CNBC Economy",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=20910258",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "economy"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-bbc-business",
+      "name": "BBC Business",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://feeds.bbci.co.uk/news/business/rss.xml",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "markets",
+        "economy"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-guardian-business",
+      "name": "The Guardian Business",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.theguardian.com/business/rss",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "markets",
+        "economy"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-npr-business",
+      "name": "NPR Business",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://feeds.npr.org/1006/rss.xml",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "economy",
+        "money"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-ap-business-gnews",
+      "name": "AP business (Google News)",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://news.google.com/rss/search?q=site:apnews.com+economy+OR+stocks+OR+inflation&hl=en-US&gl=US&ceid=US:en",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "hot_signal",
+      "interval_minutes": 30,
+      "tags": [
+        "signal"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-nerdwallet",
+      "name": "NerdWallet",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.nerdwallet.com/blog/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 180,
+      "tags": [
+        "money"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false

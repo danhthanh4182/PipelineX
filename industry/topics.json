@@ -2,339 +2,286 @@
   "groups": [
     {
       "key": "company",
-      "name": "Companies & Models",
-      "blurb": "Track models, products, and updates by provider"
+      "name": "Institutions & Companies",
+      "blurb": "Follow central banks, regulators and the most watched companies"
     },
     {
       "key": "field",
-      "name": "Technical Directions",
-      "blurb": "Explore by domain: Agents, Multimodal, Embodied AI..."
+      "name": "Markets & Assets",
+      "blurb": "Explore by market: stocks, rates, inflation, crypto, commodities..."
     },
     {
       "key": "genre",
-      "name": "Content Formats",
-      "blurb": "Browse by format: Research, Tutorials, Opinions, Policy..."
+      "name": "Story Types",
+      "blurb": "Browse by kind: earnings, deals, regulation, analysis..."
     }
   ],
   "topics": [
     {
-      "slug": "openai",
-      "name": "OpenAI / ChatGPT",
+      "slug": "federal-reserve",
+      "name": "Federal Reserve",
       "group": "company",
-      "entityId": "openai",
-      "definition": "OpenAI GPT series models, ChatGPT and Sora product updates, company strategy and team milestones."
-    },
-    {
-      "slug": "anthropic",
-      "name": "Anthropic / Claude",
-      "group": "company",
-      "entityId": "anthropic",
-      "definition": "Anthropic Claude model family, Claude Code updates, safety research, and company developments."
-    },
-    {
-      "slug": "google",
-      "name": "Google / Gemini",
-      "group": "company",
-      "entityId": "google",
+      "entityId": "fed",
+      "definition": "Fed rate decisions, FOMC minutes, Powell and governors' speeches, balance sheet and bank supervision.",
       "aliases": [
-        "DeepMind"
-      ],
-      "definition": "Google and DeepMind Gemini models, Veo video generation, frontier research, and ecosystem AI updates."
+        "FOMC",
+        "the Fed"
+      ]
     },
     {
-      "slug": "deepseek",
-      "name": "DeepSeek",
+      "slug": "ecb",
+      "name": "European Central Bank",
       "group": "company",
-      "entityId": "deepseek",
-      "definition": "DeepSeek model releases, open-weights, technical reports, and API pricing changes."
+      "entityId": "ecb",
+      "definition": "ECB rate decisions, Lagarde's statements, euro-area monetary policy."
     },
     {
-      "slug": "qwen",
-      "name": "Qwen",
+      "slug": "sec",
+      "name": "SEC",
       "group": "company",
-      "entityId": "qwen",
-      "definition": "Alibaba Qwen series model releases and open-source updates, from flagship models to mobile-optimized small models."
+      "entityId": "sec",
+      "definition": "SEC rules, enforcement actions, fines and investigations."
     },
     {
-      "slug": "kimi",
-      "name": "Moonshot AI / Kimi",
+      "slug": "us-treasury",
+      "name": "US Treasury",
       "group": "company",
-      "entityId": "kimi",
-      "aliases": [
-        "Kimi / Moonshot AI"
-      ],
-      "definition": "Moonshot AI Kimi product updates, K-series open models, and long-context technical progress."
-    },
-    {
-      "slug": "minimax",
-      "name": "MiniMax",
-      "group": "company",
-      "entityId": "minimax",
-      "definition": "MiniMax M-series frontier models, voice and multimodal capabilities, open-source, and commercialization."
-    },
-    {
-      "slug": "zhipu",
-      "name": "Zhipu GLM",
-      "group": "company",
-      "entityId": "zhipu",
-      "definition": "Zhipu GLM series model releases, open-source updates, coding, reasoning, and enterprise solutions."
-    },
-    {
-      "slug": "xai",
-      "name": "xAI / Grok",
-      "group": "company",
-      "entityId": "xai",
-      "definition": "Elon Musk xAI Grok model updates, compute cluster infrastructure, and X platform integrations."
-    },
-    {
-      "slug": "meta",
-      "name": "Meta / Llama",
-      "group": "company",
-      "entityId": "meta",
-      "definition": "Meta Llama and Muse series open models, Superintelligence Labs, and Meta AI products."
-    },
-    {
-      "slug": "microsoft",
-      "name": "Microsoft / Copilot",
-      "group": "company",
-      "entityId": "microsoft",
-      "definition": "Microsoft Copilot product suite, Azure AI cloud infrastructure, and OpenAI partnership updates."
+      "entityId": "treasury",
+      "definition": "Treasury auctions, debt, sanctions and fiscal statements."
     },
     {
       "slug": "nvidia",
-      "name": "NVIDIA",
+      "name": "Nvidia",
       "group": "company",
       "entityId": "nvidia",
-      "definition": "NVIDIA GPU hardware, CUDA software ecosystem, robotics platforms, and AI compute supply dynamics."
+      "definition": "Nvidia earnings, guidance, stock moves and market weight."
     },
     {
-      "slug": "hugging-face",
-      "name": "Hugging Face",
+      "slug": "apple",
+      "name": "Apple",
       "group": "company",
-      "entityId": "hugging-face",
-      "definition": "Hugging Face community trending open models, datasets, developer tools, and leaderboard updates."
+      "entityId": "apple",
+      "definition": "Apple earnings, buybacks, stock moves and major decisions."
     },
     {
-      "slug": "cursor",
-      "name": "Cursor",
+      "slug": "microsoft",
+      "name": "Microsoft",
       "group": "company",
-      "entityId": "cursor",
-      "definition": "Cursor (Anysphere) editor and coding agent updates, custom models, and developer pricing."
+      "entityId": "microsoft",
+      "definition": "Microsoft earnings, cloud growth, AI spending and stock moves."
     },
     {
-      "slug": "openrouter",
-      "name": "OpenRouter",
+      "slug": "tesla",
+      "name": "Tesla",
       "group": "company",
-      "entityId": "openrouter",
-      "definition": "OpenRouter unified model routing platform: newly listed models, price adjustments, and usage analytics."
+      "entityId": "tesla",
+      "definition": "Tesla deliveries, earnings, Musk decisions and stock swings."
     },
     {
-      "slug": "agent",
-      "name": "AI Agents",
+      "slug": "jpmorgan",
+      "name": "JPMorgan Chase",
+      "group": "company",
+      "entityId": "jpmorgan",
+      "definition": "JPMorgan results, Jamie Dimon's views and the banking sector."
+    },
+    {
+      "slug": "berkshire",
+      "name": "Berkshire Hathaway",
+      "group": "company",
+      "entityId": "berkshire",
+      "definition": "Berkshire Hathaway results, holdings and Warren Buffett's letters."
+    },
+    {
+      "slug": "blackrock",
+      "name": "BlackRock",
+      "group": "company",
+      "entityId": "blackrock",
+      "definition": "BlackRock flows, ETFs and Larry Fink's views."
+    },
+    {
+      "slug": "stocks",
+      "name": "Stocks",
       "group": "field",
       "tags": [
-        "Agent"
+        "Stocks"
       ],
-      "definition": "Autonomous AI agents capable of decomposing tasks, calling tools, and executing workflows: Claude Code, Manus, frameworks, and benchmarks."
+      "definition": "Equity markets: indices, records, sell-offs, sector moves."
     },
     {
-      "slug": "coding",
-      "name": "AI Coding",
+      "slug": "rates",
+      "name": "Rates & Bonds",
       "group": "field",
       "tags": [
-        "Coding"
+        "Rates",
+        "Bonds"
       ],
-      "definition": "AI coding tools, IDE extensions, code completion, automated debugging, refactoring, and SWE-bench performance."
+      "definition": "Interest rates, Treasury yields, bond markets and borrowing costs."
     },
     {
-      "slug": "reasoning",
-      "name": "Reasoning Models",
+      "slug": "inflation",
+      "name": "Inflation",
       "group": "field",
       "tags": [
-        "Reasoning"
+        "Inflation"
       ],
-      "definition": "Thinking and reasoning models: test-time compute, chain-of-thought, mathematical proofs, and complex logic solving."
+      "definition": "CPI, PCE and price pressures, and what they mean for rates."
     },
     {
-      "slug": "multimodal",
-      "name": "Multimodal",
+      "slug": "jobs",
+      "name": "Jobs",
       "group": "field",
       "tags": [
-        "Multimodal"
+        "Jobs"
       ],
-      "definition": "Unified multimodal models understanding text, vision, audio, spatial inputs, and cross-modal reasoning."
+      "definition": "Payrolls, unemployment, wages and labour-market signals."
     },
     {
-      "slug": "image-gen",
-      "name": "Image Generation",
+      "slug": "housing",
+      "name": "Housing",
       "group": "field",
       "tags": [
-        "Image Gen"
+        "Housing"
       ],
-      "definition": "AI drawing and retouching: Vincent drawing model updates, image editing capabilities and creative tools."
+      "definition": "Mortgage rates, home prices, sales and housing policy."
     },
     {
-      "slug": "video",
-      "name": "Video Generation",
+      "slug": "banks",
+      "name": "Banks",
       "group": "field",
       "tags": [
-        "Video"
+        "Banks"
       ],
-      "definition": "Video generation models: text-to-video, image-to-video, cinematic physics simulation, and visual consistency."
+      "definition": "Bank earnings, failures, capital rules and lending."
     },
     {
-      "slug": "voice",
-      "name": "Speech & Audio",
+      "slug": "tech-stocks",
+      "name": "Tech Stocks & the AI Trade",
       "group": "field",
       "tags": [
-        "Audio"
+        "Tech Stocks",
+        "AI Trade"
       ],
-      "definition": "AI speech and audio: models and products for speech synthesis, real-time speech dialogue, music generation and audio understanding."
+      "definition": "Big tech valuations, AI spending and the stocks that move with them."
     },
     {
-      "slug": "embodied",
-      "name": "Embodied AI & Robotics",
+      "slug": "energy-commodities",
+      "name": "Energy & Commodities",
       "group": "field",
       "tags": [
-        "Embodied AI"
+        "Energy",
+        "Commodities"
       ],
-      "definition": "Embodied AI, humanoid robotics, Vision-Language-Action (VLA) models, spatial intelligence, and physical interaction."
+      "definition": "Oil, gas, gold, metals and agricultural prices."
     },
     {
-      "slug": "on-device",
-      "name": "On-Device AI",
+      "slug": "currencies",
+      "name": "Currencies",
       "group": "field",
       "tags": [
-        "On-Device"
+        "Currencies"
       ],
-      "definition": "AI that runs directly on mobile phones, computers and other devices: small models, tools to run models locally, and end-side chips."
+      "definition": "The dollar, euro, yen, yuan and currency moves."
     },
     {
-      "slug": "open-source",
-      "name": "Open Source Ecosystem",
+      "slug": "trade",
+      "name": "Trade & Tariffs",
       "group": "field",
       "tags": [
-        "Open Source",
-        "Open Source / Repo"
+        "Trade / Tariffs"
       ],
-      "definition": "Open-weight models, open-source communities, fine-tuning recipes, and local inference tooling."
+      "definition": "Tariffs, trade deals and their market effects."
     },
     {
-      "slug": "engineering",
-      "name": "Deployment & Engineering",
+      "slug": "bitcoin",
+      "name": "Bitcoin",
       "group": "field",
       "tags": [
-        "Deployment / Infra"
+        "Bitcoin"
       ],
-      "definition": "How to run models faster and save money: inference acceleration, memory and cost, service deployment and infrastructure selection."
+      "definition": "Bitcoin price, ETFs, mining and adoption."
     },
     {
-      "slug": "data-training",
-      "name": "Data & Training",
+      "slug": "ethereum",
+      "name": "Ethereum",
       "group": "field",
       "tags": [
-        "Data / Training"
+        "Ethereum"
       ],
-      "definition": "How to train large models: data set construction, synthetic data, pre-training and post-training methods, computing power and training costs."
+      "definition": "Ethereum price, upgrades and ecosystem."
     },
     {
-      "slug": "safety",
-      "name": "Safety & Alignment",
+      "slug": "stablecoins",
+      "name": "Stablecoins",
       "group": "field",
       "tags": [
-        "Safety / Alignment"
+        "Stablecoins"
       ],
-      "definition": "AI safety, alignment research, jailbreak defenses, red-teaming, mechanistic interpretability, and risk governance."
+      "definition": "Stablecoin issuers, reserves and regulation."
     },
     {
-      "slug": "mcp",
-      "name": "MCP & Tool Calling",
-      "group": "field",
-      "tags": [
-        "MCP / Tool Calling"
-      ],
-      "definition": "Let AI connect to external software and data: MCP protocol, function calling tool calls and various tool integrations."
-    },
-    {
-      "slug": "model-releases",
-      "name": "Model Releases",
+      "slug": "earnings",
+      "name": "Earnings",
       "group": "genre",
       "tags": [
-        "Model Release"
+        "Earnings"
       ],
-      "definition": "The release, open source and iteration of each company's new models: flagship updates, open source weight releases, changes in capabilities and prices."
+      "definition": "Quarterly results, guidance and the reactions that follow."
     },
     {
-      "slug": "product-updates",
-      "name": "Product Updates",
+      "slug": "deals",
+      "name": "Deals & IPOs",
       "group": "genre",
       "tags": [
-        "Product Update"
+        "Deal / M&A",
+        "IPO / Listing"
       ],
-      "definition": "New functions, revisions and commercialization of AI products and applications - whose products have become more powerful, more expensive and more usable."
+      "definition": "Mergers, acquisitions, buyouts and new listings."
     },
     {
-      "slug": "papers",
-      "name": "Research & Papers",
+      "slug": "central-banks",
+      "name": "Central Banks",
       "group": "genre",
       "tags": [
-        "Research / Paper"
+        "Central Bank"
       ],
-      "definition": "AI papers and research results worth reading: architectural innovation, training methods, ability measurement and theoretical progress."
+      "definition": "Rate decisions and policy signals from central banks worldwide."
     },
     {
-      "slug": "benchmarks",
-      "name": "Benchmarks & Evals",
+      "slug": "economic-data",
+      "name": "Economic Data",
       "group": "genre",
       "tags": [
-        "Benchmark / Evaluation"
+        "Economic Data"
       ],
-      "definition": "Who is the stronger model: Benchmark evaluation results, controversy over evaluation methods and changes in rankings."
+      "definition": "Releases that move markets: GDP, CPI, jobs, retail sales, PMIs."
     },
     {
-      "slug": "tutorials",
-      "name": "Tutorials & Practice",
+      "slug": "regulation",
+      "name": "Regulation & Enforcement",
       "group": "genre",
       "tags": [
-        "Tutorial / Practice"
+        "Regulation / Enforcement",
+        "Lawsuit / Fraud"
       ],
-      "definition": "Ready-to-use practical content: prompt word skills, workflow construction, tool usage and pitfall experience."
+      "definition": "Rules, enforcement actions, fines, fraud and lawsuits."
     },
     {
-      "slug": "opinions",
-      "name": "Opinion & Analysis",
+      "slug": "personal-finance",
+      "name": "Your Money",
+      "group": "genre",
+      "tags": [
+        "Personal Finance"
+      ],
+      "definition": "Rates, savings, mortgages, retirement and taxes for ordinary people."
+    },
+    {
+      "slug": "analysis",
+      "name": "Analysis & Forecasts",
       "group": "genre",
       "tags": [
         "Opinion / Analysis"
       ],
-      "definition": "What key industry figures are thinking: founder interviews, researcher debates and investor judgments."
-    },
-    {
-      "slug": "trends",
-      "name": "Trends",
-      "group": "genre",
-      "tags": [
-        "Trends"
-      ],
-      "definition": "What is AI changing: how people use AI, the emergence of new capabilities, and its impact on society and the market structure."
-    },
-    {
-      "slug": "industry",
-      "name": "Industry News",
-      "group": "genre",
-      "tags": [
-        "Industry News"
-      ],
-      "definition": "Fundraising, acquisitions, partnerships, executive moves, legal developments, and ecosystem milestones."
-    },
-    {
-      "slug": "policy",
-      "name": "Policy & Regulation",
-      "group": "genre",
-      "tags": [
-        "Policy / Regulation"
-      ],
-      "definition": "AI governance, compliance frameworks, export controls, copyright litigation, and regulatory standards."
+      "definition": "Strategist and investor views, forecasts and commentary."
     }
   ]
 }

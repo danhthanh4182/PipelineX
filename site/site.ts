@@ -1,4 +1,4 @@
-// Site identity, branding, and reader-facing copy.
+// Site identity, branding, and reader-facing copy (PipelineX finance pack: copied over site/site.ts in a finance channel).
 // Read by both web and backend; changes take effect upon rebuild (e.g. docker compose up --build).
 // The public domain is set via the environment variable SITE_URL.
 
@@ -18,13 +18,13 @@ export const EDITION_WHEN = {
 
 export const SITE = {
   /** Site name: used in navigation, page titles, OG cards, RSS, MCP, and admin. */
-  name: "PipelineX",
+  name: "PipelineX Markets",
   /** Industry keyword: interpolated into phrases like "AI Briefing", "AI Updates". */
-  subject: "AI",
+  subject: "Markets",
   /** Homepage full title (browser tab, search engines). */
-  homeTitle: "PipelineX — AI Industry News · Daily Briefings & Curated Feed",
+  homeTitle: "PipelineX Markets — Finance & Economy News · Daily Briefings & Curated Feed",
   /** Topics directory page (/topics) title. */
-  topicsTitle: "AI Topics: Companies, Models, Technical Directions & Formats",
+  topicsTitle: "Finance Topics: Institutions, Companies, Markets & Story Types",
   /** Feedback form input placeholder. */
   feedbackExample: "e.g. When searching for a keyword, I encountered... I was expecting...",
   /** Subheading under the feedback page title. */
@@ -32,13 +32,13 @@ export const SITE = {
   /** Feedback email input hint. */
   feedbackEmailHint: "Leave your email so we can follow up with you",
   /** One-line site summary used for SEO, share cards, RSS, and llms.txt. */
-  description: `Curating noteworthy AI updates from public sources, clustering coverage into events, and publishing a daily briefing ${EDITION_WHEN.daily}.`,
+  description: `Curating noteworthy market, company and economy news from public sources, clustering coverage into events, and publishing a daily briefing ${EDITION_WHEN.daily}.`,
   /** Detailed description in llms.txt (optional). */
   llmsIntro: null as string | null,
   /** Tagline for social share cards and posters. */
-  tagline: "Noteworthy AI Industry Updates",
+  tagline: "The Money News That Matters",
   /** SEO keywords for homepage structured data. */
-  keywords: ["AI News", "AI Briefings", "AI Industry Updates", "LLM News"] as string[],
+  keywords: ["Finance News", "Stock Market News", "Economy News", "Fed News"] as string[],
   /** Search engine site verification codes (optional). */
   siteVerification: {} as Record<string, string>,
   /** Starting publication year for structured data. */
@@ -50,13 +50,13 @@ export const SITE = {
   /** Root directory icons list. */
   rootIcons: [] as string[],
   /** MCP tool name prefix (e.g. pipelinex_get_latest). */
-  mcpPrefix: "pipelinex",
+  mcpPrefix: "pipelinex_markets",
   /** Public interface version. */
   interfaceVersion: "4.0.0",
   /** Contact email address. */
   contactEmail: null as string | null,
   /** Footer note. */
-  footerNote: "Powered by open-source PipelineX engine",
+  footerNote: "Powered by the PipelineX engine. Not investment advice.",
   /** ICP license number (China-specific). */
   icp: null as string | null,
   /** Public security bureau record (China-specific). */
@@ -67,11 +67,11 @@ export const SITE = {
   poweredBy: { name: "AIHOT", url: "https://aihot.news" } as { name: string; url: string } | null,
   /** Organization operator for structured metadata. */
   organization: {
-    name: "PipelineX",
+    name: "PipelineX Markets",
     founder: null as Founder | null,
   },
   /** User-Agent identification header used during scraping. */
-  crawlerName: "PipelineXBot/1.0",
+  crawlerName: "PipelineXMarketsBot/1.0",
 } as const;
 
 /** Policy and terms pages. */
@@ -112,11 +112,11 @@ interface ContactCard {
 export const ABOUT = {
   kicker: `About ${SITE.name}`,
   description: `About ${SITE.name}: ${SITE.description}`,
-  headline: ["The AI field moves fast every day.", "Only a few stories truly matter."] as [string, string],
+  headline: ["Markets move every day.", "Only a few stories truly matter."] as [string, string],
   lead: `${SITE.name} monitors {sources} sources for you: ingesting, clustering, scoring, and curating, publishing a daily briefing ${EDITION_WHEN.daily}. Free, no login required.`,
   sourcesFallback: "dozens of",
   steps: {
-    collect: "Monitoring official blogs, media outlets, and key practitioners; active sources polled as often as every 15 minutes.",
+    collect: "Monitoring central banks, regulators, financial media and analysts; active sources polled as often as every 15 minutes.",
     store: "All ingested articles are deduplicated and clustered into events to compute trend momentum.",
     select: `Models evaluate industry relevance and concrete facts, drafting English headlines, summaries, and ${ITEM_COPY.reasonLabel}.`,
     publish: `Publishing daily briefings ${EDITION_WHEN.daily}, weekly reviews ${EDITION_WHEN.weekly}, and monthly recaps ${EDITION_WHEN.monthly}.`,
@@ -139,7 +139,7 @@ export const ADMIN = {
 };
 
 export const AGENT = {
-  search: { scope: "Search across companies, products, people, or topics in the past 7 days", ask: "What did this company release recently?" },
+  search: { scope: "Search across companies, institutions, markets, or topics in the past 7 days", ask: "What did the Fed decide this week?" },
 };
 
 export const REPORTS = {

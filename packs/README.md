@@ -1,7 +1,8 @@
 # Channel type packs
 
 A PipelineX channel is one checkout of this repository (`npm run channel -- create <name> --type <type>`). Its type is
-chosen once, at creation; its `industry/` folder is then this pack (type `ai` uses the main checkout's own `industry/`).
+chosen once, at creation; its `industry/` folder is then this pack. The main checkout itself runs the `finance` pack
+(since 2026-11-18); `packs/ai/` keeps the original AIHOT AI pack.
 
 A pack has the same files as `industry/` (see `docs/customize.en.md`):
 
@@ -23,7 +24,7 @@ Selection thresholds are calibrated on labelled examples, not guessed.
 
 | Type | Status | Notes |
 |---|---|---|
-| `ai` | running | the main checkout's `industry/` |
-| `finance` | ready (2026-11-18) | 25 sources checked by hand (4 official, 8 market media, 4 paywalled as summary-only, 4 crypto, 3 analysis, 2 heat signals); 7 categories; 8 item types; styles markets/earnings/macro/crypto; thresholds copied from AI, to calibrate |
+| `ai` | ready | the original AIHOT AI pack (39 sources); the main checkout ran it until 2026-11-18 (backup: `PipelineX/backups/ai-channel-20261118/`) |
+| `finance` | running (main checkout :3000, channel `markets` :3010) | 32 sources after the 2026-11-18 review (see FORK_CHANGES.md): 10 official, free full-text news (CNBC, Axios, BBC, Guardian, NPR, MarketWatch, Kiplinger, NerdWallet, Wolf Street), crypto CoinDesk/Decrypt, paywalled and title-only outlets as heat signals only; 7 categories; 8 item types; styles markets/earnings/macro/crypto; thresholds copied from AI, to calibrate |
 | `world` | planned | |
 | `crime` | planned | |

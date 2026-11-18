@@ -1,0 +1,340 @@
+{
+  "groups": [
+    {
+      "key": "company",
+      "name": "Companies & Models",
+      "blurb": "Track models, products, and updates by provider"
+    },
+    {
+      "key": "field",
+      "name": "Technical Directions",
+      "blurb": "Explore by domain: Agents, Multimodal, Embodied AI..."
+    },
+    {
+      "key": "genre",
+      "name": "Content Formats",
+      "blurb": "Browse by format: Research, Tutorials, Opinions, Policy..."
+    }
+  ],
+  "topics": [
+    {
+      "slug": "openai",
+      "name": "OpenAI / ChatGPT",
+      "group": "company",
+      "entityId": "openai",
+      "definition": "OpenAI GPT series models, ChatGPT and Sora product updates, company strategy and team milestones."
+    },
+    {
+      "slug": "anthropic",
+      "name": "Anthropic / Claude",
+      "group": "company",
+      "entityId": "anthropic",
+      "definition": "Anthropic Claude model family, Claude Code updates, safety research, and company developments."
+    },
+    {
+      "slug": "google",
+      "name": "Google / Gemini",
+      "group": "company",
+      "entityId": "google",
+      "aliases": [
+        "DeepMind"
+      ],
+      "definition": "Google and DeepMind Gemini models, Veo video generation, frontier research, and ecosystem AI updates."
+    },
+    {
+      "slug": "deepseek",
+      "name": "DeepSeek",
+      "group": "company",
+      "entityId": "deepseek",
+      "definition": "DeepSeek model releases, open-weights, technical reports, and API pricing changes."
+    },
+    {
+      "slug": "qwen",
+      "name": "Qwen",
+      "group": "company",
+      "entityId": "qwen",
+      "definition": "Alibaba Qwen series model releases and open-source updates, from flagship models to mobile-optimized small models."
+    },
+    {
+      "slug": "kimi",
+      "name": "Moonshot AI / Kimi",
+      "group": "company",
+      "entityId": "kimi",
+      "aliases": [
+        "Kimi / Moonshot AI"
+      ],
+      "definition": "Moonshot AI Kimi product updates, K-series open models, and long-context technical progress."
+    },
+    {
+      "slug": "minimax",
+      "name": "MiniMax",
+      "group": "company",
+      "entityId": "minimax",
+      "definition": "MiniMax M-series frontier models, voice and multimodal capabilities, open-source, and commercialization."
+    },
+    {
+      "slug": "zhipu",
+      "name": "Zhipu GLM",
+      "group": "company",
+      "entityId": "zhipu",
+      "definition": "Zhipu GLM series model releases, open-source updates, coding, reasoning, and enterprise solutions."
+    },
+    {
+      "slug": "xai",
+      "name": "xAI / Grok",
+      "group": "company",
+      "entityId": "xai",
+      "definition": "Elon Musk xAI Grok model updates, compute cluster infrastructure, and X platform integrations."
+    },
+    {
+      "slug": "meta",
+      "name": "Meta / Llama",
+      "group": "company",
+      "entityId": "meta",
+      "definition": "Meta Llama and Muse series open models, Superintelligence Labs, and Meta AI products."
+    },
+    {
+      "slug": "microsoft",
+      "name": "Microsoft / Copilot",
+      "group": "company",
+      "entityId": "microsoft",
+      "definition": "Microsoft Copilot product suite, Azure AI cloud infrastructure, and OpenAI partnership updates."
+    },
+    {
+      "slug": "nvidia",
+      "name": "NVIDIA",
+      "group": "company",
+      "entityId": "nvidia",
+      "definition": "NVIDIA GPU hardware, CUDA software ecosystem, robotics platforms, and AI compute supply dynamics."
+    },
+    {
+      "slug": "hugging-face",
+      "name": "Hugging Face",
+      "group": "company",
+      "entityId": "hugging-face",
+      "definition": "Hugging Face community trending open models, datasets, developer tools, and leaderboard updates."
+    },
+    {
+      "slug": "cursor",
+      "name": "Cursor",
+      "group": "company",
+      "entityId": "cursor",
+      "definition": "Cursor (Anysphere) editor and coding agent updates, custom models, and developer pricing."
+    },
+    {
+      "slug": "openrouter",
+      "name": "OpenRouter",
+      "group": "company",
+      "entityId": "openrouter",
+      "definition": "OpenRouter unified model routing platform: newly listed models, price adjustments, and usage analytics."
+    },
+    {
+      "slug": "agent",
+      "name": "AI Agents",
+      "group": "field",
+      "tags": [
+        "Agent"
+      ],
+      "definition": "Autonomous AI agents capable of decomposing tasks, calling tools, and executing workflows: Claude Code, Manus, frameworks, and benchmarks."
+    },
+    {
+      "slug": "coding",
+      "name": "AI Coding",
+      "group": "field",
+      "tags": [
+        "Coding"
+      ],
+      "definition": "AI coding tools, IDE extensions, code completion, automated debugging, refactoring, and SWE-bench performance."
+    },
+    {
+      "slug": "reasoning",
+      "name": "Reasoning Models",
+      "group": "field",
+      "tags": [
+        "Reasoning"
+      ],
+      "definition": "Thinking and reasoning models: test-time compute, chain-of-thought, mathematical proofs, and complex logic solving."
+    },
+    {
+      "slug": "multimodal",
+      "name": "Multimodal",
+      "group": "field",
+      "tags": [
+        "Multimodal"
+      ],
+      "definition": "Unified multimodal models understanding text, vision, audio, spatial inputs, and cross-modal reasoning."
+    },
+    {
+      "slug": "image-gen",
+      "name": "Image Generation",
+      "group": "field",
+      "tags": [
+        "Image Gen"
+      ],
+      "definition": "AI drawing and retouching: Vincent drawing model updates, image editing capabilities and creative tools."
+    },
+    {
+      "slug": "video",
+      "name": "Video Generation",
+      "group": "field",
+      "tags": [
+        "Video"
+      ],
+      "definition": "Video generation models: text-to-video, image-to-video, cinematic physics simulation, and visual consistency."
+    },
+    {
+      "slug": "voice",
+      "name": "Speech & Audio",
+      "group": "field",
+      "tags": [
+        "Audio"
+      ],
+      "definition": "AI speech and audio: models and products for speech synthesis, real-time speech dialogue, music generation and audio understanding."
+    },
+    {
+      "slug": "embodied",
+      "name": "Embodied AI & Robotics",
+      "group": "field",
+      "tags": [
+        "Embodied AI"
+      ],
+      "definition": "Embodied AI, humanoid robotics, Vision-Language-Action (VLA) models, spatial intelligence, and physical interaction."
+    },
+    {
+      "slug": "on-device",
+      "name": "On-Device AI",
+      "group": "field",
+      "tags": [
+        "On-Device"
+      ],
+      "definition": "AI that runs directly on mobile phones, computers and other devices: small models, tools to run models locally, and end-side chips."
+    },
+    {
+      "slug": "open-source",
+      "name": "Open Source Ecosystem",
+      "group": "field",
+      "tags": [
+        "Open Source",
+        "Open Source / Repo"
+      ],
+      "definition": "Open-weight models, open-source communities, fine-tuning recipes, and local inference tooling."
+    },
+    {
+      "slug": "engineering",
+      "name": "Deployment & Engineering",
+      "group": "field",
+      "tags": [
+        "Deployment / Infra"
+      ],
+      "definition": "How to run models faster and save money: inference acceleration, memory and cost, service deployment and infrastructure selection."
+    },
+    {
+      "slug": "data-training",
+      "name": "Data & Training",
+      "group": "field",
+      "tags": [
+        "Data / Training"
+      ],
+      "definition": "How to train large models: data set construction, synthetic data, pre-training and post-training methods, computing power and training costs."
+    },
+    {
+      "slug": "safety",
+      "name": "Safety & Alignment",
+      "group": "field",
+      "tags": [
+        "Safety / Alignment"
+      ],
+      "definition": "AI safety, alignment research, jailbreak defenses, red-teaming, mechanistic interpretability, and risk governance."
+    },
+    {
+      "slug": "mcp",
+      "name": "MCP & Tool Calling",
+      "group": "field",
+      "tags": [
+        "MCP / Tool Calling"
+      ],
+      "definition": "Let AI connect to external software and data: MCP protocol, function calling tool calls and various tool integrations."
+    },
+    {
+      "slug": "model-releases",
+      "name": "Model Releases",
+      "group": "genre",
+      "tags": [
+        "Model Release"
+      ],
+      "definition": "The release, open source and iteration of each company's new models: flagship updates, open source weight releases, changes in capabilities and prices."
+    },
+    {
+      "slug": "product-updates",
+      "name": "Product Updates",
+      "group": "genre",
+      "tags": [
+        "Product Update"
+      ],
+      "definition": "New functions, revisions and commercialization of AI products and applications - whose products have become more powerful, more expensive and more usable."
+    },
+    {
+      "slug": "papers",
+      "name": "Research & Papers",
+      "group": "genre",
+      "tags": [
+        "Research / Paper"
+      ],
+      "definition": "AI papers and research results worth reading: architectural innovation, training methods, ability measurement and theoretical progress."
+    },
+    {
+      "slug": "benchmarks",
+      "name": "Benchmarks & Evals",
+      "group": "genre",
+      "tags": [
+        "Benchmark / Evaluation"
+      ],
+      "definition": "Who is the stronger model: Benchmark evaluation results, controversy over evaluation methods and changes in rankings."
+    },
+    {
+      "slug": "tutorials",
+      "name": "Tutorials & Practice",
+      "group": "genre",
+      "tags": [
+        "Tutorial / Practice"
+      ],
+      "definition": "Ready-to-use practical content: prompt word skills, workflow construction, tool usage and pitfall experience."
+    },
+    {
+      "slug": "opinions",
+      "name": "Opinion & Analysis",
+      "group": "genre",
+      "tags": [
+        "Opinion / Analysis"
+      ],
+      "definition": "What key industry figures are thinking: founder interviews, researcher debates and investor judgments."
+    },
+    {
+      "slug": "trends",
+      "name": "Trends",
+      "group": "genre",
+      "tags": [
+        "Trends"
+      ],
+      "definition": "What is AI changing: how people use AI, the emergence of new capabilities, and its impact on society and the market structure."
+    },
+    {
+      "slug": "industry",
+      "name": "Industry News",
+      "group": "genre",
+      "tags": [
+        "Industry News"
+      ],
+      "definition": "Fundraising, acquisitions, partnerships, executive moves, legal developments, and ecosystem milestones."
+    },
+    {
+      "slug": "policy",
+      "name": "Policy & Regulation",
+      "group": "genre",
+      "tags": [
+        "Policy / Regulation"
+      ],
+      "definition": "AI governance, compliance frameworks, export controls, copyright litigation, and regulatory standards."
+    }
+  ]
+}

@@ -37,7 +37,13 @@
     "investor.apple.com",
     "nvidianews.nvidia.com",
     "microsoft.com",
-    "ir.tesla.com"
+    "ir.tesla.com",
+    "newyorkfed.org",
+    "bbc.co.uk",
+    "theguardian.com",
+    "npr.org",
+    "nerdwallet.com",
+    "cnbc.com"
   ],
   "paywalled": [
     "bloomberg.com",

@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { closeDb, sql } from "@aihot/backend/db";
 import { loadPool, publicMatchCondition, searchTerms } from "@aihot/backend/publication/pool";
+import { CATEGORIES } from "@aihot/industry/taxonomy";
 
 const T = `relevance-${tag()}`;
 const now = new Date("2026-01-01T12:00:00Z");
@@ -17,7 +18,7 @@ before(async () => {
 });
 
 async function add(suffix: string, direct: string, body: string, options: {
-  title?: string; age?: number; channel?: "news" | "x"; category?: "ai-models" | "paper"; tags?: string[];
+  title?: string; age?: number; channel?: "news" | "x"; category?: string; tags?: string[];
   visibility?: string; eligible?: boolean; future?: boolean; noSearchRow?: boolean;
 } = {}) {
   const at = new Date(+now - (options.age ?? 60) * 1000);
@@ -25,7 +26,7 @@ async function add(suffix: string, direct: string, body: string, options: {
     VALUES (${id(suffix)}, ${T}, ${id(suffix)}, ${`https://example.org/${id(suffix)}`}, ${options.title ?? "neutral"}, ${at}, ${at})`;
   await sql`INSERT INTO publications (article_id, title, source_id, channel, category, tags, url, discovered_at, timeline_at, sort_at,
     selected, eligible, visibility, visible_after, search_text)
-    VALUES (${id(suffix)}, ${options.title ?? "neutral"}, ${T}, ${options.channel ?? "news"}, ${options.category ?? "ai-models"}, ${options.tags ?? []},
+    VALUES (${id(suffix)}, ${options.title ?? "neutral"}, ${T}, ${options.channel ?? "news"}, ${options.category ?? CATEGORIES[0].key}, ${options.tags ?? []},
       ${`https://example.org/${id(suffix)}`}, ${at}, ${at}, ${at}, ${options.future ?? false}, ${options.eligible ?? true},
       ${options.visibility ?? "public"}, ${options.future ? new Date(+now + 60_000) : at}, ${direct})`;
   if (!options.noSearchRow) await sql`INSERT INTO pool_search (article_id, direct, body) VALUES (${id(suffix)}, ${direct}, ${body})`;
@@ -63,11 +64,11 @@ test("company relevance retains tag-only candidates, boosts and unique totals", 
 });
 
 test("relevance retains combined filters and literal LIKE characters", async () => {
-  await add("filtered", "uv", "uv", { channel: "x", category: "paper", tags: [T] });
-  await add("wrong-channel", "uv", "uv", { category: "paper", tags: [T] });
+  await add("filtered", "uv", "uv", { channel: "x", category: CATEGORIES[1].key, tags: [T] });
+  await add("wrong-channel", "uv", "uv", { category: CATEGORIES[1].key, tags: [T] });
   await add("wrong-category", "uv", "uv", { channel: "x", tags: [T] });
-  await add("wrong-tag", "uv", "uv", { channel: "x", category: "paper" });
-  const filtered = await loadPool({ ...query("uv"), channel: "x", category: "paper", tag: T });
+  await add("wrong-tag", "uv", "uv", { channel: "x", category: CATEGORIES[1].key });
+  const filtered = await loadPool({ ...query("uv"), channel: "x", category: CATEGORIES[1].key, tag: T });
   assert.deepEqual(filtered.items.map(item => item.id), [id("filtered")]);
   await add("literal", "qx%_\\z", "");
   await add("wildcard-lookalike", "qx-anything-z", "");

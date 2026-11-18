@@ -31,7 +31,7 @@ modules/video (shared code)                          renderer/ (one copy, shared
 - Channel profile: `industry/channel.json` (type, subject, audience, brand, tags, trusted official sites, paywalled
   outlets, allowed video styles, category → style map). Prompts, title cards, thumbnails and publish kits read it.
 - Channel tooling: `npm run channel -- create <name> --type <type> [--title T] | list | start | stop | update | remove <name> --yes | types`.
-- Packs: `packs/<type>/` (see `packs/README.md`); type `ai` is the main checkout's `industry/`.
+- Packs: `packs/<type>/` (see `packs/README.md`): `ai`, `finance`. The main checkout runs `finance` (its `industry/` = `packs/finance/`).
 
 ## Decisions (keep them unless the owner changes them)
 
@@ -52,16 +52,16 @@ modules/video (shared code)                          renderer/ (one copy, shared
 
 ## Status (2026-11-18)
 
-Done: AI channel running (39 sources, free model chain, auto video daily 09:30 Shanghai); video module with
-background research, dossier, fact-check, styles, thumbnail, Short, publish kit; Remotion rendering optimized with Apple Silicon hardware acceleration, bundle caching, and concurrency=8; rich motion design (ambient lighting, comparison beats, code terminal beats, frosted glass captions, high-contrast thumbnails); editor MCP with 25 tools (list/get/edit/remake/review videos, rescue_video_script, stories and make_video, system_status, retry_failed_articles, list_stalled_articles, get_article_to_analyze, submit_article_analysis, look_at_video, web_search/fetch_page, publish kit, style guide, list_styles/set_video_style); multi-channel tooling (tested with a
+Done: the main checkout (:3000) switched from AI to the **finance** pack on 2026-11-18 at the owner's request (AI data backed up in `PipelineX/backups/ai-channel-20261118/`, AI pack kept in `packs/ai/`); free model chain, auto video daily 09:30 Shanghai; video module with
+background research, dossier, fact-check, styles, thumbnail, Short, publish kit; Remotion rendering optimized with Apple Silicon hardware acceleration, bundle caching, and default concurrency 4 (6 in the main .env); rich motion design (ambient lighting, comparison beats, code terminal beats, frosted glass captions, high-contrast thumbnails); editor MCP with 25 tools (list/get/edit/remake/review videos, rescue_video_script, stories and make_video, system_status, retry_failed_articles, list_stalled_articles, look_at_video, web_search/fetch_page, publish kit, style guide, list_styles/set_video_style); multi-channel tooling (tested with a
 throwaway channel, then removed).
 
 Open items:
-- World and Crime packs (Finance is running, see below); a real name for the finance channel.
+- World and Crime packs (Finance is running, see below); a real name for the finance channel (owner's shortlist: Market Decoded, Basis Point, Plain Money, The Ticker Desk, Signal Over Noise).
+- Two finance sites run now: main checkout :3000 and channel `markets` :3010 (same pack). Owner to decide whether to keep both.
 - Unified studio: one admin page and one MCP across all channels (today each channel has its own).
 - Azure Speech key (voice code ready; edge-tts is unlicensed for commercial use and throttles — it failed a whole video's voice step twice on 2026-11-18).
 - OrcaRouter key is rejected as invalid (chain skips it).
-- ~20 failed articles from the old OpenRouter key limit (`retry_failed_articles`); `events.group` job failures to look at.
 - Music: add tracks to `renderer/music/<mood>/` (neutral, upbeat, calm, serious, somber, curious).
 - Longer videos (10–15 min): decide single deep story vs multi-story bulletin.
 - YouTube publishing automation (later; human click).
@@ -71,16 +71,19 @@ Open items:
 - Channel `markets` (type `finance`, "PipelineX Markets", placeholder name until the owner picks one): checkout
   `PipelineX/channels/markets/`, web :3010, api :3011, database `pipelinex_markets`. Start/stop with
   `npm run channel -- start|stop markets`.
-- Pack `packs/finance/`: 25 hand-checked sources (Fed press + speeches, SEC, ECB; CNBC markets/finance/earnings,
-  MarketWatch, Seeking Alpha, Axios, Reuters via Google News, Kiplinger; Bloomberg/FT/WSJ/Economist summary-only;
-  CoinDesk, Decrypt, The Block, Cointelegraph; Wolf Street, Abnormal Returns, The Big Picture; Google News "Federal
-  Reserve" and "stock market" as heat signals). 7 categories, 8 item types, finance prompts (no investment advice).
+- Pack `packs/finance/`: 32 sources after the 2026-11-18 review on real yields (750 articles, 67 selected).
+  Official (T1): Fed press + speeches, SEC, ECB, BEA, BLS and US Treasury (via Google News), Bank of England, CFTC,
+  NY Fed Liberty Street. News with free text: CNBC markets/finance/earnings/economy, MarketWatch, Axios, Kiplinger,
+  BBC Business, Guardian Business, NPR Business, NerdWallet, Wolf Street; crypto CoinDesk, Decrypt. Heat signals only
+  (not analysed; count outlets for hot stories): Bloomberg, FT, WSJ, Economist, Reuters and AP via Google News, Google
+  News "Federal Reserve"/"stock market". Dropped: Seeking Alpha, Abnormal Returns, The Big Picture, The Block,
+  Cointelegraph (noise or ~0 selected). 7 categories, 8 item types, finance prompts (no investment advice).
+  Channel `markets` still has the first 25 (its pack is its own; apply the review there by hand if kept).
 - Finance video styles: markets, earnings, macro, crypto (chosen by category; investigation only on legal words).
 - First video (#1, Nvidia earnings, style earnings): 4 min + Short + thumbnail, fact-check 27/30 supported, 0 wrong, $0.
 - Selection taste fixed once on real scores: a large move with a stated cause is an event; evergreen advice
   (Kiplinger-style tips) is not news. Thresholds are still the AI channel's: calibrate on labelled finance items.
-- In a channel checkout, `npm run typecheck` fails only in engine tests that use AI categories as fixtures
-  (expected per AGENTS.md); production code typechecks.
+- Engine tests that typed AI categories now read `CATEGORIES` from the pack, so `npm run typecheck` passes on any pack.
 
 Next packs: `world`, then `crime` (same steps: sources checked and approved by the owner, taxonomy, prompts,
 channel.json, site.ts, styles).

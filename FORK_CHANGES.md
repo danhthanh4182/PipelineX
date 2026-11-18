@@ -94,3 +94,11 @@ Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cậ
 - `renderer/src/NewsVideo.tsx`: beat mới `compare`/`comparison` (bảng 2 cột), `code`/`terminal`, `card` có `items`; nền lưới có ánh sáng chuyển động và vignette, số liệu `stat` nổi hơn, phụ đề kính mờ, thanh tiến trình gradient. `Thumbnail.tsx`, `ShortVideo.tsx`: tương phản, viền và ánh sáng nền mạnh hơn. `short.ts`: cho phép visual so sánh/code, luật trích nguồn ở beat cuối chặt hơn.
 - `editing.ts`: ghi file của video tạo thư mục nếu chưa có.
 - Tài liệu kế hoạch (EVAL-AIHOT, PLAN, RESEARCH-PROCESS, RESEARCH, SPEC) nằm trong `docs/pipelinex/`; các file cùng tên ở thư mục `PipelineX/` là symlink tới đây.
+
+## Checkout chính chuyển sang tài chính (18/11)
+
+- Theo yêu cầu chủ dự án: checkout chính (:3000) chạy gói `finance`, xoá dữ liệu AI. Backup trước khi xoá: `PipelineX/backups/ai-channel-20261118/` (`pipelinex_eval.dump` — `pg_restore -d <db>`; `data/`: video, gold set và kết quả đánh giá của kênh AI). Database `pipelinex_eval` tạo lại, migrate, seed nguồn tài chính.
+- Gói AI gốc chuyển sang `packs/ai/` (gồm `site/site.ts`); `scripts/channel.ts` lấy mọi loại kênh từ `packs/<type>/`.
+- Test engine từng ghi cứng mục AI làm kiểu (`web-server.ts`, `page-metadata.standalone`, `pool-relevance`, `search-sharing`) giờ lấy `CATEGORIES` của gói, nên typecheck qua với gói nào cũng được.
+- Rà nguồn tài chính theo số liệu thật của kênh `markets` (750 bài, 67 được chọn): bỏ Seeking Alpha, Abnormal Returns, The Big Picture, The Block, Cointelegraph (tắt trong database, giữ bài cũ); Bloomberg, FT, WSJ, Economist, Reuters (Google News) chỉ còn là tín hiệu độ nóng (`hot_signal`: báo trả phí/chỉ có tiêu đề, gần như không bài nào được chọn); thêm BEA, BLS và US Treasury (qua Google News), Bank of England, CFTC, NY Fed Liberty Street (T1), CNBC Economy, BBC Business, Guardian Business, NPR Business, NerdWallet (T2), AP qua Google News (`hot_signal`). Feed đã thử trước khi thêm; IMF, Yahoo Finance, Fortune, FDIC, Marketplace, Calculated Risk không dùng được. Thay đổi trong database qua `updateSource` (Audit Log).
+- `channel.json`: thêm newyorkfed.org, bbc.co.uk, theguardian.com, npr.org, nerdwallet.com, cnbc.com vào trang uy tín cho nghiên cứu.

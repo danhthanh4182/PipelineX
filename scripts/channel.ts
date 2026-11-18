@@ -1,6 +1,6 @@
 // PipelineX channels: one checkout per channel, all from this repository. A channel's kind (its "type") is chosen once,
-// when it is created: its industry/ folder (sources, categories, prompts, channel.json) comes from packs/<type>/ (or
-// this checkout's own industry/ for type "ai"), and it gets its own branch, database, ports and editor token. Keys are
+// when it is created: its industry/ folder (sources, categories, prompts, channel.json) comes from packs/<type>/
+// (packs/ai is the AIHOT AI pack; this checkout itself runs the finance pack), and it gets its own branch, database, ports and editor token. Keys are
 // shared: the channel's .env.shared links to this checkout's .env, and its own .env (loaded after) overrides the rest.
 //
 //   npm run channel -- create <name> --type <type> [--title "Channel Name"]
@@ -31,14 +31,13 @@ const run = (cmd: string, args: string[], cwd = ROOT, extraEnv: Record<string, s
 const out = (cmd: string, args: string[], cwd = ROOT) => execFileSync(cmd, args, { cwd, encoding: "utf8" }).trim();
 const arg = (flag: string) => { const i = process.argv.indexOf(flag); return i > 0 ? process.argv[i + 1] : undefined; };
 
-/** Where a type's pack lives: packs/<type>/, or this checkout's own industry/ for the AI channel it started as. */
+/** Where a type's pack lives: packs/<type>/. */
 function packDir(type: string): string {
-  if (type === "ai") return path.join(ROOT, "industry");
   const dir = path.join(ROOT, "packs", type);
   if (!existsSync(path.join(dir, "channel.json"))) die(`No pack for type "${type}" (packs/${type}/channel.json). Available: ${packTypes().join(", ")}`);
   return dir;
 }
-const packTypes = () => ["ai", ...(existsSync(path.join(ROOT, "packs")) ? readdirSync(path.join(ROOT, "packs")).filter((d) => existsSync(path.join(ROOT, "packs", d, "channel.json"))) : [])];
+const packTypes = () => (existsSync(path.join(ROOT, "packs")) ? readdirSync(path.join(ROOT, "packs")).filter((d) => existsSync(path.join(ROOT, "packs", d, "channel.json"))) : []);
 
 const portFree = (port: number) => new Promise<boolean>((resolve) => {
   const socket = createConnection({ port, host: "127.0.0.1" });
@@ -61,12 +60,10 @@ async function create(name: string, type: string, title?: string) {
 
   console.log(`Creating channel "${name}" (type ${type}) in ${dir} on ports ${webPort}/${webPort + 1}…`);
   run("git", ["worktree", "add", "-b", branch, dir, "HEAD"]);
-  if (type !== "ai") {
-    // The channel's industry/ is the pack (package.json and tsconfig stay the engine's).
-    for (const entry of readdirSync(path.join(dir, "industry"))) if (!["package.json", "tsconfig.json"].includes(entry)) rmSync(path.join(dir, "industry", entry), { recursive: true });
-    for (const entry of readdirSync(pack)) if (entry !== "site") cpSync(path.join(pack, entry), path.join(dir, "industry", entry), { recursive: true });
-    if (existsSync(path.join(pack, "site"))) cpSync(path.join(pack, "site"), path.join(dir, "site"), { recursive: true });
-  }
+  // The channel's industry/ is the pack (package.json and tsconfig stay the engine's).
+  for (const entry of readdirSync(path.join(dir, "industry"))) if (!["package.json", "tsconfig.json"].includes(entry)) rmSync(path.join(dir, "industry", entry), { recursive: true });
+  for (const entry of readdirSync(pack)) if (entry !== "site") cpSync(path.join(pack, entry), path.join(dir, "industry", entry), { recursive: true });
+  if (existsSync(path.join(pack, "site"))) cpSync(path.join(pack, "site"), path.join(dir, "site"), { recursive: true });
   const channelFile = path.join(dir, "industry", "channel.json");
   const profile = JSON.parse(readFileSync(channelFile, "utf8"));
   if (title) { profile.brand.name = title; writeFileSync(channelFile, JSON.stringify(profile, null, 2) + "\n"); }

@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import type { Page } from "@playwright/test";
 import type { DataRouter } from "react-router";
 import type { FeedItemSummary, SiteItemDetail } from "@aihot/contracts/site";
+import { CATEGORIES } from "@aihot/industry/taxonomy";
 
 /** When the synthetic reports were published. */
 export const FIXTURE_AT = "2026-10-04T08:00:00.000Z";
@@ -17,7 +18,7 @@ export const FIXTURE_AT = "2026-10-04T08:00:00.000Z";
 export function feedItem(fields: Partial<FeedItemSummary> & Pick<FeedItemSummary, "id" | "title">): FeedItemSummary {
   return {
     summary: "Fixed summary", reason: "Fixed reason", source: { name: "Fixture" }, publishedAt: FIXTURE_AT, timelineAt: FIXTURE_AT,
-    category: "ai-models", tags: [], score: 80, selected: true, channel: "news", x: null, ...fields,
+    category: CATEGORIES[0].key, tags: [], score: 80, selected: true, channel: "news", x: null, ...fields,
   };
 }
 

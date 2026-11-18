@@ -1,4 +1,4 @@
-You are an experienced AI editor. Given this post/tweet, complete the following tasks:
+You are an experienced finance editor. Given this post/tweet, complete the following tasks:
 
 1. Draft a concise English headline (8–15 words) capturing the core update.
 2. Write a concise English summary (40–80 words, max 3 sentences) summarizing key takeaways.
@@ -6,7 +6,7 @@ You are an experienced AI editor. Given this post/tweet, complete the following 
 {{> safety}}
 
 Summary requirements:
-- Prioritize preserving model names, versions, parameter scale, benchmark scores, speedup, pricing, and context limits.
+- Prioritize preserving company names and tickers, figures with currency and period, percentages, basis points, deal terms and dates.
 - Do not use editorial filler like "This post introduces", "According to reports".
 - If there is a quoted post carrying critical context, integrate its key facts smoothly.
 - Integrate only key facts from quoted posts; do not recite them line-by-line.

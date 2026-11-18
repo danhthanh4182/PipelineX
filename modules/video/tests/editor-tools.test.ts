@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -11,6 +11,9 @@ const { chapters, draftKit, editKit, publishKit } = await import("../backend/pub
 const { activeRules, decideRule, proposeRule, styleGuide } = await import("../backend/style.ts");
 const { fetchable } = await import("../backend/trusted.ts");
 const { fetchPage, ResearchUnavailable, webSearch } = await import("../backend/research.ts");
+const { channelProfile } = await import("../backend/channel-profile.ts");
+// The AI pack's profile, for rules written with AI stories (the checkout itself may run another pack).
+const AI_CHANNEL = JSON.parse(readFileSync(path.join(import.meta.dirname, "../../../packs/ai/channel.json"), "utf8"));
 
 test("chapters follow YouTube's rules: 0:00 first, at least three, none shorter than 10 seconds", () => {
   const scenes = [{ headline: "Hook", start: 0, duration: 20 }, { headline: "Blip", start: 20, duration: 5 }, { headline: "Story", start: 25, duration: 60 }, { headline: "Outro", start: 85, duration: 12 }];
@@ -31,7 +34,7 @@ test("the publish kit is drafted from the video's files, keeps sources and credi
   assert.match(kit.long.description, /The Verge: Huang out — https:\/\/www\.theverge\.com\/x/);
   assert.match(kit.long.description, /Jane Doe, CC BY 4\.0/);
   assert.match(kit.long.description, /narrated with AI tools/);
-  assert.ok(kit.long.tags.includes("Nvidia") && kit.long.tags.includes("AI news"));
+  assert.ok(kit.long.tags.includes("Nvidia") && kit.long.tags.includes(channelProfile().tags[0]!), "story words and the channel's own tags");
   assert.equal(kit.short!.title, "Nvidia's CEO is out #Shorts");
   publishKit(77);
   const out = editKit(77, { longTitle: "x".repeat(150), longTags: Array.from({ length: 20 }, (_, i) => `tag number ${i} with words`) })!;
@@ -56,7 +59,7 @@ test("a proposed style rule reaches the writers only after the editor approves i
 });
 
 test("web tools read only trusted, non-paywalled sites, and say so plainly without a key", async () => {
-  assert.equal(fetchable("https://openai.com/index/news"), true);
+  assert.equal(fetchable(`https://${channelProfile().officialSites[0]}/news`), true, "the channel's official sites");
   assert.equal(fetchable("https://www.bloomberg.com/news/x"), false, "paywalled");
   assert.equal(fetchable("https://discuss.huggingface.co/t/1"), false, "a forum on a trusted site");
   assert.equal(fetchable("https://example.org/a"), false, "not a trusted site");
@@ -68,8 +71,7 @@ test("web tools read only trusted, non-paywalled sites, and say so plainly witho
 
 test("a story's style follows its strongest topic signal, else its reports' category", async () => {
   const { chooseStyle: choose, STYLES, STYLE_KEYS } = await import("../backend/styles.ts");
-  const { channelProfile } = await import("../backend/channel-profile.ts");
-  const channel = channelProfile();
+  const channel = AI_CHANNEL;
   const chooseStyle = (reports: Array<{ text: string; category: string | null }>) => choose(reports, channel.styles.byCategory, channel.styles.allowed);
   const r = (text: string, category: string | null = "industry") => ({ text, category });
   assert.equal(chooseStyle([r("Drone strikes hit the front line as military AI targeting spreads"), r("Pentagon AI office"), r("Other")]).style, "war");

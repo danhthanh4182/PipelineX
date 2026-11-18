@@ -7,6 +7,7 @@
 //   npm run channel -- list | status
 //   npm run channel -- start <name> | stop <name>
 //   npm run channel -- update [<name>]      merge this branch's code into the channel(s), install, migrate
+//   npm run channel -- remove <name> --yes  stop it and delete its checkout, branch and database (cannot be undone)
 import { execFileSync, spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
@@ -146,6 +147,17 @@ function update(only?: string) {
   console.log("\nRestart running channels to load the new code: npm run channel -- stop <name> && npm run channel -- start <name>");
 }
 
+/** Deletes a channel for good: its checkout, branch, database and registry entry (only with --yes). */
+function remove(c: Channel) {
+  if (!process.argv.includes("--yes")) die(`This deletes ${c.dir}, branch ${c.branch} and database ${c.database} for good. Add --yes to confirm.`);
+  if (existsSync(pidFile(c))) stop(c);
+  run("git", ["worktree", "remove", "--force", c.dir]);
+  run("git", ["branch", "-D", c.branch]);
+  try { run("dropdb", [c.database]); } catch { console.log(`(database ${c.database} was not there)`); }
+  save(registry().filter((x) => x.name !== c.name));
+  console.log(`Removed channel ${c.name}.`);
+}
+
 const [command, name] = [process.argv[2], process.argv[3]];
 switch (command) {
   case "create": await create(name ?? die("Name the channel."), arg("--type") ?? die(`Give its type: --type ${packTypes().join("|")}`), arg("--title")); break;
@@ -153,6 +165,7 @@ switch (command) {
   case "start": start(find(name ?? die("Name the channel."))); break;
   case "stop": stop(find(name ?? die("Name the channel."))); break;
   case "update": update(name); break;
+  case "remove": remove(find(name ?? die("Name the channel."))); break;
   case "types": console.log(packTypes().join("\n")); break;
-  default: console.log("npm run channel -- create <name> --type <type> [--title T] | list | start <name> | stop <name> | update [<name>] | types");
+  default: console.log("npm run channel -- create <name> --type <type> [--title T] | list | start <name> | stop <name> | update [<name>] | remove <name> --yes | types");
 }

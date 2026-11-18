@@ -3,12 +3,12 @@
 // Where reports disagree, the dossier keeps each version with its source instead of picking one.
 // Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env dossier.ts   (reads <dir>/story.json, writes <dir>/dossier.json)
 import { writeFileSync } from "node:fs";
-import { chatJson, materialOf, numbersIn, outlet, readArticles, W, words } from "./lib.ts";
+import { CHANNEL, chatJson, materialOf, numbersIn, outlet, readArticles, W, words } from "./lib.ts";
 
 const CHARS = Number(process.env.VIDEO_DOSSIER_CHARS || 12000);
 const articles = readArticles();
 
-const system = `You are a research editor preparing a fact sheet for a news video about AI. Work ONLY from the numbered reports.
+const system = `You are a research editor preparing a fact sheet for a news video about ${CHANNEL.subject}. Work ONLY from the numbered reports.
 
 Rules:
 - Every fact is one atomic, checkable statement, attributed ("according to X", "X said") when it is a claim rather than an established event.
@@ -22,7 +22,7 @@ Rules:
 
 Return ONLY JSON:
 {"summary": string (3-4 neutral sentences),
- "angle": string (one sentence: why this matters to people following AI),
+ "angle": string (one sentence: why this matters to ${CHANNEL.audience}),
  "facts": [{"id": "F1", "text": string, "kind": "event"|"statement"|"number"|"allegation"|"background"|"reaction"|"next", "date": string|null, "sources": [n]}],
  "quotes": [{"speaker": "Name, role", "text": string, "source": n}],
  "numbers": [{"value": string, "what": string, "source": n}],

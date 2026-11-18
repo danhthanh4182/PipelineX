@@ -1,7 +1,7 @@
 // Vertical YouTube Short (1080×1920) from timeline-short.json: full-bleed pictures the long video already checked,
 // big word-by-word captions in the middle, a progress bar, and a closing call to the full story.
 import { AbsoluteFill, Audio, Img, Loop, OffthreadVideo, Sequence, interpolate, spring, staticFile, useCurrentFrame, Easing } from "remotion";
-import { applyPalette, FPS, type Timeline } from "./NewsVideo";
+import { applyPalette, DEFAULT_BRAND, FPS, type Timeline } from "./NewsVideo";
 
 /** Seconds the closing card stays after the last word. */
 export const SHORT_TAIL = 1.5;
@@ -135,7 +135,7 @@ const BeatView = ({ beat }: { beat: Beat }) => {
   );
 };
 
-export const ShortVideo = ({ scenes, total, music, palette }: Timeline) => {
+export const ShortVideo = ({ scenes, total, music, palette, brand = DEFAULT_BRAND }: Timeline) => {
   applyPalette(C, palette);
   const f = useCurrentFrame();
   const beats = scenes.flatMap((s) => s.beats.map((b) => ({ ...b, start: s.start + b.start }))) as Beat[];
@@ -151,15 +151,15 @@ export const ShortVideo = ({ scenes, total, music, palette }: Timeline) => {
       {/* Brand and progress along the top. */}
       <div style={{ position: "absolute", top: 70, left: 50, right: 50, display: "flex", alignItems: "center", gap: 14, fontFamily: SANS }}>
         <div style={{ width: 16, height: 16, borderRadius: 8, background: C.hot }} />
-        <div style={{ color: C.ink, fontWeight: 900, fontSize: 32, letterSpacing: 5, textShadow: "0 2px 10px rgba(0,0,0,0.7)" }}>PIPELINEX</div>
-        <div style={{ background: C.accent, color: "#06110c", fontWeight: 900, fontSize: 22, letterSpacing: 3, padding: "3px 10px", borderRadius: 6 }}>AI NEWS</div>
+        <div style={{ color: C.ink, fontWeight: 900, fontSize: 32, letterSpacing: 5, textShadow: "0 2px 10px rgba(0,0,0,0.7)" }}>{brand.name.toUpperCase()}</div>
+        <div style={{ background: C.accent, color: "#06110c", fontWeight: 900, fontSize: 22, letterSpacing: 3, padding: "3px 10px", borderRadius: 6 }}>{brand.label}</div>
       </div>
       <div style={{ position: "absolute", top: 40, left: 50, right: 50, height: 8, background: "rgba(255,255,255,0.2)", borderRadius: 4, overflow: "hidden" }}>
         <div style={{ width: `${Math.min(100, (f / Math.max(1, end)) * 100)}%`, height: "100%", background: C.accent }} />
       </div>
       {/* Closing call to the full story, over the last words. */}
       <div style={{ position: "absolute", left: 60, right: 60, bottom: 260, opacity: cta, transform: `translateY(${(1 - cta) * 40}px)`, textAlign: "center", fontFamily: SANS }}>
-        <div style={{ display: "inline-block", background: C.hot, color: "white", fontWeight: 900, fontSize: 52, padding: "18px 36px", borderRadius: 18 }}>Full story on PipelineX</div>
+        <div style={{ display: "inline-block", background: C.hot, color: "white", fontWeight: 900, fontSize: 52, padding: "18px 36px", borderRadius: 18 }}>Full story on {brand.name}</div>
       </div>
       {music && <Audio src={staticFile(music)} loop volume={(fr) => interpolate(fr, [0, 15, end, end + SHORT_TAIL * FPS], [0, 0.06, 0.06, 0], { extrapolateRight: "clamp" })} />}
     </AbsoluteFill>

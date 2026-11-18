@@ -3,7 +3,7 @@
 // it uses; without one (or VIDEO_DOSSIER=off) from the reports' first VIDEO_MATERIAL_CHARS characters, as before.
 // Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env script.ts   (reads <dir>/story.json [+ dossier.json], writes <dir>/script.json)
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { chatJson, materialOf, numbersIn, outlet, readArticles, readPreset, W, words } from "./lib.ts";
+import { CHANNEL, chatJson, materialOf, numbersIn, outlet, readArticles, readPreset, W, words } from "./lib.ts";
 
 const preset = readPreset();
 
@@ -40,7 +40,7 @@ const facts = dossier
 - When sources disagree (different figures at different times), say so or use the latest attributed figure. Never mix them silently.
 - Allegations stay allegations. Neutral and precise.`;
 
-const system = `You are the head writer of an English-language YouTube news channel about AI.
+const system = `You are the head writer of an English-language YouTube news channel about ${CHANNEL.subject} (${CHANNEL.brand.name}).
 Write a narrated news explainer video${dossier ? " from the research dossier" : " from the source material"} only.
 
 ${facts}

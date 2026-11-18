@@ -9,6 +9,7 @@ import { config } from "@aihot/backend/config";
 import { EXTRAS, finishVideo, getVideo, markStep, recordStep, STEPS, storyMaterial, styleInputs, type Step } from "./videos.ts";
 import { activeRules } from "./style.ts";
 import { chooseStyle, STYLES, type StyleKey } from "./styles.ts";
+import { channelProfile } from "./channel-profile.ts";
 import { sql } from "@aihot/backend/db";
 
 export const ROOT = fileURLToPath(new URL("../../../", import.meta.url));
@@ -36,7 +37,11 @@ const RENDERER_ENV = [
   "AZURE_SPEECH_KEY", "AZURE_SPEECH_REGION", "VIDEO_TTS",
   "VIDEO_SCRIPT_MODEL", "VIDEO_SCRIPT_WORDS", "VIDEO_MATERIAL_CHARS", "VIDEO_DOSSIER", "VIDEO_DOSSIER_CHARS", "VIDEO_MUSIC",
 ];
-const rendererEnv = () => Object.fromEntries([...SYSTEM_ENV, ...RENDERER_ENV].flatMap((k) => (process.env[k] === undefined ? [] : [[k, process.env[k]!]])));
+const rendererEnv = () => ({
+  ...Object.fromEntries([...SYSTEM_ENV, ...RENDERER_ENV].flatMap((k) => (process.env[k] === undefined ? [] : [[k, process.env[k]!]]))),
+  // The shared renderer works for this checkout's channel: its profile, sources and trusted sites.
+  VIDEO_INDUSTRY_DIR: path.join(ROOT, "industry"),
+});
 const LIMITS: Record<Exclude<Step, "story">, number> = { thumbnail: 5 * MINUTE, short: 15 * MINUTE, shortvoice: 10 * MINUTE, shortrender: 20 * MINUTE, background: 10 * MINUTE, dossier: 10 * MINUTE, script: 10 * MINUTE, verify: 10 * MINUTE, assets: 20 * MINUTE, voice: 15 * MINUTE, render: 40 * MINUTE };
 
 function command(step: Exclude<Step, "story">, dir: string): [string, string[]] {
@@ -117,7 +122,8 @@ export async function makeVideo(id: number, from: Step = "story"): Promise<void>
   // The video's style: chosen from its story the first time, kept (or as the editor or agent set it) afterwards.
   let style = (video.style && video.style in STYLES ? video.style : null) as StyleKey | null;
   if (!style && video.story_id) {
-    const chosen = chooseStyle(await styleInputs(video.story_id));
+    const channel = channelProfile();
+    const chosen = chooseStyle(await styleInputs(video.story_id), channel.styles.byCategory, channel.styles.allowed);
     style = chosen.style;
     await sql`UPDATE video_jobs SET style = ${style}, result = result || ${sql.json({ style: { style, why: chosen.why } } as never)} WHERE id = ${id}`;
   }

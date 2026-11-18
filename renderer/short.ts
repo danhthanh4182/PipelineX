@@ -4,7 +4,7 @@
 // Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env short.ts   (reads script-final.json [+ dossier.json], writes script-short.json)
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { chatJson, numbersIn, readArticles, readPreset, W, words } from "./lib.ts";
+import { CHANNEL, chatJson, numbersIn, readArticles, readPreset, W, words } from "./lib.ts";
 
 const preset = readPreset();
 
@@ -28,7 +28,7 @@ const material = dossier
     (dossier.conflicts?.length ? `REPORTS DIFFER ON:\n${dossier.conflicts.map((c: any) => `- ${c.topic}`).join("\n")}\n` : "")
   : `LONG VIDEO NARRATION:\n${beats.map((b) => b.narration).join(" ")}`;
 
-const system = `You write YouTube Shorts for an English AI news channel. Turn the research into ONE vertical Short of 110-150 spoken words (45-60 seconds).
+const system = `You write YouTube Shorts for an English news channel about ${CHANNEL.subject} (${CHANNEL.brand.name}). Turn the research into ONE vertical Short of 110-150 spoken words (45-60 seconds).
 
 Rules:
 - Facts only from the material; attribute claims ("according to The Verge"); allegations stay allegations; where reports differ, say so.
@@ -74,7 +74,7 @@ const out = (json.beats as any[]).map((b) => {
 
 const short = {
   title: json.title, description: long.description, sources: long.sources, thumbnail_text: null,
-  scenes: [{ kind: "short", kicker: long.scenes[0]?.kicker ?? "AI NEWS", headline: json.title, beats: out }],
+  scenes: [{ kind: "short", kicker: long.scenes[0]?.kicker ?? CHANNEL.brand.label, headline: json.title, beats: out }],
 };
 writeFileSync(`${W}/script-short.json`, JSON.stringify(short, null, 2));
 const wordCount = out.reduce((n, b) => n + b.narration.split(/\s+/).length, 0);

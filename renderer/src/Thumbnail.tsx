@@ -1,7 +1,7 @@
 // YouTube thumbnail (1280×720 still): the video's main picture, two to five huge words, channel mark and topic.
 // Rendered with `remotion still … Thumbnail` from the same timeline props as the video.
 import { AbsoluteFill, Img, staticFile } from "remotion";
-import { applyPalette, type Timeline } from "./NewsVideo";
+import { applyPalette, DEFAULT_BRAND, type Timeline } from "./NewsVideo";
 
 const C = { bg: "#0b0f17", ink: "#ffffff", accent: "#36d399", hot: "#ff3b3b", yellow: "#ffd23f" };
 const SANS = "Inter, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif";
@@ -31,6 +31,7 @@ export function thumbWords(t: Timeline & { thumbnail_text?: string | null }): st
 
 export const Thumbnail = (t: Timeline & { thumbnail_text?: string | null }) => {
   applyPalette(C, t.palette);
+  const brand = t.brand ?? DEFAULT_BRAND;
   const pic = mainPicture(t);
   const words = thumbWords(t).toUpperCase().split(" ");
   // Two lines, the second in the highlight colour; long words get a smaller size so nothing is cut.
@@ -50,8 +51,8 @@ export const Thumbnail = (t: Timeline & { thumbnail_text?: string | null }) => {
       <AbsoluteFill style={{ background: `radial-gradient(circle at 18% 30%, ${C.accent}38, transparent 45%)` }} />
       <div style={{ position: "absolute", left: 56, top: 48, display: "flex", alignItems: "center", gap: 14 }}>
         <div style={{ width: 18, height: 18, borderRadius: 9, background: C.hot }} />
-        <div style={{ color: C.ink, fontWeight: 900, fontSize: 34, letterSpacing: 5 }}>PIPELINEX</div>
-        <div style={{ background: C.accent, color: "#06110c", fontWeight: 900, fontSize: 24, letterSpacing: 3, padding: "4px 12px", borderRadius: 6 }}>AI NEWS</div>
+        <div style={{ color: C.ink, fontWeight: 900, fontSize: 34, letterSpacing: 5 }}>{brand.name.toUpperCase()}</div>
+        <div style={{ background: C.accent, color: "#06110c", fontWeight: 900, fontSize: 24, letterSpacing: 3, padding: "4px 12px", borderRadius: 6 }}>{brand.label}</div>
       </div>
       <div style={{ position: "absolute", left: 56, bottom: 64, width: 760 }}>
         {kicker && (

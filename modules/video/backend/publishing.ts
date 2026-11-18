@@ -5,6 +5,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { INTRO_SECONDS } from "./media.ts";
 import { workDir } from "./pipeline.ts";
+import { channelProfile } from "./channel-profile.ts";
 
 export interface PublishKit {
   long: { title: string; description: string; tags: string[] };
@@ -41,7 +42,7 @@ export function chapters(scenes: Array<{ headline: string; start: number; durati
 const NOT_NAMES = /^(The|And|For|With|After|Amid|Over|Into|From|Says|Said|New|Names|Named|Launches|Releases|Ships|Sues|Gets|Adds|Wins|Faces|Plans|Leaves|Joins|Raises|Exit|Out|Back|Top|How|Why|What|Who|Its|Their)$/;
 function tagsFor(title: string): string[] {
   const names = [...new Set(title.match(/\b[A-Z][A-Za-z0-9.+-]{2,}/g) ?? [])].filter((n) => !NOT_NAMES.test(n));
-  const tags = ["AI news", "artificial intelligence", "tech news", ...names.slice(0, 8)];
+  const tags = [...channelProfile().tags, ...names.slice(0, 8)];
   const out: string[] = [];
   for (const t of tags) if ([...out, t].join(",").length <= LIMITS.tags) out.push(t);
   return out;
@@ -65,7 +66,7 @@ export function draftKit(id: number): PublishKit | null {
     sources.length ? `Sources:\n${sources.map((s) => `- ${s.name}: ${s.title} — ${s.url}`).join("\n")}` : "",
     credits.length ? `Picture credits:\n${credits.map((c) => `- ${c}`).join("\n")}` : "",
     "Researched, written and narrated with AI tools, then checked against the sources above. Corrections welcome in the comments.",
-    hashtags(tags).concat("#AINews").join(" "),
+    hashtags(tags).concat(channelProfile().hashtags).join(" "),
   ].filter(Boolean).join("\n\n").slice(0, LIMITS.description);
   const shortTitle = short ? short.title.slice(0, LIMITS.title - 8).trim() + " #Shorts" : "";
   return {
@@ -73,7 +74,7 @@ export function draftKit(id: number): PublishKit | null {
     short: short ? {
       title: shortTitle,
       description: [short.scenes[0]?.beats[0]?.narration ?? "", "Full story on our channel.",
-        sources.length ? `Sources: ${sources.slice(0, 3).map((s) => s.name).join(", ")}` : "", "#Shorts #AINews"].filter(Boolean).join("\n\n"),
+        sources.length ? `Sources: ${sources.slice(0, 3).map((s) => s.name).join(", ")}` : "", ["#Shorts", ...channelProfile().hashtags].join(" ")].filter(Boolean).join("\n\n"),
       tags,
     } : null,
     draftedAt: new Date().toISOString(),

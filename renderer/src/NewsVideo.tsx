@@ -7,8 +7,11 @@ type Visual = Record<string, any> & { type: string };
 type Beat = { narration: string; visual: Visual; audio: string; start: number; duration: number; words: Word[] };
 type Scene = { kind: string; kicker: string; headline: string; start: number; duration: number; beats: Beat[] };
 export type Palette = { accent: string; accent2: string; kicker: string };
+export type Brand = { name: string; label: string; tagline: string };
 export type Timeline = { title: string; total: number; scenes: Scene[]; sources?: Array<{ n: number; name: string; title?: string }>; music?: string | null; date?: string;
-  style?: string; palette?: Palette | null };
+  style?: string; palette?: Palette | null; brand?: Brand };
+/** The channel's brand on the cards (the timeline's, from industry/channel.json). */
+export const DEFAULT_BRAND: Brand = { name: "PipelineX", label: "AI NEWS", tagline: "The AI news that matters, every day." };
 
 /** Branded opening and the end card, around the narrated part (seconds). */
 export const INTRO = 3;
@@ -239,7 +242,7 @@ const Push = ({ frames, children }: { frames: number; children: React.ReactNode 
 };
 
 /** Opening: channel mark, date and the video's title. */
-const Intro = ({ title, date }: { title: string; date?: string }) => {
+const Intro = ({ title, date, brand }: { title: string; date?: string; brand: Brand }) => {
   const f = useCurrentFrame();
   const a = spring({ frame: f, fps: FPS, config: { damping: 200 } });
   const b = spring({ frame: f - 10, fps: FPS, config: { damping: 200 } });
@@ -250,8 +253,8 @@ const Intro = ({ title, date }: { title: string; date?: string }) => {
       <AbsoluteFill style={{ padding: "0 160px", justifyContent: "center", fontFamily: SANS }}>
         <div style={{ display: "flex", alignItems: "center", gap: 18, opacity: a, transform: `translateX(${(1 - a) * -40}px)` }}>
           <div style={{ width: 22, height: 22, borderRadius: 11, background: C.hot }} />
-          <div style={{ color: C.ink, fontWeight: 900, fontSize: 44, letterSpacing: 8 }}>PIPELINEX</div>
-          <div style={{ color: C.dim, fontSize: 36, letterSpacing: 4 }}>AI NEWS{date ? ` · ${date}` : ""}</div>
+          <div style={{ color: C.ink, fontWeight: 900, fontSize: 44, letterSpacing: 8 }}>{brand.name.toUpperCase()}</div>
+          <div style={{ color: C.dim, fontSize: 36, letterSpacing: 4 }}>{brand.label}{date ? ` · ${date}` : ""}</div>
         </div>
         <div style={{ marginTop: 40, color: C.ink, fontSize: 96, fontWeight: 900, lineHeight: 1.05, maxWidth: 1600, opacity: b, transform: `translateY(${(1 - b) * 40}px)` }}>{title}</div>
         <div style={{ marginTop: 48, height: 8, width: `${interpolate(f, [10, INTRO * FPS], [0, 100], { extrapolateRight: "clamp" })}%`, background: C.accent, borderRadius: 4 }} />
@@ -261,7 +264,7 @@ const Intro = ({ title, date }: { title: string; date?: string }) => {
 };
 
 /** End card: the sources the video was made from, and the invitation to subscribe. */
-const Outro = ({ sources }: { sources: Array<{ n: number; name: string; title?: string }> }) => {
+const Outro = ({ sources, brand }: { sources: Array<{ n: number; name: string; title?: string }>; brand: Brand }) => {
   const f = useCurrentFrame();
   const a = spring({ frame: f, fps: FPS, config: { damping: 200 } });
   const outlets = [...new Set(sources.map((s) => s.name))];
@@ -276,7 +279,7 @@ const Outro = ({ sources }: { sources: Array<{ n: number; name: string; title?: 
             return <div key={o} style={{ color: C.ink, fontSize: 34, fontWeight: 600, padding: "10px 22px", borderRadius: 10, background: C.panel, border: `1px solid ${C.line}`, opacity: s }}>{o}</div>;
           })}
         </div>
-        <div style={{ marginTop: 90, color: C.ink, fontSize: 84, fontWeight: 900 }}>The AI news that matters, every day.</div>
+        <div style={{ marginTop: 90, color: C.ink, fontSize: 84, fontWeight: 900 }}>{brand.tagline}</div>
         <div style={{ marginTop: 34, display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: 18, background: C.hot, color: "white",
           fontSize: 44, fontWeight: 900, padding: "18px 40px", borderRadius: 14, transform: `scale(${1 + 0.03 * Math.sin(f / 8)})` }}>Subscribe</div>
         <div style={{ marginTop: 26, color: C.dim, fontSize: 30 }}>Links to every report are in the description.</div>
@@ -287,13 +290,13 @@ const Outro = ({ sources }: { sources: Array<{ n: number; name: string; title?: 
 
 // ── Overlays ────────────────────────────────────────────────────────────────
 
-const Header = ({ at, total }: { at: number; total: number }) => {
+const Header = ({ at, total, brand }: { at: number; total: number; brand: Brand }) => {
   const f = useCurrentFrame();
   return (
     <div style={{ position: "absolute", top: 40, left: 64, right: 64, display: "flex", alignItems: "center", gap: 16, fontFamily: SANS }}>
       <div style={{ width: 14, height: 14, borderRadius: 7, background: C.hot, opacity: 0.6 + 0.4 * Math.sin(f / 6) }} />
-      <div style={{ color: C.ink, fontWeight: 800, fontSize: 24, letterSpacing: 3, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>PIPELINEX</div>
-      <div style={{ color: "#c6ccd8", fontSize: 22, letterSpacing: 2, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>AI NEWS</div>
+      <div style={{ color: C.ink, fontWeight: 800, fontSize: 24, letterSpacing: 3, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{brand.name.toUpperCase()}</div>
+      <div style={{ color: "#c6ccd8", fontSize: 22, letterSpacing: 2, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{brand.label}</div>
       <div style={{ flex: 1 }} />
       <div style={{ width: 300, height: 6, background: "rgba(255,255,255,0.18)", borderRadius: 3, overflow: "hidden" }}>
         <div style={{ width: `${Math.min(100, (at / total) * 100)}%`, height: "100%", background: C.accent }} />
@@ -334,7 +337,7 @@ const Captions = ({ words }: { words: Word[] }) => {
   );
 };
 
-const BeatView = ({ scene, beat, index, at, total, repeat }: { scene: Scene; beat: Beat; index: number; at: number; total: number; repeat: boolean }) => {
+const BeatView = ({ scene, beat, index, at, total, repeat, brand }: { scene: Scene; beat: Beat; index: number; at: number; total: number; repeat: boolean; brand: Brand }) => {
   const frames = Math.round(beat.duration * FPS);
   const f = useCurrentFrame();
   // Enter: a short fade with a slight zoom-out, so cuts feel like moves rather than flashes.
@@ -354,7 +357,7 @@ const BeatView = ({ scene, beat, index, at, total, repeat }: { scene: Scene; bea
   return (
     <AbsoluteFill style={{ opacity: enter, transform: `scale(${1.03 - 0.03 * enter})` }}>
       {body}
-      <Header at={at + f / FPS} total={total} />
+      <Header at={at + f / FPS} total={total} brand={brand} />
       {!kinetic && <Captions words={beat.words} />}
       <Audio src={staticFile(beat.audio)} />
     </AbsoluteFill>
@@ -370,14 +373,14 @@ export function applyPalette(target: { accent: string; hot: string }, palette?: 
   target.hot = palette?.accent2 ?? "#ff5c5c";
 }
 
-export const NewsVideo = ({ scenes, total, title, sources = [], music, date, palette }: Timeline) => {
+export const NewsVideo = ({ scenes, total, title, sources = [], music, date, palette, brand = DEFAULT_BRAND }: Timeline) => {
   applyPalette(C, palette);
   let index = 0;
   const shown = new Set<string>();
   const end = Math.round((INTRO + total) * FPS);
   return (
     <AbsoluteFill style={{ background: C.bg }}>
-      <Sequence durationInFrames={INTRO * FPS}><Intro title={title} date={date} /></Sequence>
+      <Sequence durationInFrames={INTRO * FPS}><Intro title={title} date={date} brand={brand} /></Sequence>
       <Sequence from={INTRO * FPS}>
         {scenes.map((s, si) => (
           <Sequence key={si} from={Math.round(s.start * FPS)} durationInFrames={Math.round(s.duration * FPS)}>
@@ -389,7 +392,7 @@ export const NewsVideo = ({ scenes, total, title, sources = [], music, date, pal
               if (key) shown.add(key);
               return (
                 <Sequence key={bi} from={Math.round(b.start * FPS)} durationInFrames={Math.round(b.duration * FPS)}>
-                  <BeatView scene={s} beat={b} index={i} at={s.start + b.start} total={total} repeat={repeat} />
+                  <BeatView scene={s} beat={b} index={i} at={s.start + b.start} total={total} repeat={repeat} brand={brand} />
                 </Sequence>
               );
             })}
@@ -397,7 +400,7 @@ export const NewsVideo = ({ scenes, total, title, sources = [], music, date, pal
           </Sequence>
         ))}
       </Sequence>
-      <Sequence from={end}><Outro sources={sources} /></Sequence>
+      <Sequence from={end}><Outro sources={sources} brand={brand} /></Sequence>
       {music && <Audio src={staticFile(music)} loop volume={(f) => interpolate(f, [0, 30, end, end + OUTRO * FPS - 30, end + OUTRO * FPS], [0, 0.07, 0.07, 0.16, 0], { extrapolateRight: "clamp" })} />}
     </AbsoluteFill>
   );

@@ -155,29 +155,30 @@ const SIGNALS: Array<[StyleKey, RegExp]> = [
   ["investigation", /\b(lawsuit|sues?|sued|court|judge|ruling|regulat(e|es|ed|or|ors|ion|ions)|antitrust|ftc|sec probe|probe|investigat(e|es|ed|ion|ions)|attorney general|subpoena|breach|hack(ed|ing)?|security incident|scandal|fine[ds]?|ban(s|ned)?|export (controls?|rules?|curbs|restrictions)|sanctions?|licen[cs]e rule|lawmakers|congress|senate|legislation|bill|white house|commerce department|resign(s|ed|ation)?|ousted|ouster|fired|affair|spy|espionage|allegations?|alleged(ly)?|whistleblower)\b/i],
   ["finance", /\b(ipo|valuation|funding|raises?|raised|series [a-f]|acquisitions?|acquires?|merger|earnings|revenue|profit|shares|stock|market cap|investors?|billion|trillion)\b/i],
 ];
-const BY_CATEGORY: Record<string, StyleKey> = { "ai-models": "launch", "ai-products": "product", paper: "explainer", opinion: "analysis", tip: "analysis", industry: "news" };
+/** The channel's own category -> style map (industry/channel.json styles.byCategory), passed in by the caller. */
 
 /**
  * The style a story's reports call for: war or crime when a third of the reports are about it; else the stronger of
  * investigation and finance when a third are about it; else the reports' most common category; else plain news.
  */
-export function chooseStyle(reports: Array<{ text: string; category: string | null }>): { style: StyleKey; why: string } {
+export function chooseStyle(reports: Array<{ text: string; category: string | null }>, byCategory: Record<string, string> = {}, allowed: readonly string[] = STYLE_KEYS): { style: StyleKey; why: string } {
   if (!reports.length) return { style: "news", why: "no reports" };
   const share = (re: RegExp) => reports.filter((r) => re.test(r.text)).length;
   const enough = (hits: number) => hits >= 1 && hits / reports.length >= 1 / 3;
   const why = (style: StyleKey, hits: number) => `${hits} of ${reports.length} reports are about ${STYLES[style].label.toLowerCase()}`;
   // Sensitive topics first: their stricter rules must apply whenever a third of the coverage is about them.
-  for (const [style, re] of SIGNALS.filter(([k]) => k === "war" || k === "crime")) {
+  for (const [style, re] of SIGNALS.filter(([k]) => (k === "war" || k === "crime") && allowed.includes(k))) {
     const hits = share(re);
     if (enough(hits)) return { style, why: why(style, hits) };
   }
   // Then the stronger of investigation and finance (a scandal moves shares; a funding round can draw a probe).
-  const ranked = SIGNALS.filter(([k]) => k === "investigation" || k === "finance").map(([style, re]) => ({ style, hits: share(re) }))
+  const ranked = SIGNALS.filter(([k]) => (k === "investigation" || k === "finance") && allowed.includes(k)).map(([style, re]) => ({ style, hits: share(re) }))
     .filter((x) => enough(x.hits)).sort((a, b) => b.hits - a.hits);
   if (ranked[0]) return { style: ranked[0].style, why: why(ranked[0].style, ranked[0].hits) };
   const counts = new Map<string, number>();
   for (const r of reports) if (r.category) counts.set(r.category, (counts.get(r.category) ?? 0) + 1);
   const top = [...counts].sort((a, b) => b[1] - a[1])[0];
-  const style = top ? BY_CATEGORY[top[0]] ?? "news" : "news";
+  const mapped = top ? byCategory[top[0]] : undefined;
+  const style = (mapped && mapped in STYLES && allowed.includes(mapped) ? mapped : "news") as StyleKey;
   return { style, why: top ? `most reports are in category ${top[0]}` : "no category" };
 }

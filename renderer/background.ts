@@ -5,7 +5,7 @@
 // Without TINYFISH_API_KEY, or when TinyFish fails, it records why and the video goes on without it.
 // Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env background.ts
 import { readFileSync, writeFileSync } from "node:fs";
-import { chatJson, outlet, W, type Article } from "./lib.ts";
+import { CHANNEL, chatJson, outlet, W, type Article } from "./lib.ts";
 import { hostOf, NOT_ARTICLE_PATHS, NOT_ARTICLES, paywalled, trustedDomains } from "../modules/video/backend/trusted.ts";
 
 const KEY = process.env.TINYFISH_API_KEY ?? "";
@@ -58,7 +58,7 @@ if (!KEY) {
     }
 
     // (2) Context the reports lack: a few searches within trusted sites, then the best new pages.
-    const { json, cost } = await chatJson(`You plan background research for a news video about AI. From the reports' headlines and summaries, write at most ${MAX_QUERIES} web search queries for context the reports themselves do not give: the earlier events this story builds on, the official announcement or filing behind it, named people's or companies' prior statements, and what is scheduled next. Each query 3-10 words, specific (names, products, dates), in English. Return ONLY JSON: {"queries": [{"q": string, "why": string}]}`,
+    const { json, cost } = await chatJson(`You plan background research for a news video about ${CHANNEL.subject}. From the reports' headlines and summaries, write at most ${MAX_QUERIES} web search queries for context the reports themselves do not give: the earlier events this story builds on, the official announcement or filing behind it, named people's or companies' prior statements, and what is scheduled next. Each query 3-10 words, specific (names, products, dates), in English. Return ONLY JSON: {"queries": [{"q": string, "why": string}]}`,
       story.map((a, i) => `[${i + 1}] ${outlet(a)}, ${a.published_at.slice(0, 10)}: ${a.title}\n${a.summary}`).join("\n\n"), { maxTokens: 4000 });
     result.cost = cost;
     const queries: string[] = (json.queries ?? []).map((q: any) => String(q.q ?? "").trim()).filter(Boolean).slice(0, MAX_QUERIES);

@@ -29,6 +29,8 @@ BEAT_GAP = 0.1 if SHORT else 0.25   # pause between beats inside a scene (a Shor
 SCENE_GAP = 0.3 if SHORT else 0.7   # pause between scenes
 # The video's style (style-preset.json, written by the pipeline) sets the pace and the music's mood.
 PRESET = json.loads((W / "style-preset.json").read_text()) if (W / "style-preset.json").exists() else None
+# The channel's brand for the title cards (industry/channel.json of the checkout that runs the pipeline).
+CHANNEL = json.loads((Path(os.environ.get("VIDEO_INDUSTRY_DIR", "../industry")) / "channel.json").read_text())
 RATE = (PRESET["voice"]["shortRate"] if SHORT else PRESET["voice"]["rate"]) if PRESET else ("+10%" if SHORT else "+4%")
 
 
@@ -131,7 +133,8 @@ async def main():
     timeline = {"title": script["title"], "thumbnail_text": script.get("thumbnail_text"), "voice": VOICE, "total": round(t, 3), "scenes": scenes, "sources": script["sources"],
                 "music": "music.mp3" if music and Path(music).exists() else None,
                 "date": datetime.date.today().strftime("%b %-d, %Y"),
-                "style": PRESET["key"] if PRESET else "news", "palette": PRESET["visual"] if PRESET else None}
+                "style": PRESET["key"] if PRESET else "news", "palette": PRESET["visual"] if PRESET else None,
+                "brand": CHANNEL["brand"]}
     (W / TIMELINE).write_text(json.dumps(timeline, indent=2))
     print(f"total {t:.1f}s")
     chars = sum(len(b["narration"]) for s in script["scenes"] for b in s["beats"])

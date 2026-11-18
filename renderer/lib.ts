@@ -1,7 +1,11 @@
 // Shared by the renderer's steps: the work directory, the story's reports, one LLM call, and text checks.
 import { existsSync, readFileSync } from "node:fs";
 
+import { channelProfile } from "../modules/video/backend/channel-profile.ts";
+
 export const W = process.env.VIDEO_WORKDIR ?? "work";
+/** The channel the video is for (industry/channel.json of the checkout that runs the pipeline). */
+export const CHANNEL = channelProfile();
 
 export type Article = { title: string; source: string; url: string; published_at: string; headline: string; summary: string; body: string; background?: boolean };
 

@@ -67,7 +67,10 @@ test("web tools read only trusted, non-paywalled sites, and say so plainly witho
 });
 
 test("a story's style follows its strongest topic signal, else its reports' category", async () => {
-  const { chooseStyle, STYLES, STYLE_KEYS } = await import("../backend/styles.ts");
+  const { chooseStyle: choose, STYLES, STYLE_KEYS } = await import("../backend/styles.ts");
+  const { channelProfile } = await import("../backend/channel-profile.ts");
+  const channel = channelProfile();
+  const chooseStyle = (reports: Array<{ text: string; category: string | null }>) => choose(reports, channel.styles.byCategory, channel.styles.allowed);
   const r = (text: string, category: string | null = "industry") => ({ text, category });
   assert.equal(chooseStyle([r("Drone strikes hit the front line as military AI targeting spreads"), r("Pentagon AI office"), r("Other")]).style, "war");
   assert.equal(chooseStyle([r("Police arrest deepfake scam ring; prosecutors say fraud topped $10M"), r("Scammers charged"), r("x")]).style, "crime");
@@ -77,6 +80,7 @@ test("a story's style follows its strongest topic signal, else its reports' cate
   assert.equal(chooseStyle([r("A paper on reasoning", "paper")]).style, "explainer");
   assert.equal(chooseStyle([]).style, "news");
   assert.equal(chooseStyle([r("One lawsuit mention"), r("a"), r("b"), r("c")]).style, "news", "a signal in under a third of the reports is not enough");
+  assert.equal(choose([r("Police arrest scam ring"), r("Scammers charged")], {}, ["news", "finance"]).style, "news", "a style the channel does not allow is never chosen");
   for (const k of STYLE_KEYS) {
     const s = STYLES[k];
     assert.ok(s.script.structure.includes("hook") && s.script.structure.includes("outro"), `${k} keeps a hook and an outro`);

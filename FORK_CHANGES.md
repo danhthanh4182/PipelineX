@@ -133,3 +133,22 @@ Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cậ
 - `site/models.ts`: `nvidia-minimax` thành service riêng (`nvidia-minimax`). Đo thực tế: chỉ MiniMax trả 429 (ở ~10–20 lượt/phút tổng, khi các bước video cũng dùng nó), Nemotron thì không; tách ra để 429 của MiniMax không làm ngắt circuit của Nemotron và có trần riêng.
 - Lưu ý vận hành: `npm run dev:worker` chạy `node --watch`; sửa code làm worker tự khởi động lại nhưng phải chờ job đang chạy (một video có thể mất nhiều phút) và không nhận việc mới trong lúc đó.
 - Test: `tests/model-rate.test.ts`.
+
+## Nhiều ảnh hơn trong video (18/11)
+
+- Đo: video #2 chỉ 6/26 cảnh có ảnh; kịch bản chọn 15/26 cảnh chữ, 4/10 cảnh cần ảnh không tìm được (một phần vì kiểm tra ảnh bằng model bị lỗi 429 và lỗi bị coi như "không hợp"). Ảnh của báo thương mại vẫn không dùng (bản quyền, Content ID); og:image của trang chính phủ chỉ là logo chung nên không dùng.
+- `renderer/assets.ts`:
+  - Kiểm tra ảnh trả `yes | no | error`; lỗi được thử lại một lần sau 8 giây; nếu model kiểm tra hỏng hẳn (3 lỗi), cảnh b-roll dùng clip Pixabay đầu tiên khớp từ khóa (ghi log "unchecked"), cảnh ảnh người/vật cụ thể thì không.
+  - Chân dung: cảnh trích dẫn lấy ảnh người nói trên Wikimedia Commons theo tên (`intitle:"Tên"`, tên tệp phải có họ; ảnh chính thức của chính phủ Mỹ ở đó là public domain); model chỉ kiểm tra là ảnh rõ của một người. Ghi credit vào ATTRIBUTIONS.
+  - Nền ảnh: cảnh số liệu, trích dẫn, bài báo, mốc thời gian, biểu đồ, so sánh, thẻ chữ dùng ảnh gần nhất của video (ưu tiên cùng cảnh) làm nền (`visual.backdrop`).
+- `renderer/src/NewsVideo.tsx`: `Backdrop` (ảnh/clip mờ, tối, trôi chậm; không có thì lưới như cũ) cho mọi cảnh chữ; `QuoteBeat` hiện chân dung tròn và credit ảnh.
+- `renderer/script.ts`: prompt yêu cầu ≥ 60% cảnh là photo/broll; nếu kịch bản thiếu, thẻ chữ trơn được đổi sang b-roll theo gợi ý của phong cách (assets.ts đổi lại thành thẻ chữ nếu không tìm được ảnh).
+
+## Kết nối YouTube (18/11)
+
+- `modules/video/backend/youtube.ts`: OAuth với Google (client "Web application", `YOUTUBE_CLIENT_ID` / `YOUTUBE_CLIENT_SECRET`, redirect `<SITE_URL>/api/admin/video/youtube/callback`, quyền upload, quản lý và Analytics chỉ đọc). Refresh token lưu ở `.data/youtube-auth.json` (quyền 0600), không bao giờ trả về qua API.
+- `uploadPrivate`: upload video dài **private** bằng resumable upload với publish kit (tiêu đề, mô tả, tag, danh mục, ngôn ngữ en, không dành cho trẻ em), rồi thumbnail, phụ đề tiếng Anh (SRT từ lời đọc) và Short. Lỗi thumbnail/phụ đề/Short chỉ ghi chú, không làm hỏng lượt upload. Ghi vào `<video>/youtube.json`.
+- `publishPublic`: chỉ khi người bấm "Publish on YouTube" trên trang Videos (có hộp xác nhận), chỉ với video đã Approved; đặt video và Short thành public rồi đọc lại trạng thái. Dự án Google Cloud chưa qua audit của YouTube thì upload qua API bị khóa private: nút báo rõ lỗi đó.
+- Route: `GET /api/admin/video/youtube/connect|callback`, `POST /api/admin/video/videos/:id/youtube/upload|publish` (phiên admin + CSRF; state OAuth dùng một lần, 10 phút, gắn với admin bắt đầu). Audit Log: `video.youtube.connect|upload|publish`. Editor MCP không có công cụ YouTube.
+- Trang Videos: trạng thái kết nối ở đầu trang (link "connect the channel"), khung YouTube trong chi tiết video.
+- Test: `modules/video/tests/youtube.test.ts`.

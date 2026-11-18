@@ -62,10 +62,15 @@ interface Overview {
   steps: Step[];
   candidates: Candidate[];
   videos: Video[];
+  youtube: YouTubeStatus;
 }
+
+interface YouTubeStatus { configured: boolean; connected: boolean; channel: { id: string; title: string; connectedAt: string } | null; redirectUri: string }
+interface YouTubeRecord { longId?: string; shortId?: string; uploadedAt?: string; publishedAt?: string; publishedBy?: string; notes?: string[] }
 
 interface Detail {
   publish: PublishKit | null;
+  youtube: YouTubeRecord | null;
   video: Video;
   dossier: null | {
     angle: string;
@@ -168,6 +173,14 @@ export default function VideosAdmin({ loaderData }: { loaderData: { overview: Ov
     return () => clearInterval(t);
   }, [working, revalidator]);
 
+  // Back from Google's sign-in: say how it went once, then drop the parameter.
+  useEffect(() => {
+    const result = params.get("youtube");
+    if (!result) return;
+    toast(result === "connected" ? "YouTube channel connected" : `YouTube: ${result}`, result === "connected" ? "ok" : "error");
+    const next = new URLSearchParams(params); next.delete("youtube"); setParams(next, { preventScrollReset: true, replace: true });
+  }, [params, setParams]);
+
   const open = (id: number) => setParams({ id: String(id) }, { preventScrollReset: true });
   const make = async (storyId: number) => {
     const video = await run(`make-${storyId}`, "/api/admin/video/videos", { storyId }, "Video queued");
@@ -182,10 +195,14 @@ export default function VideosAdmin({ loaderData }: { loaderData: { overview: Ov
           One video per story: background → research → script → fact-check → pictures → voice → render, then thumbnail and a vertical Short. Daily automatic video:{" "}
           <b className={o.auto ? "text-ok" : "text-ink-2"}>{o.auto ? "on" : "off"}</b> (VIDEO_AUTO_ENABLED)
           {!o.modelCalls && <span className="text-hot"> · MODEL_CALLS_ENABLED is off: videos cannot be made</span>}
+          {" · "}YouTube:{" "}
+          {o.youtube.connected ? <b className="text-ok">{o.youtube.channel?.title}</b>
+            : o.youtube.configured ? <a className="font-semibold text-accent underline" href="/api/admin/video/youtube/connect">connect the channel</a>
+            : <span className="text-ink-3">set YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET in .env (redirect URI {o.youtube.redirectUri})</span>}
         </>
       }
     >
-      {detail && <VideoDetail d={detail} steps={o.steps} styles={o.styles} run={run} busy={busy} close={() => setParams({}, { preventScrollReset: true })} />}
+      {detail && <VideoDetail d={detail} steps={o.steps} styles={o.styles} youtube={o.youtube} run={run} busy={busy} close={() => setParams({}, { preventScrollReset: true })} />}
       <StyleGuide rules={o.style} run={run} busy={busy} />
 
       <div className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
@@ -324,10 +341,11 @@ function StyleGuide({ rules, run, busy }: { rules: StyleRule[]; run: (label: str
   );
 }
 
-function VideoDetail({ d, steps, styles, run, busy, close }: {
+function VideoDetail({ d, steps, styles, youtube, run, busy, close }: {
   d: Detail;
   steps: Step[];
   styles: StyleOption[];
+  youtube: YouTubeStatus;
   run: (label: string, path: string, body: unknown, done: string) => Promise<Video | null>;
   busy: string | null;
   close: () => void;
@@ -420,6 +438,31 @@ function VideoDetail({ d, steps, styles, run, busy, close }: {
           </div>
 
           {v.error && <pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded-control bg-hot-soft p-3 text-[12px] text-hot">{v.error}</pre>}
+
+          {youtube.connected && (v.status === "ready" || v.status === "approved") && d.hasVideo && (
+            <div className="space-y-2 rounded-control p-3 text-[12.5px] ring-1 ring-line">
+              <div className="font-semibold text-ink-2">YouTube · {youtube.channel?.title}</div>
+              {!d.youtube?.longId ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button size="sm" busy={busy === "yt-upload"} onClick={() => run("yt-upload", `/api/admin/video/videos/${v.id}/youtube/upload`, {}, "Uploaded to YouTube as private")}>Upload as private</Button>
+                  <span className="text-ink-3">Video, Short, thumbnail and captions, with the publish kit. Nobody sees it until you publish.</span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-wrap gap-3">
+                    <a className="text-accent underline" href={`https://youtu.be/${d.youtube.longId}`} target="_blank" rel="noreferrer">Video</a>
+                    {d.youtube.shortId && <a className="text-accent underline" href={`https://youtube.com/shorts/${d.youtube.shortId}`} target="_blank" rel="noreferrer">Short</a>}
+                    <a className="text-accent underline" href={`https://studio.youtube.com/video/${d.youtube.longId}/edit`} target="_blank" rel="noreferrer">Open in Studio</a>
+                    <span className="text-ink-3">{d.youtube.publishedAt ? `Public since ${new Date(d.youtube.publishedAt).toLocaleString()}` : "Private"}</span>
+                  </div>
+                  {!d.youtube.publishedAt && (v.status === "approved"
+                    ? <Button size="sm" tone="primary" busy={busy === "yt-publish"} onClick={() => window.confirm("Make this video and its Short public on YouTube now? Everyone will be able to see them.") && run("yt-publish", `/api/admin/video/videos/${v.id}/youtube/publish`, { confirm: true }, "Published on YouTube")}>Publish on YouTube</Button>
+                    : <div className="text-ink-3">Approve the video to publish it.</div>)}
+                  {d.youtube.notes?.length ? <ul className="list-disc pl-5 text-hot">{d.youtube.notes.map((n) => <li key={n}>{n}</li>)}</ul> : null}
+                </>
+              )}
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center gap-2">
             {(v.status === "ready" || v.status === "rejected") && d.hasVideo && (

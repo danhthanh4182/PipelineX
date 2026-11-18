@@ -41,7 +41,7 @@ modules/video (shared code)                          renderer/ (one copy, shared
 | A paid model is planned only for a future **orchestrator** role (editorial decisions: pick stories, plan, final QA). Not built. | Low volume, high impact. |
 | **Antigravity is the editor/operator** through the editor MCP (`/api/admin/video/mcp`, direct local connections + `VIDEO_EDITOR_TOKEN`). It cannot publish, change sources, settings, keys or models. Every action is logged (video `edits.json` + Audit Log). | The owner wants the local agent to take part, with guardrails. |
 | **The system scores and selects articles, never an agent.** Agents may list stuck articles and send them back through AIHOT's analysis (`retry_failed_articles`); when the script step stalls an agent may write a video script (`rescue_video_script`), which is still fact-checked from `verify`. A tool that wrote agent scores into `analyses` was removed on 2026-11-18. | Selection uses the channel's own prompts, two independent scores, thresholds and receipts; an agent's score bypasses all of it. |
-| **A human publishes.** No YouTube upload automation yet; when built, publishing stays a human click. | Public and hard to undo. |
+| **A human publishes.** The tool uploads to YouTube as private (Videos page, "Upload as private"); a video goes public only when a human clicks "Publish on YouTube" on an approved video. The editor MCP has no YouTube tool. | Public and hard to undo. |
 | **One channel = one type, chosen at creation**; changing type means a new channel. Each channel has its own sources. | Clear identity per channel; no mixing old and new data. |
 | **Facts are grounded**: dossier (facts with outlets) → script cites facts → sentence-by-sentence verify against full report text; quotes/numbers re-checked by words. Allegations attributed. | Accuracy; A/B on 3 stories: errors 6.0% → 2.2%. |
 | **Video style per story** (`modules/video/backend/styles.ts`): news, launch, product, finance, investigation, crime, war, explainer, analysis — chosen from the story, changeable by editor/agent. Crime and war are **sensitive**: no graphic words or pictures, every figure attributed, no victims' or private names, presumption of innocence. | Different stories need different structure, tone and look; YouTube sensitive-topic policy. |
@@ -64,7 +64,7 @@ Open items:
 - OrcaRouter key is rejected as invalid (chain skips it).
 - Music: add tracks to `renderer/music/<mood>/` (neutral, upbeat, calm, serious, somber, curious).
 - Longer videos (10–15 min): decide single deep story vs multi-story bulletin.
-- YouTube publishing automation (later; human click).
+- YouTube: connected through `modules/video/backend/youtube.ts` (owner's channel @MarketDecodedVideo). API uploads stay private until Google audits the Cloud project: request the YouTube API audit. Next: read channel analytics (views, CTR, retention) to guide topics and titles.
 
 ## Finance channel — running (2026-11-18)
 

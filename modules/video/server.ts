@@ -12,6 +12,8 @@ import { pickCandidates } from "./backend/candidates.ts";
 import { registerEditorMcp } from "./backend/editor-mcp.ts";
 import { editHistory, recordEdit } from "./backend/editing.ts";
 import { captionsSrt, editKit, publishKit } from "./backend/publishing.ts";
+import { connectUrl, finishConnect, publishPublic, uploadPrivate, youtubeRecord, youtubeStatus, YouTubeError } from "./backend/youtube.ts";
+import { auditAgent } from "./backend/operations.ts";
 import { decideRule, StyleConflict, styleGuide } from "./backend/style.ts";
 import { STYLE_KEYS, STYLES } from "./backend/styles.ts";
 import { makeVideo, shortFile, thumbnailFile, videoFile, videoFiles } from "./backend/pipeline.ts";
@@ -47,7 +49,7 @@ function guarded(fn: Handler) {
     try {
       return await fn(req, reply, admin);
     } catch (error) {
-      if (error instanceof VideoConflict || error instanceof StyleConflict) return reply.code(409).send({ error: "conflict", detail: error.message });
+      if (error instanceof VideoConflict || error instanceof StyleConflict || error instanceof YouTubeError) return reply.code(409).send({ error: "conflict", detail: error.message });
       if (error instanceof z.ZodError) return reply.code(400).send({ error: "invalid_request", detail: error.issues.map((i) => i.message).join("; ") });
       req.log.error({ err: error }, "video admin error");
       return reply.code(500).send({ error: "internal_error", detail: String((error as Error).message).slice(0, 300) });
@@ -105,6 +107,7 @@ export const videoServer: ServerModule = {
       style: await styleGuide(),
       styles: STYLE_KEYS.map((k) => ({ key: k, label: STYLES[k].label, for: STYLES[k].for, sensitive: !!STYLES[k].sensitive })),
       videos: await listVideos(),
+      youtube: youtubeStatus(),
     })));
 
     app.get("/api/admin/video/videos/:id", guarded(async (req, reply) => {
@@ -112,7 +115,7 @@ export const videoServer: ServerModule = {
       const video = await getVideo(id);
       if (!video) return reply.code(404).send({ error: "not_found", detail: "No such video." });
       const done = video.status === "ready" || video.status === "approved" || video.status === "rejected";
-      return { video, ...videoFiles(id), history: editHistory(id), publish: done ? publishKit(id) : null };
+      return { video, ...videoFiles(id), history: editHistory(id), publish: done ? publishKit(id) : null, youtube: youtubeRecord(id) };
     }));
 
     app.get("/api/admin/video/videos/:id/video.mp4", guarded(async (req, reply) => sendVideo(req, reply, videoFile(idParam.parse(req.params).id))));
@@ -172,6 +175,39 @@ export const videoServer: ServerModule = {
       const rule = z.object({ rule: z.string().regex(/^[a-f0-9-]{4,40}$/) }).parse(req.params).rule;
       const { status } = z.object({ status: z.enum(["active", "rejected", "retired"]) }).parse(req.body);
       return { rule: await decideRule(actorOf(admin), rule, status) };
+    }));
+
+    // YouTube: connect the channel (OAuth in the admin's browser), upload private, and publish on a human's click.
+    app.get("/api/admin/video/youtube/connect", guarded(async (_req, reply, admin) => reply.redirect(connectUrl(actorOf(admin)))));
+    app.get("/api/admin/video/youtube/callback", guarded(async (req, reply, admin) => {
+      const q = z.object({ code: z.string().optional(), state: z.string().optional(), error: z.string().optional() }).parse(req.query);
+      if (q.error || !q.code || !q.state) return reply.redirect(`/admin/videos?youtube=${encodeURIComponent(q.error ?? "cancelled")}`);
+      try {
+        const channel = await finishConnect(q.code, q.state, actorOf(admin));
+        await auditAgent(actorOf(admin), "video.youtube.connect", `youtube:${channel.id}`, null, { channel: channel.title });
+        return reply.redirect("/admin/videos?youtube=connected");
+      } catch (error) {
+        return reply.redirect(`/admin/videos?youtube=${encodeURIComponent((error as Error).message.slice(0, 200))}`);
+      }
+    }));
+    app.post("/api/admin/video/videos/:id/youtube/upload", guarded(async (req, _reply, admin) => {
+      const { id } = idParam.parse(req.params);
+      const video = await getVideo(id);
+      if (!video || !["ready", "approved"].includes(video.status)) throw new VideoConflict("Only a finished video (ready or approved) can be uploaded.");
+      const record = await uploadPrivate(id, actorOf(admin));
+      recordEdit(id, { actor: actorOf(admin), kind: "edit", detail: { variant: "youtube", upload: record } });
+      await auditAgent(actorOf(admin), "video.youtube.upload", `video:${id}`, null, record);
+      return { youtube: record };
+    }));
+    app.post("/api/admin/video/videos/:id/youtube/publish", guarded(async (req, _reply, admin) => {
+      const { id } = idParam.parse(req.params);
+      z.object({ confirm: z.literal(true) }).parse(req.body);
+      const video = await getVideo(id);
+      if (video?.status !== "approved") throw new VideoConflict("Approve the video first: only an approved video can go public.");
+      const record = await publishPublic(id, actorOf(admin));
+      recordEdit(id, { actor: actorOf(admin), kind: "edit", detail: { variant: "youtube", published: record.publishedAt } });
+      await auditAgent(actorOf(admin), "video.youtube.publish", `video:${id}`, null, record);
+      return { youtube: record };
     }));
 
     app.post("/api/admin/video/videos/:id/review", guarded(async (req) => {

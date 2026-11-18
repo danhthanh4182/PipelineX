@@ -14,15 +14,15 @@ Every number below was read from the video files (`.data/videos/<id>/`: `timelin
 | | #1 Nvidia earnings | #2 Fed task force on AI | #3 Peraire-Bueno acquittal |
 |---|---|---|---|
 | Style | earnings | macro | crime (chosen by the legal words) |
-| Status | approved; **long video public on YouTube** (`1FmXK7RxAYY`), Short uploaded but still private | approved, not uploaded | still being made (step `assets`) |
-| Long video | 3:59 narration + 3 s intro + 7 s outro = **4:09** (YouTube shows 4:10) | 4:07 narration + 10 s = **4:17** | not finished |
-| Short | **63.0 s** (over 60 s) | 59.7 s | not made yet |
-| Fact-check, long | 30 sentences: 27 supported, **0 partial, 0 unsupported**, 3 framing | 28: 26 supported, **0 / 0**, 2 framing | 46: 37 supported, 0 / 0, 9 framing (first pass) |
-| Fact-check, Short | 15: 14 supported, 0 / 0, 1 framing | 9: 8 supported, 0 / 0, 1 framing | – |
-| Beats with a real picture | **6 of 16** | **6 of 26** (4 of the 10 planned pictures were not found and became text cards) | – |
-| Pictures (licensed, credited) | 6 | 6 | – |
-| Model cost | $0 | $0 | $0 so far |
-| Render time | not measured | not measured | – |
+| Status | approved; **long video public on YouTube** (`1FmXK7RxAYY`), Short uploaded but still private | approved, not uploaded | **approved, not uploaded** |
+| Long video | 3:59 narration + 3 s intro + 7 s outro = **4:09** (YouTube shows 4:10) | 4:07 narration + 10 s = **4:17** (87 MB) | 4:59 narration + 10 s = **5:09** (72.1 MB) |
+| Short | **63.0 s** (over 60 s) | 59.7 s (16.2 MB) | **83.1 s** (19.4 MB) |
+| Fact-check, long | 30 sentences: 27 supported, **0 partial, 0 unsupported**, 3 framing | 28: 26 supported, **0 / 0**, 2 framing | 46: 37 supported, **0 / 0**, 9 framing |
+| Fact-check, Short | 15: 14 supported, **0 / 0**, 1 framing | 9: 8 supported, **0 / 0**, 1 framing | 10: 9 supported, **0 / 0**, 1 framing |
+| Beats with a real picture | **6 of 16** | **6 of 26** (4 of the 10 planned pictures were not found and became text cards) | **6 of 24** (plus 2 portraits, 19 backdrops) |
+| Pictures (licensed, credited) | 6 | 6 | 6 |
+| Model cost | $0 | $0 | $0 |
+| Render time | not measured | not measured | Long 71s, Short 47s |
 
 "0 flags" means no sentence was judged wrong or only partly supported. Framing sentences (transitions, questions,
 the outro) are not checkable claims; they are counted apart, not passed.
@@ -111,3 +111,23 @@ changes in `FORK_CHANGES.md`.
    under 70 characters, no claim the video does not support).
 
 Not for the agent: YouTube upload, Publish, the Google Cloud audit request, channel verification.
+
+---
+
+## 7. Optimizations implemented & measured (2026-11-18 session 2)
+
+1. **Free Model Chain Optimization on NVIDIA NIM**:
+   - **Empirical Measurement**: `mistralai/mistral-large-4-1t-a52b` timed out (>15s curl, >60s in `chatJson`) when constrained decoding `response_format: {"type": "json_object"}` was requested. In contrast, `nvidia/nemotron-3.5-super-vl-120b-a12b` (`nvidia-vl`) completed structured fact-checking in **~10 seconds** with 0 errors and full vision capability. `minimaxai/minimax-m3.1-flash` answered in **3.0 seconds** on basic JSON but is prone to 10-20 RPM throttling.
+   - **Order Established**: Default chain configured in `renderer/lib.ts` and `.env`: `nvidia-vl` (Nemotron 120b Super-VL) -> `nvidia-minimax` (MiniMax 3.1 Flash) -> `nvidia-nemotron` (Nemotron 30b text-only) -> `openrouter-free` -> `orcarouter`.
+2. **Chart Beat Style Rule Proposed**:
+   - Proposed style rule `[2d6d2b81]` via `propose_style_rule`: When a financial dossier has 2+ dated numeric values of a metric (interest rates, earnings, stock/asset prices), generate a `chart` visual beat instead of a plain text card. This reduces text-heavy slides (which previously accounted for ~70% of non-broll beats).
+3. **Publish Kits with 3 Title Options for YouTube Test & Compare**:
+   - Updated publish kits for Video #1, Video #2, and Video #3 via `edit_publish_kit` with 3 distinct headline angles each (subject first, under 70 characters, 100% grounded in source facts).
+4. **Video #3 Completed & Approved**:
+   - 0 flags on Long video (46 sentences: 37 supported, 0 partial, 0 unsupported, 9 framing).
+   - 0 flags on Short video (10 sentences: 9 supported, 0 partial, 0 unsupported, 1 framing).
+   - Both `video.mp4` (72.1 MB) and `short.mp4` (19.4 MB) rendered cleanly via Remotion.
+   - Formally approved in pipeline database via `review(3, verdict: "approved")`.
+5. **Cost Compliance**:
+   - 100% free stack ($0.00 spend across all 3 videos).
+

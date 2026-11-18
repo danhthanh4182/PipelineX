@@ -22,16 +22,26 @@ export const outlet = (a: Article) => a.source.replace(/\s*·.*$/, "");
  * the app's LLM_* is used. A provider that throttles, fails, times out or refuses the key hands the call to the next.
  */
 const DEFAULT_MODEL: Record<string, string> = {
-  nvidia: "nvidia/nemotron-3.5-super-vl-120b-a12b", openrouter: "nvidia/nemotron-3.5-super-vl", orcarouter: "deepseek/deepseek-v4.1-flash-free",
+  nvidia: "nvidia/nemotron-3.5-super-vl-120b-a12b",
+  "nvidia-vl": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+  "nvidia-minimax": "minimaxai/minimax-m3.1-flash",
+  "nvidia-mistral": "mistralai/mistral-large-4-1t-a52b",
+  "nvidia-nemotron": "nvidia/nemotron-3.5-lightning-30b-a3b",
+  openrouter: "nvidia/nemotron-3.5-super-vl",
+  orcarouter: "deepseek/deepseek-v4.1-flash-free",
 };
 /** Providers whose default model cannot read images: calls with an image skip them. */
-const TEXT_ONLY = new Set(["orcarouter"]);
+const TEXT_ONLY = new Set(["orcarouter", "nvidia-nemotron"]);
 export function providers() {
-  const list = (process.env.VIDEO_PROVIDERS || "nvidia,openrouter-free,orcarouter").split(",").map((p) => p.trim().toLowerCase()).filter(Boolean).flatMap((name) => {
+  const list = (process.env.VIDEO_PROVIDERS || "nvidia-vl,nvidia-minimax,nvidia-nemotron,openrouter-free,orcarouter").split(",").map((p) => p.trim().toLowerCase()).filter(Boolean).flatMap((name) => {
     // "<provider>-free" is that provider's free variant of the same model (OpenRouter's ":free" ids).
     const base = name.replace(/-free$/, "");
-    const env = (k: string) => process.env[`${base.toUpperCase()}_${k}`];
-    const model = (env("MODEL") || DEFAULT_MODEL[base]) + (name.endsWith("-free") ? ":free" : "");
+    const providerKey = base.startsWith("nvidia") ? "NVIDIA" : base.toUpperCase();
+    const env = (k: string) => process.env[`${providerKey}_${k}`];
+    // NVIDIA_MODEL overrides only the plain "nvidia" member (the named nvidia-* members are fixed models); other
+    // providers keep their own <NAME>_MODEL override.
+    const override = base === "nvidia" ? process.env.NVIDIA_MODEL : base.startsWith("nvidia-") ? undefined : env("MODEL");
+    const model = (override || DEFAULT_MODEL[base]) + (name.endsWith("-free") ? ":free" : "");
     return env("BASE_URL") && env("API_KEY") && model ? [{ name, base: env("BASE_URL")!, key: env("API_KEY")!, model, vision: !TEXT_ONLY.has(base) }] : [];
   });
   if (list.length) return list;
@@ -46,7 +56,7 @@ export async function chat(messages: Message[], opts: { maxTokens?: number; temp
   const image = messages.some((m) => Array.isArray(m.content) && m.content.some((part) => part.type === "image_url"));
   for (const p of providers().filter((p) => !image || p.vision)) {
     try {
-      const res = await fetch(`${p.base.replace(/\/$/, "")}/chat/completions`, {
+      let res = await fetch(`${p.base.replace(/\/$/, "")}/chat/completions`, {
         method: "POST",
         headers: { "content-type": "application/json", authorization: `Bearer ${p.key}` },
         body: JSON.stringify({
@@ -57,6 +67,22 @@ export async function chat(messages: Message[], opts: { maxTokens?: number; temp
         }),
         signal: AbortSignal.timeout(opts.timeoutMs ?? 600_000),
       });
+      let retries = 0;
+      while (res.status === 429 && retries < 3) {
+        retries++;
+        console.log(`[${p.name}] HTTP 429, waiting ${retries * 4}s before retry ${retries}/3...`);
+        await new Promise((r) => setTimeout(r, retries * 4000));
+        res = await fetch(`${p.base.replace(/\/$/, "")}/chat/completions`, {
+          method: "POST",
+          headers: { "content-type": "application/json", authorization: `Bearer ${p.key}` },
+          body: JSON.stringify({
+            model: p.model, temperature: opts.temperature ?? 0.2, max_tokens: opts.maxTokens ?? 30000, messages,
+            ...(opts.json === false ? {} : { response_format: { type: "json_object" } }),
+            ...(p.name.startsWith("openrouter") && opts.reasoning !== 0 ? { reasoning: { max_tokens: opts.reasoning ?? Number(process.env.LLM_REASONING_TOKENS || 6000) } } : {}),
+          }),
+          signal: AbortSignal.timeout(opts.timeoutMs ?? 600_000),
+        });
+      }
       const data = (await res.json().catch(() => ({}))) as any;
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${JSON.stringify(data).slice(0, 300)}`);
       const choice = data.choices?.[0];

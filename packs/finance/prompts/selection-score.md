@@ -69,7 +69,9 @@ Do not average the axes first, do not change the weights, do not stack several o
 
 ### Noise that must be held down
 
-- Daily "stocks rose / fell" wraps with no cause, no outlier and no turning point: `sig ≤ 3`.
+- Daily "stocks rose / fell" wraps with no cause, no outlier and no turning point: `sig ≤ 3`. This cap does not apply to a large move with a stated cause (a major index down or up about 2% or more, or several hundred Dow points, a record, a crash, a volatility spike): score that as a market event.
+- Evergreen money advice (how-to, rules of thumb, quizzes, year-in-review lists) without a new rule, rate, price, deadline or decision behind it: `sig ≤ 3` and `nov ≤ 3`; it is not news, however useful.
+- Entertainment or culture pieces that only touch money (a TV sketch, a celebrity's spending): `sig ≤ 2`.
 - Single-analyst price targets, ratings changes, "stocks to buy" lists and trading tips: `sig ≤ 2` and `act ≤ 1`.
 - Press-release PR: product placements, partnerships without numbers, executive hires below the C-suite, conference talk: `sig ≤ 3`.
 - Rumours and "considering" or "exploring" reports without a decision: `cred ≤ 4`.

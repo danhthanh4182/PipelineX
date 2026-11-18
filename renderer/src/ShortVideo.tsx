@@ -1,7 +1,7 @@
 // Vertical YouTube Short (1080×1920) from timeline-short.json: full-bleed pictures the long video already checked,
 // big word-by-word captions in the middle, a progress bar, and a closing call to the full story.
 import { AbsoluteFill, Audio, Img, Loop, OffthreadVideo, Sequence, interpolate, spring, staticFile, useCurrentFrame, Easing } from "remotion";
-import { FPS, type Timeline } from "./NewsVideo";
+import { applyPalette, FPS, type Timeline } from "./NewsVideo";
 
 /** Seconds the closing card stays after the last word. */
 export const SHORT_TAIL = 1.5;
@@ -18,7 +18,7 @@ const Backdrop = () => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill style={{ background: C.bg }}>
-      <AbsoluteFill style={{ background: `radial-gradient(circle at 50% ${30 + 8 * Math.sin(f / 70)}%, rgba(54,211,153,0.20), transparent 60%)` }} />
+      <AbsoluteFill style={{ background: `radial-gradient(circle at 50% ${30 + 8 * Math.sin(f / 70)}%, ${C.accent}33, transparent 60%)` }} />
     </AbsoluteFill>
   );
 };
@@ -135,7 +135,8 @@ const BeatView = ({ beat }: { beat: Beat }) => {
   );
 };
 
-export const ShortVideo = ({ scenes, total, music }: Timeline) => {
+export const ShortVideo = ({ scenes, total, music, palette }: Timeline) => {
+  applyPalette(C, palette);
   const f = useCurrentFrame();
   const beats = scenes.flatMap((s) => s.beats.map((b) => ({ ...b, start: s.start + b.start }))) as Beat[];
   const end = Math.round(total * FPS);

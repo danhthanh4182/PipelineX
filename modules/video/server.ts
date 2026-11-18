@@ -13,8 +13,9 @@ import { registerEditorMcp } from "./backend/editor-mcp.ts";
 import { editHistory, recordEdit } from "./backend/editing.ts";
 import { editKit, publishKit } from "./backend/publishing.ts";
 import { decideRule, StyleConflict, styleGuide } from "./backend/style.ts";
+import { STYLE_KEYS, STYLES } from "./backend/styles.ts";
 import { makeVideo, shortFile, thumbnailFile, videoFile, videoFiles } from "./backend/pipeline.ts";
-import { autoPick, candidatesWithVideos, createVideo, getVideo, listVideos, requeueVideo, reviewVideo, STEPS, VideoConflict, type Step } from "./backend/videos.ts";
+import { autoPick, candidatesWithVideos, createVideo, getVideo, listVideos, requeueVideo, reviewVideo, setStyle, STEPS, VideoConflict, type Step } from "./backend/videos.ts";
 
 export const AUTO_ENABLED = () => process.env.VIDEO_AUTO_ENABLED === "true";
 
@@ -102,6 +103,7 @@ export const videoServer: ServerModule = {
       steps: STEPS,
       candidates: await candidatesWithVideos(),
       style: await styleGuide(),
+      styles: STYLE_KEYS.map((k) => ({ key: k, label: STYLES[k].label, for: STYLES[k].for, sensitive: !!STYLES[k].sensitive })),
       videos: await listVideos(),
     })));
 
@@ -146,6 +148,15 @@ export const videoServer: ServerModule = {
       if (!out) throw new VideoConflict("This video is not finished yet.");
       recordEdit(id, { actor: actorOf(admin), kind: "edit", detail: { variant: "publish", kit: out.changes } });
       return { publish: out.kit };
+    }));
+
+    app.post("/api/admin/video/videos/:id/style", guarded(async (req, _reply, admin) => {
+      const { id } = idParam.parse(req.params);
+      const { style } = z.object({ style: z.enum(STYLE_KEYS as [string, ...string[]]) }).parse(req.body);
+      const before = (await getVideo(id))?.style ?? null;
+      const video = await setStyle(id, style);
+      recordEdit(id, { actor: actorOf(admin), kind: "edit", detail: { variant: "style", style: { before, after: style } } });
+      return { video };
     }));
 
     app.post("/api/admin/video/style/:rule", guarded(async (req, _reply, admin) => {

@@ -4,7 +4,9 @@
 // Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env short.ts   (reads script-final.json [+ dossier.json], writes script-short.json)
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { chatJson, numbersIn, readArticles, W, words } from "./lib.ts";
+import { chatJson, numbersIn, readArticles, readPreset, W, words } from "./lib.ts";
+
+const preset = readPreset();
 
 const articles = readArticles();
 const long = JSON.parse(readFileSync(`${W}/script-final.json`, "utf8"));
@@ -30,7 +32,7 @@ const system = `You write YouTube Shorts for an English AI news channel. Turn th
 
 Rules:
 - Facts only from the material; attribute claims ("according to The Verge"); allegations stay allegations; where reports differ, say so.
-- Beat 1 is the hook: the single most surprising fact in under 12 words. No greeting, no channel name.
+- Beat 1 is the hook: ${preset ? preset.short.hook : "the single most surprising fact in under 12 words"}. No greeting, no channel name.${preset ? `\n- Tone: ${preset.script.tone}.${preset.script.rules.map((r) => `\n- ${r}`).join("")}` : ""}
 - 6-9 beats, each 1-2 short sentences (3-7 seconds). Plain spoken English, no emojis, no hashtags in narration.
 - Last beat: one-line takeaway, then "Full story on our channel."
 - Every beat shows ONE visual:

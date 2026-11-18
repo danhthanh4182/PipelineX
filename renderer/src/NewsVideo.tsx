@@ -6,7 +6,9 @@ type Word = { text: string; start: number; end: number };
 type Visual = Record<string, any> & { type: string };
 type Beat = { narration: string; visual: Visual; audio: string; start: number; duration: number; words: Word[] };
 type Scene = { kind: string; kicker: string; headline: string; start: number; duration: number; beats: Beat[] };
-export type Timeline = { title: string; total: number; scenes: Scene[]; sources?: Array<{ n: number; name: string; title?: string }>; music?: string | null; date?: string };
+export type Palette = { accent: string; accent2: string; kicker: string };
+export type Timeline = { title: string; total: number; scenes: Scene[]; sources?: Array<{ n: number; name: string; title?: string }>; music?: string | null; date?: string;
+  style?: string; palette?: Palette | null };
 
 /** Branded opening and the end card, around the narrated part (seconds). */
 export const INTRO = 3;
@@ -30,7 +32,7 @@ const Grid = () => {
     <AbsoluteFill style={{ background: C.bg }}>
       <AbsoluteFill style={{ backgroundImage: `linear-gradient(${C.line} 1px, transparent 1px), linear-gradient(90deg, ${C.line} 1px, transparent 1px)`,
         backgroundSize: "80px 80px", backgroundPosition: `${shift}px ${shift}px`, opacity: 0.5 }} />
-      <AbsoluteFill style={{ background: `radial-gradient(circle at ${35 + 10 * Math.sin(f / 90)}% 40%, rgba(54,211,153,0.14), transparent 55%)` }} />
+      <AbsoluteFill style={{ background: `radial-gradient(circle at ${35 + 10 * Math.sin(f / 90)}% 40%, ${C.accent}24, transparent 55%)` }} />
     </AbsoluteFill>
   );
 };
@@ -359,7 +361,17 @@ const BeatView = ({ scene, beat, index, at, total, repeat }: { scene: Scene; bea
   );
 };
 
-export const NewsVideo = ({ scenes, total, title, sources = [], music, date }: Timeline) => {
+/**
+ * The video's style colours (styles.ts, through the timeline). Every frame of one render uses the same timeline, so
+ * setting the shared palette before drawing is safe.
+ */
+export function applyPalette(target: { accent: string; hot: string }, palette?: Palette | null) {
+  target.accent = palette?.accent ?? "#36d399";
+  target.hot = palette?.accent2 ?? "#ff5c5c";
+}
+
+export const NewsVideo = ({ scenes, total, title, sources = [], music, date, palette }: Timeline) => {
+  applyPalette(C, palette);
   let index = 0;
   const shown = new Set<string>();
   const end = Math.round((INTRO + total) * FPS);

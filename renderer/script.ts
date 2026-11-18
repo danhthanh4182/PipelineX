@@ -3,7 +3,9 @@
 // it uses; without one (or VIDEO_DOSSIER=off) from the reports' first VIDEO_MATERIAL_CHARS characters, as before.
 // Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env script.ts   (reads <dir>/story.json [+ dossier.json], writes <dir>/script.json)
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { chatJson, materialOf, numbersIn, outlet, readArticles, W, words } from "./lib.ts";
+import { chatJson, materialOf, numbersIn, outlet, readArticles, readPreset, W, words } from "./lib.ts";
+
+const preset = readPreset();
 
 const articles = readArticles();
 const useDossier = process.env.VIDEO_DOSSIER !== "off" && existsSync(`${W}/dossier.json`);
@@ -45,7 +47,9 @@ ${facts}
 
 Style: spoken English, short sentences, plain words, no markdown, no emojis. Each beat must add something new: never restate an earlier beat in softer words.
 
-Structure: scenes = hook (15-20 s: the single most surprising fact and the question the video answers), 4-6 story scenes (what happened, background, reactions, what is disputed, what comes next), outro.
+Structure: scenes = ${preset ? preset.script.structure : "hook (15-20 s: the single most surprising fact and the question the video answers), 4-6 story scenes (what happened, background, reactions, what is disputed, what comes next), outro"}.${preset ? `
+Tone: ${preset.script.tone}.${preset.script.rules.length ? `\nRules for this kind of story:\n${preset.script.rules.map((r) => `- ${r}`).join("\n")}` : ""}
+B-roll that suits it (when nothing more specific fits): ${preset.script.broll.join(", ")}.` : ""}
 Every scene is split into 2-4 BEATS. A beat is 1-3 sentences of narration (about 5-12 seconds) with ONE visual.
 Total narration ${minWords}-${maxWords} words. Change the visual type often; never use the same type more than twice in a row. Show each report as an "article" at most once.
 

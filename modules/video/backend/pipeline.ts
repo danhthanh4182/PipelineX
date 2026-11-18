@@ -6,8 +6,10 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } fr
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config } from "@aihot/backend/config";
-import { EXTRAS, finishVideo, getVideo, markStep, recordStep, STEPS, storyMaterial, type Step } from "./videos.ts";
+import { EXTRAS, finishVideo, getVideo, markStep, recordStep, STEPS, storyMaterial, styleInputs, type Step } from "./videos.ts";
 import { activeRules } from "./style.ts";
+import { chooseStyle, STYLES, type StyleKey } from "./styles.ts";
+import { sql } from "@aihot/backend/db";
 
 export const ROOT = fileURLToPath(new URL("../../../", import.meta.url));
 export const RENDERER = process.env.VIDEO_RENDERER_DIR || path.join(ROOT, "renderer");
@@ -112,6 +114,14 @@ export async function makeVideo(id: number, from: Step = "story"): Promise<void>
   mkdirSync(dir, { recursive: true });
   let step: Step = from;
   let shortFailed = false;
+  // The video's style: chosen from its story the first time, kept (or as the editor or agent set it) afterwards.
+  let style = (video.style && video.style in STYLES ? video.style : null) as StyleKey | null;
+  if (!style && video.story_id) {
+    const chosen = chooseStyle(await styleInputs(video.story_id));
+    style = chosen.style;
+    await sql`UPDATE video_jobs SET style = ${style}, result = result || ${sql.json({ style: { style, why: chosen.why } } as never)} WHERE id = ${id}`;
+  }
+  writeFileSync(path.join(dir, "style-preset.json"), JSON.stringify(STYLES[style ?? "news"]));
   try {
     if (!config.modelCallsEnabled) throw new Error("MODEL_CALLS_ENABLED is not true: the script and picture checks call paid models.");
     for (step of STEPS.slice(STEPS.indexOf(from))) {

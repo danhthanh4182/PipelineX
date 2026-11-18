@@ -23,6 +23,7 @@ interface Video {
   cost: string;
   duration_s: string | null;
   created_by: string;
+  style: string | null;
   created_at: string;
   finished_at: string | null;
   updated_at: string;
@@ -49,7 +50,10 @@ interface PublishKit {
   editedAt?: string;
 }
 
+interface StyleOption { key: string; label: string; for: string; sensitive: boolean }
+
 interface Overview {
+  styles: StyleOption[];
   style: StyleRule[];
   csrf: string;
   auto: boolean;
@@ -180,7 +184,7 @@ export default function VideosAdmin({ loaderData }: { loaderData: { overview: Ov
         </>
       }
     >
-      {detail && <VideoDetail d={detail} steps={o.steps} run={run} busy={busy} close={() => setParams({}, { preventScrollReset: true })} />}
+      {detail && <VideoDetail d={detail} steps={o.steps} styles={o.styles} run={run} busy={busy} close={() => setParams({}, { preventScrollReset: true })} />}
       <StyleGuide rules={o.style} run={run} busy={busy} />
 
       <div className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
@@ -194,6 +198,7 @@ export default function VideosAdmin({ loaderData }: { loaderData: { overview: Ov
               { key: "id", label: "#", render: (v) => <span className="tabular-nums text-ink-3">{v.id}</span> },
               { key: "title", label: "Story", render: (v) => <span className={`line-clamp-2 ${Number(params.get("id")) === v.id ? "font-semibold text-ink" : ""}`}>{v.title}</span> },
               { key: "status", label: "Status", render: (v) => <StatusBadge v={v} /> },
+              { key: "style", label: "Style", render: (v) => <span className="text-[12px] text-ink-3">{o.styles.find((s) => s.key === v.style)?.label ?? "–"}</span> },
               { key: "len", label: "Length", align: "right", render: (v) => <span className="tabular-nums">{minutes(v.duration_s)}</span> },
               { key: "cost", label: "Cost", align: "right", render: (v) => <span className="tabular-nums">{usd(v.cost)}</span> },
               { key: "at", label: "Made", render: (v) => <span className="text-ink-3">{ago(v.created_at)}{v.created_by === "auto" ? " · auto" : ""}</span> },
@@ -300,9 +305,10 @@ function StyleGuide({ rules, run, busy }: { rules: StyleRule[]; run: (label: str
   );
 }
 
-function VideoDetail({ d, steps, run, busy, close }: {
+function VideoDetail({ d, steps, styles, run, busy, close }: {
   d: Detail;
   steps: Step[];
+  styles: StyleOption[];
   run: (label: string, path: string, body: unknown, done: string) => Promise<Video | null>;
   busy: string | null;
   close: () => void;
@@ -383,6 +389,16 @@ function VideoDetail({ d, steps, run, busy, close }: {
               return <li key={s}><Badge tone={state}>{i + 1}. {STEP_LABEL[s]}</Badge></li>;
             })}
           </ol>
+
+          <div className="flex flex-wrap items-center gap-2 text-[12.5px]">
+            <span className="text-ink-3">Style</span>
+            <Select value={v.style ?? ""} disabled={!done} aria-label="Video style"
+              onChange={(e) => e.target.value && run("style", `/api/admin/video/videos/${v.id}/style`, { style: e.target.value }, "Style changed: make again from Script to rewrite in it")}>
+              {!v.style && <option value="">(chosen when made)</option>}
+              {styles.map((s) => <option key={s.key} value={s.key} title={s.for}>{s.label}{s.sensitive ? " ⚠︎" : ""}</option>)}
+            </Select>
+            <span className="text-ink-4">{styles.find((s) => s.key === v.style)?.for}</span>
+          </div>
 
           {v.error && <pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded-control bg-hot-soft p-3 text-[12px] text-hot">{v.error}</pre>}
 
@@ -512,7 +528,7 @@ function VideoDetail({ d, steps, run, busy, close }: {
             {[...d.history].reverse().map((h, i) => (
               <li key={i}>
                 <span className="text-ink-4">{ago(h.at)} · {h.actor} · </span>
-                <b className="text-ink-2">{h.kind === "create" ? "started this video" : h.kind === "edit" ? (h.detail.variant === "publish" ? `edited the publish kit (${Object.keys(h.detail.kit ?? {}).join(", ")})` : h.detail.visual ? "changed a picture" : `edited the ${h.detail.variant === "short" ? "Short" : "script"}`) : h.kind === "remake" ? `made again from ${h.detail.from}` : `marked ${h.detail.verdict}`}</b>
+                <b className="text-ink-2">{h.kind === "create" ? "started this video" : h.kind === "edit" ? (h.detail.variant === "style" ? `changed the style: ${h.detail.style?.before ?? "–"} → ${h.detail.style?.after}` : h.detail.variant === "publish" ? `edited the publish kit (${Object.keys(h.detail.kit ?? {}).join(", ")})` : h.detail.visual ? "changed a picture" : `edited the ${h.detail.variant === "short" ? "Short" : "script"}`) : h.kind === "remake" ? `made again from ${h.detail.from}` : `marked ${h.detail.verdict}`}</b>
                 {h.note && <span className="text-ink-3"> — {h.note}</span>}
                 {h.kind === "edit" && (h.detail.beats ?? []).map((b: any, j: number) => (
                   <div key={j} className="mt-1 pl-3 text-ink-3">

@@ -84,6 +84,15 @@ export async function chatJson(system: string, user: string, opts: { maxTokens?:
   return { json: parseJson(text), text, cost, provider };
 }
 
+/** The video's style (modules/video/backend/styles.ts), written by the pipeline as style-preset.json; null when run by hand. */
+export type Preset = {
+  key: string; label: string; sensitive?: boolean;
+  script: { structure: string; tone: string; rules: string[]; broll: string[] };
+  short: { hook: string }; pictureRules: string[];
+  visual: { accent: string; accent2: string; kicker: string }; voice: { rate: string; shortRate: string }; music: string;
+};
+export const readPreset = (): Preset | null => (existsSync(`${W}/style-preset.json`) ? JSON.parse(readFileSync(`${W}/style-preset.json`, "utf8")) : null);
+
 /** Lower-case, quotes and runs of spaces removed: for "does this text appear verbatim" checks. */
 export const norm = (s: string) => s.toLowerCase().replace(/[“”"‘’'`]/g, "").replace(/[–—]/g, "-").replace(/\s+/g, " ").trim();
 /** Only the words: for verbatim checks that ignore punctuation and spacing ("justice," == "justice."). */

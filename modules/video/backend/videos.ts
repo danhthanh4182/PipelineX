@@ -18,6 +18,7 @@ export interface VideoRow {
   cost: string;
   duration_s: string | null;
   created_by: string;
+  style: string | null;
   created_at: Date;
   started_at: Date | null;
   finished_at: Date | null;
@@ -41,13 +42,13 @@ export async function getVideo(id: number, db: Db = sql): Promise<VideoRow | nul
 }
 
 /** A new video for a story; a story already queued or being made is refused. */
-export async function createVideo(storyId: number, createdBy: string, db: Db = sql): Promise<VideoRow> {
+export async function createVideo(storyId: number, createdBy: string, db: Db = sql, style: string | null = null): Promise<VideoRow> {
   const [story] = await db<{ id: number; title: string }[]>`SELECT id, title FROM stories WHERE id = ${storyId} AND merged_into IS NULL`;
   if (!story) throw new VideoConflict("This story does not exist or was merged into another.");
   const [busy] = await db`SELECT id FROM video_jobs WHERE story_id = ${storyId} AND status IN ('queued', 'running')`;
   if (busy) throw new VideoConflict(`Video #${busy.id} for this story is already in progress.`);
   const [row] = await db<VideoRow[]>`
-    INSERT INTO video_jobs (story_id, title, created_by) VALUES (${storyId}, ${story.title}, ${createdBy}) RETURNING *`;
+    INSERT INTO video_jobs (story_id, title, created_by, style) VALUES (${storyId}, ${story.title}, ${createdBy}, ${style}) RETURNING *`;
   await db`UPDATE video_candidates SET status = 'selected' WHERE story_id = ${storyId}`;
   return row!;
 }
@@ -100,6 +101,26 @@ export async function candidatesWithVideos(db: Db = sql) {
     LEFT JOIN LATERAL (SELECT id, status FROM video_jobs WHERE story_id = c.story_id ORDER BY id DESC LIMIT 1) v ON true
     ORDER BY c.created_at::date DESC, c.heat DESC, c.id DESC
     LIMIT 40`;
+}
+
+/** Sets a video's style; it applies from the next remake (from "script" for the words, "voice" for pace and look). */
+export async function setStyle(id: number, style: string, db: Db = sql): Promise<VideoRow> {
+  const [row] = await db<VideoRow[]>`UPDATE video_jobs SET style = ${style}, updated_at = now() WHERE id = ${id} AND status NOT IN ('queued', 'running') RETURNING *`;
+  if (!row) throw new VideoConflict("This video is queued or being made right now, or does not exist.");
+  return row;
+}
+
+/** What the style chooser reads of a story: each report's title and summary, and its category. */
+export async function styleInputs(storyId: number, db: Db = sql) {
+  return db<{ text: string; category: string | null }[]>`
+    SELECT DISTINCT ON (a.id) concat_ws(' ', a.title, an.summary_zh, p.summary) AS text, p.category
+    FROM facts f
+    JOIN fact_articles fa ON fa.fact_id = f.id
+    JOIN articles a ON a.id = fa.article_id
+    LEFT JOIN publications p ON p.article_id = a.id
+    LEFT JOIN analyses an ON an.article_id = a.id AND an.input_revision = a.revision
+    WHERE f.story_id = ${storyId}
+    ORDER BY a.id, an.id DESC`;
 }
 
 /** The day's automatic video: the hottest candidate not made yet, once a day. */

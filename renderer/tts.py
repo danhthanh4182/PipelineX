@@ -27,7 +27,9 @@ OUT = W / "public" / "audio"; OUT.mkdir(parents=True, exist_ok=True)
 SHORT = VARIANT == "short"
 BEAT_GAP = 0.1 if SHORT else 0.25   # pause between beats inside a scene (a Short keeps moving)
 SCENE_GAP = 0.3 if SHORT else 0.7   # pause between scenes
-RATE = "+10%" if SHORT else "+4%"
+# The video's style (style-preset.json, written by the pipeline) sets the pace and the music's mood.
+PRESET = json.loads((W / "style-preset.json").read_text()) if (W / "style-preset.json").exists() else None
+RATE = (PRESET["voice"]["shortRate"] if SHORT else PRESET["voice"]["rate"]) if PRESET else ("+10%" if SHORT else "+4%")
 
 
 def duration(path: Path) -> float:
@@ -122,12 +124,14 @@ async def main():
         scenes.append({k: s[k] for k in ("kind", "kicker", "headline")} | {"start": round(scene_start, 3), "duration": round(t - scene_start, 3), "beats": beats})
         print(f"scene {si}: {t - scene_start:5.1f}s, {len(beats)} beats")
     # Optional music bed: VIDEO_MUSIC, else the first track in renderer/music/ (e.g. from the YouTube Audio Library).
-    music = os.environ.get("VIDEO_MUSIC") or next((str(p) for p in sorted(Path("music").glob("*.mp3"))), None)
+    mood_tracks = sorted((Path("music") / PRESET["music"]).glob("*.mp3")) if PRESET else []
+    music = os.environ.get("VIDEO_MUSIC") or next((str(p) for p in mood_tracks), None) or next((str(p) for p in sorted(Path("music").glob("*.mp3"))), None)
     if music and Path(music).exists():
         shutil.copy(music, W / "public" / "music.mp3")
     timeline = {"title": script["title"], "thumbnail_text": script.get("thumbnail_text"), "voice": VOICE, "total": round(t, 3), "scenes": scenes, "sources": script["sources"],
                 "music": "music.mp3" if music and Path(music).exists() else None,
-                "date": datetime.date.today().strftime("%b %-d, %Y")}
+                "date": datetime.date.today().strftime("%b %-d, %Y"),
+                "style": PRESET["key"] if PRESET else "news", "palette": PRESET["visual"] if PRESET else None}
     (W / TIMELINE).write_text(json.dumps(timeline, indent=2))
     print(f"total {t:.1f}s")
     chars = sum(len(b["narration"]) for s in script["scenes"] for b in s["beats"])

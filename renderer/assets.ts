@@ -6,7 +6,9 @@
 // Pixabay content: Pixabay Content License (free commercial use, no attribution required; we credit anyway).
 // Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env assets.ts   (reads <dir>/script.json, writes <dir>/script-final.json and <dir>/public/assets)
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
-import { chat } from "./lib.ts";
+import { chat, readPreset } from "./lib.ts";
+
+const preset = readPreset();
 
 const UA = "PipelineX-prototype/0.1 (automated news video research)";
 const OK_LICENSE = /^(cc0|cc[- ]?by(-sa)?( \d\.\d)?|public domain|pd)/i;
@@ -107,7 +109,7 @@ Answer YES only if ALL hold: (1) the image clearly shows ${wanted};
 (3) no other recognisable public figure appears who could mislead viewers about the story;
 (4) nothing offensive or unrelated dominates the picture;
 (5) it is not a photo of a document, letter, sign or screen with legible text, and shows no private person's name or signature;
-(6) its mood fits what is spoken (no celebration, smiling crowds or luxury over a scandal, lawsuit or loss) and it does not suggest a person, brand or product the narration is not about.
+(6) its mood fits what is spoken (no celebration, smiling crowds or luxury over a scandal, lawsuit or loss) and it does not suggest a person, brand or product the narration is not about${preset?.pictureRules.length ? `;\n(7) ${preset.pictureRules.join("; ")}` : ""}.
 Reply with one word: YES or NO.`;
   // Send the picture itself: providers cannot always fetch Wikimedia/Openverse URLs.
   let pic = await get(c.thumb, { "user-agent": UA });

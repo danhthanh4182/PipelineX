@@ -65,3 +65,21 @@ test("web tools read only trusted, non-paywalled sites, and say so plainly witho
   await assert.rejects(webSearch("anything"), ResearchUnavailable);
   await assert.rejects(fetchPage("https://www.bloomberg.com/news/x"), /trusted sites/);
 });
+
+test("a story's style follows its strongest topic signal, else its reports' category", async () => {
+  const { chooseStyle, STYLES, STYLE_KEYS } = await import("../backend/styles.ts");
+  const r = (text: string, category: string | null = "industry") => ({ text, category });
+  assert.equal(chooseStyle([r("Drone strikes hit the front line as military AI targeting spreads"), r("Pentagon AI office"), r("Other")]).style, "war");
+  assert.equal(chooseStyle([r("Police arrest deepfake scam ring; prosecutors say fraud topped $10M"), r("Scammers charged"), r("x")]).style, "crime");
+  assert.equal(chooseStyle([r("California attorney general sues OpenAI"), r("The lawsuit alleges"), r("x")]).style, "investigation");
+  assert.equal(chooseStyle([r("Anthropic IPO valuation tops $70 billion"), r("Investors pile in"), r("x")]).style, "finance");
+  assert.equal(chooseStyle([r("New model tops benchmarks", "ai-models"), r("It is fast", "ai-models"), r("Hands-on", "ai-products")]).style, "launch");
+  assert.equal(chooseStyle([r("A paper on reasoning", "paper")]).style, "explainer");
+  assert.equal(chooseStyle([]).style, "news");
+  assert.equal(chooseStyle([r("One lawsuit mention"), r("a"), r("b"), r("c")]).style, "news", "a signal in under a third of the reports is not enough");
+  for (const k of STYLE_KEYS) {
+    const s = STYLES[k];
+    assert.ok(s.script.structure.includes("hook") && s.script.structure.includes("outro"), `${k} keeps a hook and an outro`);
+    if (s.sensitive) assert.ok(s.pictureRules.length && s.script.rules.some((x) => /graphic/.test(x)), `${k} has the sensitive-topic rules`);
+  }
+});

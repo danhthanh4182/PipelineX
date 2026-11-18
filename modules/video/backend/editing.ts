@@ -39,7 +39,7 @@ export async function videoForEditor(id: number) {
     scene: si, beat: bi, sceneKicker: scene.kicker, narration: b.narration, visual: String(b.visual?.type ?? ""), facts: b.facts ?? [],
   }))) ?? [];
   return {
-    video: { id: video.id, title: video.title, status: video.status, step: video.step, error: video.error, durationSeconds: video.duration_s, createdAt: video.created_at },
+    video: { id: video.id, title: video.title, status: video.status, step: video.step, error: video.error, durationSeconds: video.duration_s, createdAt: video.created_at, style: video.style },
     long: script && { title: script.title, description: script.description ?? "", thumbnailText: script.thumbnail_text ?? null, beats: beatsOf(script) },
     longCheck: { summary: readJson<Verify>(id, "verify.json")?.summary ?? null, flagged: flagged(readJson<Verify>(id, "verify.json")) },
     short: short && { title: short.title, beats: beatsOf(short) },

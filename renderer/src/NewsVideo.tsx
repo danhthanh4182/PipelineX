@@ -1,4 +1,6 @@
+import React from "react";
 import { AbsoluteFill, Audio, Img, Loop, OffthreadVideo, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig, Easing } from "remotion";
+import { Chart } from "./components/Chart";
 
 export const FPS = 30;
 
@@ -49,6 +51,23 @@ const Grid = () => {
 
 // ── Visual beats ─────────────────────────────────────────────────────────────
 
+/** Behind the words of a text beat: the video's nearest picture (assets.ts sets visual.backdrop), blurred and darkened
+ * so the words stay readable, with a slow drift; without one, the grid. */
+const Backdrop = ({ v }: { v: Visual }) => {
+  const f = useCurrentFrame();
+  if (!v.backdrop?.file) return <Grid />;
+  const z = 1.08 + f * 0.0004;
+  const style: React.CSSProperties = { width: "100%", height: "100%", objectFit: "cover", transform: `scale(${z})`, filter: "blur(10px) saturate(0.85) brightness(0.55)" };
+  return (
+    <AbsoluteFill style={{ background: C.bg, overflow: "hidden" }}>
+      {v.backdrop.kind === "video" ? <OffthreadVideo src={staticFile(v.backdrop.file)} muted style={style} /> : <Img src={staticFile(v.backdrop.file)} style={style} />}
+      <AbsoluteFill style={{ background: `linear-gradient(180deg, ${C.bg}b3 0%, ${C.bg}73 45%, ${C.bg}cc 100%)` }} />
+      <AbsoluteFill style={{ background: "radial-gradient(ellipse at center, transparent 35%, rgba(4,6,11,0.75) 100%)" }} />
+    </AbsoluteFill>
+  );
+};
+
+
 /** Full-bleed photo with a slow Ken Burns move and an on-screen credit. */
 const PhotoBeat = ({ v, frames, index }: { v: Visual; frames: number; index: number }) => {
   const f = useCurrentFrame();
@@ -67,9 +86,15 @@ const PhotoBeat = ({ v, frames, index }: { v: Visual; frames: number; index: num
           transform: `scale(${1.06 + 0.08 * p}) translateX(${dir * (p - 0.5) * 40}px)` }} />
       )}
       <AbsoluteFill style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, transparent 25%, transparent 55%, rgba(0,0,0,0.75) 100%)" }} />
-      <div style={{ position: "absolute", right: 40, bottom: 28, color: "rgba(255,255,255,0.75)", fontFamily: SANS, fontSize: 18 }}>
-        {v.asset.kind === "video" ? "Video" : "Photo"}: {v.asset.credit} · {v.asset.license}
-      </div>
+      {v.type === "illustration" ? (
+        // An AI-made illustration is always labelled, clearly, for the whole beat.
+        <div style={{ position: "absolute", right: 40, top: 110, fontFamily: SANS, fontSize: 26, fontWeight: 800, letterSpacing: 2, color: "#0b0f17",
+          background: "rgba(255,255,255,0.88)", padding: "8px 18px", borderRadius: 10 }}>AI ILLUSTRATION</div>
+      ) : (
+        <div style={{ position: "absolute", right: 40, bottom: 28, color: "rgba(255,255,255,0.75)", fontFamily: SANS, fontSize: 18 }}>
+          {v.asset.kind === "video" ? "Video" : "Photo"}: {v.asset.credit} · {v.asset.license}
+        </div>
+      )}
     </AbsoluteFill>
   );
 };
@@ -81,7 +106,7 @@ const ArticleBeat = ({ v }: { v: Visual }) => {
   const brand = BRAND[v.name] ?? C.hot;
   return (
     <AbsoluteFill>
-      <Grid />
+      <Backdrop v={v} />
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
         <div style={{ width: 1360, background: C.paper, borderRadius: 18, padding: "56px 72px", boxShadow: "0 40px 120px rgba(0,0,0,0.55)",
           transform: `translateY(${(1 - enter) * 80}px) rotate(${(1 - enter) * -2}deg)`, opacity: enter }}>
@@ -102,21 +127,37 @@ const ArticleBeat = ({ v }: { v: Visual }) => {
   );
 };
 
-/** A direct quote, revealed word by word, with the speaker. */
+/** A direct quote, revealed word by word, with the speaker and perspective indicator. */
 const QuoteBeat = ({ v, frames }: { v: Visual; frames: number }) => {
   const f = useCurrentFrame();
   const words = String(v.text).split(/\s+/);
   const shown = Math.ceil(interpolate(f, [8, Math.min(frames * 0.6, 90)], [0, words.length], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }));
   const by = useSpring(20);
+  const perspective = v.perspective || (v.conflict ? "Disputed Perspective" : undefined);
   return (
     <AbsoluteFill>
-      <Grid />
+      <Backdrop v={v} />
       <AbsoluteFill style={{ padding: "0 200px", justifyContent: "center", fontFamily: SERIF }}>
+        {perspective && (
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 10, alignSelf: "flex-start",
+            background: "rgba(10,16,28,0.85)", border: `2px solid ${C.hot}`, color: C.hot,
+            padding: "8px 20px", borderRadius: 8, fontFamily: SANS, fontSize: 24, fontWeight: 900,
+            letterSpacing: 2, textTransform: "uppercase", marginBottom: 20 }}>
+            <span style={{ width: 10, height: 10, borderRadius: 5, background: C.hot }} />
+            {perspective}
+          </div>
+        )}
         <div style={{ color: C.accent, fontSize: 220, lineHeight: 0.6, height: 110 }}>“</div>
         <div style={{ color: C.ink, fontSize: 72, lineHeight: 1.2, fontWeight: 600 }}>
           {words.map((w, i) => <span key={i} style={{ opacity: i < shown ? 1 : 0.12 }}>{w} </span>)}
         </div>
-        <div style={{ marginTop: 44, fontFamily: SANS, color: C.dim, fontSize: 36, opacity: by }}>— {v.speaker}</div>
+        <div style={{ marginTop: 44, display: "flex", alignItems: "center", gap: 28, fontFamily: SANS, color: C.dim, fontSize: 36, opacity: by }}>
+          {v.portrait?.file && (
+            <Img src={staticFile(v.portrait.file)} style={{ width: 150, height: 150, borderRadius: 75, objectFit: "cover", objectPosition: "50% 25%",
+              border: `4px solid ${C.accent}`, boxShadow: "0 12px 40px rgba(0,0,0,0.5)", transform: `scale(${0.85 + 0.15 * by})` }} />
+          )}
+          <div>— {v.speaker}{v.portrait?.credit && <div style={{ marginTop: 8, fontSize: 18, color: "rgba(255,255,255,0.55)" }}>Photo: {v.portrait.credit} · {v.portrait.license}</div>}</div>
+        </div>
       </AbsoluteFill>
     </AbsoluteFill>
   );
@@ -133,7 +174,7 @@ const StatBeat = ({ v }: { v: Visual }) => {
   const lab = useSpring(14);
   return (
     <AbsoluteFill>
-      <Grid />
+      <Backdrop v={v} />
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", fontFamily: SANS, textAlign: "center" }}>
         <div style={{ color: C.accent, fontSize: 230, fontWeight: 900, letterSpacing: -6, textShadow: `0 0 60px ${C.accent}44, 0 10px 40px rgba(0,0,0,0.6)` }}>{text}</div>
         <div style={{ color: C.ink, fontSize: 52, fontWeight: 600, maxWidth: 1300, opacity: lab, transform: `translateY(${(1 - lab) * 30}px)` }}>{v.label}</div>
@@ -143,23 +184,52 @@ const StatBeat = ({ v }: { v: Visual }) => {
 };
 
 /** Bars that grow to each value, with the change between first and last. */
+/** A data series: bars for a few values, an animated line for a longer series (official data: 8-12 months or
+ * quarters), the change between first and last (points for a rate, percent otherwise) and the source. */
 const ChartBeat = ({ v }: { v: Visual }) => {
-  const pts = v.points as Array<{ label: string; value: number }>;
-  const max = Math.max(...pts.map((p) => p.value));
-  const change = (pts[pts.length - 1].value - pts[0].value) / pts[0].value * 100;
+  const f = useCurrentFrame();
+  const pts = (v.points as Array<{ label: string; value: number }>).map((p) => ({ ...p, value: Number(p.value) }));
+  const first = pts[0]!.value, last = pts[pts.length - 1]!.value;
+  const rate = v.unit === "%";
+  const change = rate ? last - first : first ? ((last - first) / Math.abs(first)) * 100 : 0;
+  const badgeText = `${change > 0 ? "+" : ""}${rate ? `${change.toFixed(2)} pts` : `${change.toFixed(0)}%`}`;
   const badge = useSpring(40);
+  const fmt = (n: number) => `${v.unit === "$" ? "$" : ""}${n.toLocaleString("en-US", { maximumFractionDigits: 2 })}${v.unit && v.unit !== "$" ? v.unit : ""}`;
+  const W = 1360, H = 520;
+  const lo = Math.min(...pts.map((p) => p.value)), hi = Math.max(...pts.map((p) => p.value));
+  const pad = (hi - lo || Math.abs(hi) || 1) * 0.18;
+  const x = (i: number) => (i / (pts.length - 1)) * W;
+  const y = (val: number) => H - ((val - (lo - pad)) / (hi + pad - (lo - pad))) * H;
+  const draw = interpolate(f, [6, 54], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) });
+  const shown = Math.max(1, Math.ceil(draw * (pts.length - 1)) + 1);
+  const line = pts.slice(0, shown).map((p, i) => `${x(i)},${y(p.value)}`).join(" ");
+  const every = Math.ceil(pts.length / 6);
   return (
     <AbsoluteFill>
-      <Grid />
-      <AbsoluteFill style={{ padding: "170px 200px 210px", fontFamily: SANS }}>
-        <div style={{ color: C.ink, fontSize: 56, fontWeight: 800 }}>{v.title}</div>
-        <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: 120, marginTop: 40, paddingLeft: 40 }}>
-          {pts.map((p, i) => <Bar key={i} p={p} max={max} unit={v.unit} delay={i * 12} last={i === pts.length - 1 && change < 0} />)}
-          <div style={{ alignSelf: "center", opacity: badge, transform: `scale(${0.8 + 0.2 * badge})`, background: change < 0 ? C.hot : C.accent,
-            color: "white", fontSize: 64, fontWeight: 900, padding: "18px 34px", borderRadius: 16 }}>
-            {change > 0 ? "+" : ""}{change.toFixed(0)}%
-          </div>
+      <Backdrop v={v} />
+      <AbsoluteFill style={{ padding: "160px 200px 200px", fontFamily: SANS }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          <div style={{ color: C.ink, fontSize: 54, fontWeight: 800, flex: 1 }}>{v.title}</div>
+          <div style={{ opacity: badge, transform: `scale(${0.8 + 0.2 * badge})`, background: change < 0 ? C.hot : C.accent,
+            color: "white", fontSize: 50, fontWeight: 900, padding: "12px 28px", borderRadius: 14 }}>{badgeText}</div>
         </div>
+        {pts.length <= 5 ? (
+          <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: 80, marginTop: 40, paddingLeft: 40 }}>
+            {pts.map((p, i) => <Bar key={i} p={p} max={hi} unit={v.unit} delay={i * 12} last={i === pts.length - 1 && change < 0} />)}
+          </div>
+        ) : (
+          <div style={{ flex: 1, marginTop: 50, position: "relative" }}>
+            <svg width={W} height={H + 60} viewBox={`0 0 ${W} ${H + 60}`} style={{ overflow: "visible" }}>
+              {[0.25, 0.5, 0.75].map((t) => <line key={t} x1={0} x2={W} y1={H * t} y2={H * t} stroke="rgba(255,255,255,0.12)" strokeWidth={2} />)}
+              <polyline points={line} fill="none" stroke={C.accent} strokeWidth={8} strokeLinejoin="round" strokeLinecap="round" />
+              <circle cx={x(shown - 1)} cy={y(pts[shown - 1]!.value)} r={14} fill={C.accent} />
+              <text x={Math.min(x(shown - 1), W - 10)} y={y(pts[shown - 1]!.value) - 30} fill={C.ink} fontSize={46} fontWeight={800} textAnchor={shown - 1 > pts.length / 2 ? "end" : "start"}>{fmt(pts[shown - 1]!.value)}</text>
+              <text x={0} y={y(first) - 26} fill={C.dim} fontSize={34}>{fmt(first)}</text>
+              {pts.map((p, i) => (i % every === 0 || i === pts.length - 1) && <text key={i} x={x(i)} y={H + 52} fill={C.dim} fontSize={30} textAnchor={i === 0 ? "start" : i === pts.length - 1 ? "end" : "middle"}>{p.label}</text>)}
+            </svg>
+          </div>
+        )}
+        {v.source && <div style={{ marginTop: 18, color: "rgba(255,255,255,0.6)", fontSize: 24 }}>Source: {String(v.source)}</div>}
       </AbsoluteFill>
     </AbsoluteFill>
   );
@@ -167,11 +237,97 @@ const ChartBeat = ({ v }: { v: Visual }) => {
 const Bar = ({ p, max, unit, delay, last }: { p: { label: string; value: number }; max: number; unit?: string; delay: number; last: boolean }) => {
   const g = useSpring(delay);
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", width: 260 }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", width: 220 }}>
       <div style={{ color: C.ink, fontSize: 48, fontWeight: 800, opacity: g, marginBottom: 14 }}>{unit === "$" ? "$" : ""}{p.value}{unit && unit !== "$" ? unit : ""}</div>
       <div style={{ width: "100%", height: `${(p.value / max) * 75 * g}%`, background: last ? C.hot : C.accent, borderRadius: "12px 12px 0 0" }} />
       <div style={{ color: C.dim, fontSize: 34, marginTop: 16 }}>{p.label}</div>
     </div>
+  );
+};
+
+/** Cause and effect: 3-5 short steps joined by arrows, each lighting up in turn. */
+const FlowBeat = ({ v, frames }: { v: Visual; frames: number }) => {
+  const f = useCurrentFrame();
+  const steps = (v.steps as string[]).slice(0, 5);
+  const each = Math.max(12, Math.min(36, (frames * 0.6) / steps.length));
+  return (
+    <AbsoluteFill>
+      <Backdrop v={v} />
+      <AbsoluteFill style={{ padding: "0 140px", justifyContent: "center", fontFamily: SANS }}>
+        {v.title && <div style={{ color: C.accent, fontSize: 34, fontWeight: 800, letterSpacing: 4, marginBottom: 50, textTransform: "uppercase" }}>{v.title}</div>}
+        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+          {steps.map((step, i) => {
+            const on = interpolate(f, [i * each, i * each + 14], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) });
+            return (
+              <React.Fragment key={i}>
+                {i > 0 && <div style={{ color: C.accent, fontSize: 80, fontWeight: 900, opacity: on, transform: `translateX(${(1 - on) * -20}px)` }}>→</div>}
+                <div style={{ flex: 1, minHeight: 230, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "28px 26px",
+                  borderRadius: 22, background: "rgba(10,16,28,0.72)", border: `3px solid ${i === steps.length - 1 ? C.hot : C.accent}`,
+                  color: C.ink, fontSize: steps.length > 4 ? 38 : 46, fontWeight: 750, lineHeight: 1.2, opacity: on, transform: `translateY(${(1 - on) * 30}px) scale(${0.94 + 0.06 * on})` }}>{step}</div>
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
+/** Two figures side by side (expected vs reported, this year vs last, one company vs another), sized to scale. */
+const VersusBeat = ({ v }: { v: Visual }) => {
+  const sides = [v.left, v.right] as Array<{ name: string; value: string }>;
+  const nums = sides.map((x) => Number(String(x.value).replace(/[^0-9.-]/g, "")) || 0);
+  const max = Math.max(...nums.map(Math.abs), 1);
+  const grow = useSpring(8);
+  return (
+    <AbsoluteFill>
+      <Backdrop v={v} />
+      <AbsoluteFill style={{ padding: "150px 220px 200px", justifyContent: "center", fontFamily: SANS }}>
+        {v.label && <div style={{ color: C.ink, fontSize: 54, fontWeight: 800, marginBottom: 60, textAlign: "center" }}>{v.label}</div>}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 160, height: 520 }}>
+          {sides.map((side, i) => (
+            <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", width: 420 }}>
+              <div style={{ color: i === 1 ? C.accent : C.ink, fontSize: 92, fontWeight: 900, marginBottom: 18, opacity: grow }}>{side.value}</div>
+              <div style={{ width: "100%", height: `${(Math.abs(nums[i]!) / max) * 62 * grow}%`, minHeight: 12, borderRadius: "18px 18px 0 0",
+                background: i === 1 ? C.accent : "rgba(255,255,255,0.35)" }} />
+              <div style={{ marginTop: 22, color: C.dim, fontSize: 40, fontWeight: 700, textAlign: "center" }}>{side.name}</div>
+            </div>
+          ))}
+        </div>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
+/** A value against a target or a range (inflation against the Fed's 2% goal): a needle on an arc. */
+const GaugeBeat = ({ v }: { v: Visual }) => {
+  const value = Number(v.value), target = Number(v.target);
+  const top = Number(v.max ?? Math.max(value, target) * 1.6), low = Number(v.min ?? 0);
+  const t = useSpring(10);
+  const angle = (x: number) => Math.PI * (1 - Math.min(1, Math.max(0, (x - low) / (top - low || 1))));
+  const R = 330, cx = 400, cy = 400;
+  const point = (a: number, r = R) => [cx + r * Math.cos(a), cy - r * Math.sin(a)];
+  const needle = angle(low + (value - low) * t);
+  const [nx, ny] = point(needle, R - 40);
+  const [tx, ty] = point(angle(target), R + 46);
+  const [tx1, ty1] = point(angle(target), R - 26), [tx2, ty2] = point(angle(target), R + 26);
+  const unit = v.unit ?? "";
+  return (
+    <AbsoluteFill>
+      <Backdrop v={v} />
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", fontFamily: SANS }}>
+        <svg width={800} height={470} viewBox="0 0 800 470" style={{ overflow: "visible" }}>
+          <path d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth={46} strokeLinecap="round" />
+          <path d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${point(needle)[0]} ${point(needle)[1]}`} fill="none" stroke={value > target ? C.hot : C.accent} strokeWidth={46} strokeLinecap="round" />
+          <line x1={tx1} y1={ty1} x2={tx2} y2={ty2} stroke={C.ink} strokeWidth={8} />
+          <text x={tx} y={ty} fill={C.ink} fontSize={34} fontWeight={700} textAnchor="middle">{v.targetLabel ?? "Target"} {target}{unit}</text>
+          <line x1={cx} y1={cy} x2={nx} y2={ny} stroke={C.ink} strokeWidth={12} strokeLinecap="round" />
+          <circle cx={cx} cy={cy} r={22} fill={C.ink} />
+        </svg>
+        <div style={{ marginTop: -10, color: value > target ? C.hot : C.accent, fontSize: 130, fontWeight: 900 }}>{(value * t).toFixed(String(v.value).split(".")[1]?.length ?? 0)}{unit}</div>
+        <div style={{ color: C.ink, fontSize: 50, fontWeight: 700, maxWidth: 1400, textAlign: "center" }}>{v.label}</div>
+      </AbsoluteFill>
+    </AbsoluteFill>
   );
 };
 
@@ -183,7 +339,7 @@ const TimelineBeat = ({ v, frames }: { v: Visual; frames: number }) => {
   const line = interpolate(f, [0, step * ev.length], [0, 100], { extrapolateRight: "clamp" });
   return (
     <AbsoluteFill>
-      <Grid />
+      <Backdrop v={v} />
       <AbsoluteFill style={{ padding: "0 140px", justifyContent: "center", fontFamily: SANS }}>
         <div style={{ position: "relative", height: 360 }}>
           <div style={{ position: "absolute", top: 120, left: 0, height: 6, width: `${line}%`, background: C.accent, borderRadius: 3 }} />
@@ -216,7 +372,7 @@ const ComparisonBeat = ({ v }: { v: Visual }) => {
 
   return (
     <AbsoluteFill>
-      <Grid />
+      <Backdrop v={v} />
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", padding: "0 140px", fontFamily: SANS }}>
         <div style={{ width: "100%", maxWidth: 1400, opacity: enter, transform: `translateY(${(1 - enter) * 40}px)` }}>
           {v.title && (
@@ -258,7 +414,7 @@ const CodeBeat = ({ v, frames }: { v: Visual; frames: number }) => {
 
   return (
     <AbsoluteFill>
-      <Grid />
+      <Backdrop v={v} />
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", padding: "0 120px", fontFamily: SANS }}>
         <div style={{ width: "100%", maxWidth: 1360, background: "#0e131d", borderRadius: 18, overflow: "hidden",
           border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 30px 100px rgba(0,0,0,0.7)", opacity: enter, transform: `scale(${0.96 + 0.04 * enter})` }}>
@@ -349,7 +505,7 @@ const CardBeat = ({ v }: { v: Visual }) => {
 
   return (
     <AbsoluteFill>
-      <Grid />
+      <Backdrop v={v} />
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", padding: "0 160px", fontFamily: SANS }}>
         <div style={{ width: "100%", maxWidth: 1300, opacity: enter, transform: `translateY(${(1 - enter) * 30}px)` }}>
           {v.title && (
@@ -404,7 +560,7 @@ const KineticBeat = ({ scene, beat }: { scene: Scene; beat: Beat }) => {
   const enter = spring({ frame: f - Math.round((g[0]?.start ?? 0) * FPS), fps: FPS, config: { damping: 200 } });
   return (
     <AbsoluteFill>
-      <Grid />
+      <Backdrop v={beat.visual} />
       <AbsoluteFill style={{ padding: "0 160px", justifyContent: "center", fontFamily: SANS }}>
         <div style={{ color: C.accent, fontSize: 30, fontWeight: 800, letterSpacing: 6, marginBottom: 28 }}>{scene.kicker.toUpperCase()}</div>
         <div style={{ fontSize: 92, fontWeight: 800, lineHeight: 1.12, maxWidth: 1600, opacity: enter, transform: `translateY(${(1 - enter) * 30}px)` }}>
@@ -564,9 +720,10 @@ const BeatView = ({ scene, beat, index, at, total, repeat, brand }: { scene: Sce
   const sweepOpacity = interpolate(f, [0, 9, 13], [0.85, 0.85, 0], { extrapolateRight: "clamp" });
 
   const v = beat.visual;
-  const kinetic = (v.type === "photo" || v.type === "broll") ? !v.asset : (v.type === "card" && !v.items && !v.text) || (v.type === "article" && repeat);
+  const pictured = v.type === "photo" || v.type === "broll" || v.type === "illustration";
+  const kinetic = pictured ? !v.asset : (v.type === "card" && !v.items && !v.text) || (v.type === "article" && repeat);
   const body = kinetic ? <KineticBeat scene={scene} beat={beat} />
-    : v.type === "photo" || v.type === "broll" ? <PhotoBeat v={v} frames={frames} index={index} />
+    : pictured ? <PhotoBeat v={v} frames={frames} index={index} />
     : <Push frames={frames}>{
         v.type === "article" ? <ArticleBeat v={v} />
         : v.type === "quote" ? <QuoteBeat v={v} frames={frames} />
@@ -574,6 +731,9 @@ const BeatView = ({ scene, beat, index, at, total, repeat, brand }: { scene: Sce
         : v.type === "chart" ? <ChartBeat v={v} />
         : v.type === "timeline" ? <TimelineBeat v={v} frames={frames} />
         : v.type === "compare" || v.type === "comparison" ? <ComparisonBeat v={v} />
+        : v.type === "flow" && Array.isArray(v.steps) && v.steps.length >= 2 ? <FlowBeat v={v} frames={frames} />
+        : v.type === "versus" && v.left && v.right ? <VersusBeat v={v} />
+        : v.type === "gauge" && Number.isFinite(Number(v.value)) && Number.isFinite(Number(v.target)) ? <GaugeBeat v={v} />
         : v.type === "code" || v.type === "terminal" ? <CodeBeat v={v} frames={frames} />
         : v.type === "card" && (v.items || v.text) ? <CardBeat v={v} />
         : <KineticBeat scene={scene} beat={beat} />

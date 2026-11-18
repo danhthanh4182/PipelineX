@@ -128,6 +128,7 @@ export function draftKit(id: number): PublishKit | null {
     ? readFileSync(path.join(workDir(id), "ATTRIBUTIONS.txt"), "utf8").split("\n").filter(Boolean).map((l) => l.replace(/^assets\/[^:]+:\s*/, "")) : [];
   const sources = cleanSources(script.sources ?? []);
   const narration = (script.scenes ?? []).flatMap((s) => s.beats.map((b) => b.narration)).join(" ");
+  const illustrated = (script.scenes ?? []).some((s) => s.beats.some((b) => (b as { visual?: { type?: string } }).visual?.type === "illustration"));
   const { tags, hashtags, subjects } = tagsFor(script.title, `${script.description ?? ""} ${narration}`, style, Number(timeline.date?.slice(0, 4)) || undefined);
   const chapterLines = chapters(timeline.scenes, timeline.total);
   const description = [
@@ -137,6 +138,7 @@ export function draftKit(id: number): PublishKit | null {
     sources.length ? `Sources:\n${sources.map((s) => `- ${s.name}: ${s.title} — ${s.url}`).join("\n")}` : "",
     credits.length ? `Picture credits:\n${credits.map((c) => `- ${c}`).join("\n")}` : "",
     "Researched, written and narrated with AI tools, then checked against the sources above. Corrections welcome in the comments.",
+    illustrated ? "Some illustrations in this video were made with AI; they are labelled on screen." : "",
     yt?.disclaimer ?? "",
     hashtags.join(" "),
   ].filter(Boolean).join("\n\n").slice(0, LIMITS.description);

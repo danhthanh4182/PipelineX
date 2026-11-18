@@ -8,7 +8,7 @@ import { z } from "zod";
 import { config } from "@aihot/backend/config";
 import { enqueueOn } from "@aihot/backend/jobs/queue";
 import type { ModuleQueue } from "@aihot/backend/modules";
-import { editScript, editVisual, recordEdit, videoForEditor } from "./editing.ts";
+import { addIllustration, editScript, editVisual, recordEdit, videoForEditor } from "./editing.ts";
 import { candidates, retryFailedArticles, searchStories, story, systemStatus } from "./operations.ts";
 import { thumbnailImage, videoFrames } from "./media.ts";
 import { editKit, publishKit } from "./publishing.ts";
@@ -29,6 +29,7 @@ const token = () => process.env.VIDEO_EDITOR_TOKEN ?? "";
 
 const INSTRUCTIONS = `PipelineX operator and video editor. You run the daily video work for a human editor and improve AI-made news videos before they are published.
 Daily run: system_status (fix what you can: retry_failed_articles; report what needs the human: dead processes, spent keys, failing sources) -> list_videos (today's automatic video) -> list_candidates / search_stories / get_story to pick what deserves a video, then make_video with your reason -> for each finished video: get_video -> edit_script / edit_visual -> remake from the step the tool suggests -> review with a short note -> tell the human what waits for them.
+Illustrations: for an abstract idea no photo can show, you may generate an image and add_illustration it (labelled AI on screen; never a realistic person, place, product or event). Prefer real photos and the graphics (chart, flow, versus, gauge) first.
 Checking: look_at_video to see the thumbnail and frames (pictures that do not fit the words, covered text, empty cards); web_search / fetch_page on trusted sites when a claim is flagged or doubtful.
 Before the human publishes: get_publish_kit, then edit_publish_kit for both the video and the Short: 3 title options, description, tags.
 Learning: when you keep fixing the same kind of problem, propose_style_rule; the human decides, approved rules guide future scripts.
@@ -204,6 +205,21 @@ export function buildEditorServer(makeQueue: ModuleQueue<{ id: number; from: Ste
   }, async (args) => safely(async () => {
     const out = await editVisual(args.id, ACTOR, args);
     return ok(`Beat (${out.scene},${out.beat}) now shows ${JSON.stringify(out.after)} (was ${JSON.stringify(out.before)}). ${out.next}`, out as unknown as Record<string, unknown>);
+  }));
+
+  server.registerTool("add_illustration", {
+    description: "Put an illustration you generated with your own image model on one beat of the long video, for an idea no photo can show honestly: a concept (inflation eating savings), a process (how a rate cut reaches a mortgage), a trend. It is always labelled 'AI illustration' on screen and in the credits. NEVER a realistic image of a real person, company building, product or event, never a fake photo, chart, document or logo, no text in the image. Give the image's absolute file path (PNG, JPEG or WebP, 16:9, at least 1600 px wide) and the prompt you used. Then remake from 'voice'.",
+    inputSchema: z.strictObject({
+      id: z.number().int().positive(), scene: z.number().int().min(0), beat: z.number().int().min(0),
+      file: z.string().trim().min(2).max(500).describe("Absolute path of the image on this machine."),
+      prompt: z.string().trim().min(10).max(800).describe("The prompt the image was made from (kept with the video)."),
+      model: z.string().trim().min(2).max(60).describe("The image model, e.g. 'Gemini image'."),
+      note: z.string().trim().max(500).optional().describe("Why: shown to the human editor."),
+    }),
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  }, async (args) => safely(async () => {
+    const out = await addIllustration(args.id, ACTOR, args);
+    return ok(`Beat (${out.scene},${out.beat}) now shows the AI illustration ${out.file} (was ${JSON.stringify(out.before)}). ${out.next}`, out as unknown as Record<string, unknown>);
   }));
 
   server.registerTool("system_status", {

@@ -6,6 +6,7 @@
 // Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env background.ts
 import { readFileSync, writeFileSync } from "node:fs";
 import { CHANNEL, chatJson, outlet, W, type Article } from "./lib.ts";
+import { addData } from "./data.ts";
 import { hostOf, NOT_ARTICLE_PATHS, NOT_ARTICLES, paywalled, trustedDomains } from "../modules/video/backend/trusted.ts";
 
 const KEY = process.env.TINYFISH_API_KEY ?? "";
@@ -35,7 +36,6 @@ async function fetchPages(urls: string[]) {
 const result: Record<string, unknown> = { filled: 0, searched: 0, added: 0 };
 const finish = (note?: string) => {
   if (note) { result.skipped = note; console.log(`background skipped: ${note}`); }
-  console.log(`RESULT ${JSON.stringify(result)}`);
 };
 
 if (!KEY) {
@@ -95,3 +95,7 @@ if (!KEY) {
     finish(`failed: ${(error as Error).message.slice(0, 300)}`);
   }
 }
+
+// Real data series for charts (FRED, SEC), whatever happened above; a failure here never stops the video.
+try { Object.assign(result, await addData()); } catch (error) { result.dataError = (error as Error).message.slice(0, 200); }
+console.log(`RESULT ${JSON.stringify(result)}`);

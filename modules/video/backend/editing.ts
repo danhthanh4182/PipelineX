@@ -1,7 +1,7 @@
 // Editing a made video's words from outside the pipeline (the editor MCP, editor-mcp.ts): read everything a reviewer
 // needs, change narration, title, description or thumbnail words, and keep a history of every change in edits.json.
 // An edited script is checked against the reports again at once (verify.ts), so the editor sees the new verdicts.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, openSync, readFileSync, readSync, closeSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { run, workDir } from "./pipeline.ts";
 import { getVideo, VideoConflict } from "./videos.ts";
@@ -81,6 +81,45 @@ export async function editVisual(id: number, actor: string, input: { scene: numb
   }
   recordEdit(id, { actor, kind: "edit", detail: { variant: "long", visual: { scene: input.scene, beat: input.beat, before, after: input.visual } }, note: input.note });
   return { scene: input.scene, beat: input.beat, before, after: input.visual, next: "Remake from step 'assets' to find and check the new picture (the voice and render follow)." };
+}
+
+/** Image files an illustration may be: by their first bytes, not their name. */
+function imageKind(file: string): "png" | "jpg" | "webp" | null {
+  const fd = openSync(file, "r"); const head = Buffer.alloc(12); readSync(fd, head, 0, 12, 0); closeSync(fd);
+  if (head.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "png";
+  if (head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) return "jpg";
+  if (head.subarray(0, 4).toString("latin1") === "RIFF" && head.subarray(8, 12).toString("latin1") === "WEBP") return "webp";
+  return null;
+}
+
+/**
+ * Puts an AI-made illustration (made by the local agent's own image model) on one beat of the long video. It is
+ * always labelled "AI illustration" on screen and in the credits, and is only for ideas no photo can show (a concept,
+ * a process, a trend): never a realistic picture of a real person, place or event. Takes effect from step "voice".
+ */
+export async function addIllustration(id: number, actor: string, input: { scene: number; beat: number; file: string; prompt: string; model: string; note?: string }) {
+  const video = await getVideo(id);
+  if (!video) throw new VideoConflict(`No video #${id}.`);
+  if (video.status === "queued" || video.status === "running") throw new VideoConflict(`Video #${id} is being made; add it when it is finished.`);
+  if (!path.isAbsolute(input.file) || !existsSync(input.file) || !statSync(input.file).isFile()) throw new VideoConflict(`No image file at ${input.file} (give its absolute path).`);
+  if (statSync(input.file).size > 12 * 1024 * 1024) throw new VideoConflict("The image is over 12 MB.");
+  const kind = imageKind(input.file);
+  if (!kind) throw new VideoConflict("The file is not a PNG, JPEG or WebP image.");
+  const names = ["script.json", "script-final.json"];
+  const scripts = names.map((n) => ({ n, s: readJson<Script>(id, n) })).filter((x): x is { n: string; s: Script } => !!x.s);
+  const shown = (scripts.find((x) => x.n === "script-final.json") ?? scripts[0])?.s.scenes[input.scene]?.beats[input.beat];
+  if (!shown) throw new VideoConflict(`There is no scene ${input.scene}, beat ${input.beat} in the long script.`);
+  const rel = `assets/illustration-s${input.scene}b${input.beat}.${kind}`;
+  mkdirSync(path.join(workDir(id), "public", "assets"), { recursive: true });
+  copyFileSync(input.file, path.join(workDir(id), "public", rel));
+  const before = { type: shown.visual?.type, query: shown.visual?.query ?? null };
+  const visual = { type: "illustration", prompt: input.prompt, asset: { file: rel, credit: `AI illustration (${input.model})`, license: "AI-generated", sourceUrl: "", kind: "image" } };
+  for (const { n, s } of scripts) {
+    s.scenes[input.scene]!.beats[input.beat]!.visual = { ...visual } as never;
+    writeJson(id, n, s);
+  }
+  recordEdit(id, { actor, kind: "edit", detail: { variant: "long", illustration: { scene: input.scene, beat: input.beat, before, model: input.model, prompt: input.prompt } }, note: input.note });
+  return { scene: input.scene, beat: input.beat, before, file: rel, next: "Remake from step 'voice' to show it (the voice is reused; render follows)." };
 }
 
 /**

@@ -3,7 +3,7 @@
 // broll -> Pixabay video clip first, then Pixabay photo, Openverse, Commons (Pixabay needs PIXABAY_API_KEY).
 // Every candidate is checked by a vision model before use (right subject, a real photo, nothing misleading).
 // Only licenses that allow commercial reuse and modification: CC0, Public domain, CC BY, CC BY-SA.
-// Pixabay content: Pixabay Content License (free commercial use, no attribution required; we credit anyway).
+// Pixabay content: Pixabay Content License; Pexels: Pexels License (both free commercial use, no attribution required; we credit anyway).
 // Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env assets.ts   (reads <dir>/script.json, writes <dir>/script-final.json and <dir>/public/assets)
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { chat, readPreset } from "./lib.ts";
@@ -27,6 +27,10 @@ async function get(url: string | URL, headers: Record<string, string>, timeoutMs
     console.log(`  no answer from ${new URL(String(url)).hostname}: ${(error as Error).message.slice(0, 80)}`);
     return null;
   }
+}
+/** A response's bytes, or null when the body stops arriving (a slow host times out mid-download). */
+async function bytes(res: Response): Promise<Buffer | null> {
+  try { return Buffer.from(await res.arrayBuffer()); } catch (error) { console.log(`  download cut off: ${(error as Error).message.slice(0, 80)}`); return null; }
 }
 const strip = (html = "") => html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 const used = new Set<string>();
@@ -96,8 +100,33 @@ async function pixabay(query: string, videos: boolean): Promise<Cand[]> {
   return out;
 }
 
-/** Vision check: does the picture really show the query, and is it fit for a neutral news video on this story? */
-async function fits(c: Cand, query: string, kind: string, context: string, narration: string): Promise<boolean> {
+type Verdict = "yes" | "no" | "error";
+/** Pexels photos or videos (PEXELS_API_KEY): the Pexels License allows commercial use without attribution; we credit anyway. */
+const PEXELS = process.env.PEXELS_API_KEY ?? "";
+async function pexels(query: string, videos: boolean): Promise<Cand[]> {
+  if (!PEXELS) return [];
+  const u = new URL(videos ? "https://api.pexels.com/videos/search" : "https://api.pexels.com/v1/search");
+  for (const [k, v] of Object.entries({ query: query.slice(0, 100), orientation: "landscape", size: videos ? "medium" : "large", per_page: "15" })) u.searchParams.set(k, v);
+  const res = await get(u, { authorization: PEXELS, "user-agent": UA });
+  if (!res?.ok) { console.log(`  pexels ${res?.status ?? "-"}`); return []; }
+  const body = (await res.json().catch(() => null)) as any;
+  const out: Cand[] = [];
+  if (videos) for (const v of body?.videos ?? []) {
+    const f = (v.video_files ?? []).filter((x: any) => x.file_type === "video/mp4" && x.width >= 1280 && x.width / x.height >= 1.6).sort((a: any, b: any) => Math.abs(a.width - 1920) - Math.abs(b.width - 1920))[0];
+    if (!f || used.has(f.link) || v.duration < 5) continue;
+    out.push({ url: f.link, thumb: v.image, credit: `${v.user?.name ?? "Unknown"} on Pexels`, license: "Pexels License", sourceUrl: v.url, width: f.width, height: f.height, kind: "video", duration: v.duration });
+  }
+  else for (const ph of body?.photos ?? []) {
+    const url = ph.src?.large2x ?? ph.src?.original;
+    if (!url || used.has(url) || ph.width < 1600) continue;
+    out.push({ url, thumb: ph.src?.medium ?? url, credit: `${ph.photographer ?? "Unknown"} on Pexels`, license: "Pexels License", sourceUrl: ph.url, width: ph.width, height: ph.height });
+  }
+  return out;
+}
+
+/** Vision check: does the picture really show the query, and is it fit for a neutral news video on this story?
+ * "error" (the check itself failed: a throttled or down model) is not a "no": the caller may try again. */
+async function fits(c: Cand, query: string, kind: string, context: string, narration: string, ask?: string): Promise<Verdict> {
   const wanted = kind === "photo" ? `"${query}" as the main subject` : `something a viewer would recognise as "${query}"`;
   const what = c.kind === "video" ? "still frame from a stock video clip" : kind === "photo" ? "photo of a specific subject" : "generic illustrative b-roll image";
   const prompt = `A ${what} is needed for a news video.
@@ -111,21 +140,28 @@ Answer YES only if ALL hold: (1) the image clearly shows ${wanted};
 (5) it is not a photo of a document, letter, sign or screen with legible text, and shows no private person's name or signature;
 (6) its mood fits what is spoken (no celebration, smiling crowds or luxury over a scandal, lawsuit or loss) and it does not suggest a person, brand or product the narration is not about${preset?.pictureRules.length ? `;\n(7) ${preset.pictureRules.join("; ")}` : ""}.
 Reply with one word: YES or NO.`;
+  const question = ask ?? prompt;
   // Send the picture itself: providers cannot always fetch Wikimedia/Openverse URLs.
   let pic = await get(c.thumb, { "user-agent": UA });
   if (!pic?.ok) pic = await get(c.url, { "user-agent": UA });
-  if (!pic?.ok) { console.log(`  thumbnail ${pic?.status ?? "-"}`); return false; }
+  if (!pic?.ok) { console.log(`  thumbnail ${pic?.status ?? "-"}`); return "no"; }
   const type = pic.headers.get("content-type")?.split(";")[0] || "image/jpeg";
-  const dataUrl = `data:${type};base64,${Buffer.from(await pic.arrayBuffer()).toString("base64")}`;
-  try {
-    const { text, cost: spent } = await chat([{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: dataUrl } }] }],
-      { temperature: 0, maxTokens: 3000, json: false, reasoning: 1500, timeoutMs: 120_000 });
-    cost += spent;
-    return /^\s*yes/i.test(text);
-  } catch (error) {
-    console.log(`  vision check failed: ${(error as Error).message.slice(0, 160)}`);
-    return false;
+  const buf = await bytes(pic);
+  if (!buf) return "no";
+  if (buf.length > 8 * 1024 * 1024) { console.log(`  image too large (${(buf.length / 1024 / 1024).toFixed(1)}MB), skipping`); return "no"; }
+  const dataUrl = `data:${type};base64,${buf.toString("base64")}`;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const { text, cost: spent } = await chat([{ role: "user", content: [{ type: "text", text: question }, { type: "image_url", image_url: { url: dataUrl } }] }],
+        { temperature: 0, maxTokens: 3000, json: false, reasoning: 1500, timeoutMs: 120_000 });
+      cost += spent;
+      return /^\s*yes/i.test(text) ? "yes" : "no";
+    } catch (error) {
+      console.log(`  vision check failed${attempt ? "" : ", retrying"}: ${(error as Error).message.slice(0, 160)}`);
+      if (!attempt) await new Promise((r) => setTimeout(r, 8_000));
+    }
   }
+  return "error";
 }
 
 // When nothing found for a beat's own query fits, try a few broader queries picked by what the beat is about, then
@@ -158,44 +194,110 @@ for (const scene of script.scenes) for (const beat of scene.beats) {
   if (v.type !== "photo" && v.type !== "broll") continue;
 
   const queries = fallbackQueries(v.query.trim(), beat.narration);
-  let found: Cand | null = null, tried = 0;
+  let found: Cand | null = null, tried = 0, errors = 0;
+  // When the vision model is down (not when it said no), a stock b-roll clip for the beat's own words beats a text card.
+  let unchecked: Cand | null | undefined;
 
   for (const query of queries) {
     if (tried >= MAX_CHECKS) break;
+    // Photos of named subjects: Commons first (real people, places, products), then Openverse and Pexels. B-roll: stock clips
+    // first, alternating Pexels and Pixabay, then their photos; no Commons (it surfaces real documents and private people).
+    const interleave = (...lists: Cand[][]) => lists.flatMap((l, i) => l.map((c, j) => ({ c, k: j * lists.length + i }))).sort((a, b) => a.k - b.k).map((x) => x.c);
     const cands = v.type === "photo"
-      ? [...(await commons(query)).slice(0, 4), ...(await openverse(query)).slice(0, 2)]
-      : [...(await pixabay(query, true)).slice(0, 3), ...(await pixabay(query, false)).slice(0, 2),
-         ...(await openverse(query)).slice(0, 2)]; // no Commons for b-roll: it surfaces real documents and private people
+      ? [...(await commons(query)).slice(0, 4), ...(await openverse(query)).slice(0, 2), ...(await pexels(query, false)).slice(0, 2)]
+      : [...interleave((await pexels(query, true)).slice(0, 3), (await pixabay(query, true)).slice(0, 3)),
+         ...interleave((await pexels(query, false)).slice(0, 2), (await pixabay(query, false)).slice(0, 2)),
+         ...(await openverse(query)).slice(0, 2)];
     if (cands.length === 0) continue;
 
     for (const c of cands.slice(0, query === v.query.trim() ? 8 : 4)) {
       if (tried >= MAX_CHECKS || used.has(c.url)) continue;
       tried++;
-      if (await fits(c, query, v.type, script.title, beat.narration)) {
+      const verdict = await fits(c, query, v.type, script.title, beat.narration);
+      if (verdict === "error") { unchecked ??= /on (Pixabay|Pexels)$/.test(c.credit) ? c : null; errors++; if (errors >= 3) break; continue; }
+      if (verdict === "yes") {
         found = c;
         used.add(c.url);
         break;
       }
     }
+    if (errors >= 3) break;
     if (found) {
       if (query !== v.query.trim()) console.log(`  (matched via fallback query "${query}")`);
       break;
     }
   }
 
+  if (!found && v.type === "broll" && unchecked) {
+    found = unchecked; used.add(unchecked.url);
+    console.log(`  vision checks failed; using the first stock clip for "${v.query}" unchecked`);
+  }
   if (!found) { missing++; console.log(`beat ${i} ${v.type} "${v.query}": nothing fitting (${tried} checked across ${queries.length} queries) -> text card`); v.type = "card"; continue; }
   const ext = found.kind === "video" ? "mp4" : (found.url.split("?")[0].match(/\.(jpe?g|png|webp)$/i)?.[1] ?? "jpg").toLowerCase();
   const file = `assets/beat-${String(i).padStart(2, "0")}.${ext}`;
   const img = await get(found.url, { "user-agent": UA }, 120_000);
   if (!img?.ok) { missing++; console.log(`beat ${i}: download ${img?.status ?? "failed"}`); v.type = "card"; continue; }
-  writeFileSync(`${W}/public/${file}`, Buffer.from(await img.arrayBuffer()));
+  const data = await bytes(img);
+  if (!data) { missing++; console.log(`beat ${i}: download cut off`); v.type = "card"; continue; }
+  writeFileSync(`${W}/public/${file}`, data);
   v.asset = { file, credit: found.credit.slice(0, 80), license: found.license, sourceUrl: found.sourceUrl,
     kind: found.kind ?? "image", ...(found.duration ? { duration: found.duration } : {}) };
   console.log(`beat ${i} ${v.type.padEnd(5)} "${v.query}" -> ${found.kind ?? "image"} · ${found.license} · ${found.credit.slice(0, 40)} (${tried} checked)`);
 }
+// ── Portraits: a quote is shown with a photo of its speaker, from Wikimedia Commons by name (official US government
+// portraits there are public domain). Commons file titles carry the name; the vision model only checks it is a clear
+// photo of one person, since it cannot tell who someone is.
+async function save(c: Cand, name: string) {
+  const ext = c.kind === "video" ? "mp4" : (c.url.split("?")[0].match(/\.(jpe?g|png|webp)$/i)?.[1] ?? "jpg").toLowerCase();
+  const file = `assets/${name}.${ext}`;
+  const img = await get(c.url, { "user-agent": UA }, 120_000);
+  if (!img?.ok) return null;
+  const data = await bytes(img);
+  if (!data) return null;
+  writeFileSync(`${W}/public/${file}`, data);
+  return { file, credit: c.credit.slice(0, 80), license: c.license, sourceUrl: c.sourceUrl, kind: c.kind ?? "image", ...(c.duration ? { duration: c.duration } : {}) };
+}
+const PORTRAIT = "Is this a clear photograph with one person as the main subject (a portrait, or the person speaking), not a group, a drawing, a logo, a document or a screenshot? Reply with one word: YES or NO.";
+const portraits = new Map<string, Awaited<ReturnType<typeof save>>>();
+let portraitCount = 0;
+for (const beat of script.scenes.flatMap((s: any) => s.beats)) {
+  const v = beat.visual;
+  if (v.type !== "quote" || !v.speaker) continue;
+  const name = String(v.speaker).split(/,|—|–| - |\(/)[0]!.trim();
+  if (name.split(/\s+/).length < 2 || name.split(/\s+/).length > 4) continue;
+  if (!portraits.has(name)) {
+    const surname = name.split(/\s+/).at(-1)!.toLowerCase();
+    const cands = (await commons(`intitle:"${name}"`)).filter((c) => decodeURIComponent(c.sourceUrl).toLowerCase().includes(surname)).slice(0, 3);
+    let saved: Awaited<ReturnType<typeof save>> = null;
+    for (const c of cands) {
+      if (await fits(c, name, "photo", script.title, beat.narration, PORTRAIT) !== "yes") continue;
+      saved = await save(c, `portrait-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`);
+      if (saved) { used.add(c.url); break; }
+    }
+    portraits.set(name, saved);
+    console.log(`portrait "${name}": ${saved ? `${saved.license} · ${saved.credit.slice(0, 40)}` : `none (${cands.length} candidates)`}`);
+  }
+  const portrait = portraits.get(name);
+  if (portrait) { v.portrait = portrait; portraitCount++; }
+}
+
+// ── Backdrops: numbers, quotes, headlines and cards sit on the nearest picture of the video (the same scene first),
+// darkened and blurred behind the words, instead of an empty grid.
+const flat = script.scenes.flatMap((s: any, si: number) => s.beats.map((b: any) => ({ si, v: b.visual })));
+const pictures = flat.map((x: any, i: number) => ({ ...x, i })).filter((x: any) => x.v.asset);
+let backdrops = 0;
+flat.forEach((x: any, i: number) => {
+  if (x.v.asset || x.v.type === "photo" || x.v.type === "broll" || !pictures.length) return;
+  const near = [...pictures].sort((a: any, b: any) => (a.si === x.si ? 0 : 100) + Math.abs(a.i - i) - ((b.si === x.si ? 0 : 100) + Math.abs(b.i - i)))[0];
+  x.v.backdrop = { file: near.v.asset.file, kind: near.v.asset.kind };
+  backdrops++;
+});
+console.log(`portraits: ${portraitCount}, backdrops: ${backdrops}`);
+
 writeFileSync(`${W}/script-final.json`, JSON.stringify(script, null, 2));
-const credits = script.scenes.flatMap((s: any) => s.beats).map((b: any) => b.visual.asset).filter(Boolean)
+const credits = script.scenes.flatMap((s: any) => s.beats).flatMap((b: any) => [b.visual.asset, b.visual.portrait]).filter(Boolean)
+  .filter((a: any, i: number, all: any[]) => all.findIndex((x: any) => x.file === a.file) === i)
   .map((a: any) => `${a.file}: ${a.credit}, ${a.license} — ${a.sourceUrl}`);
 writeFileSync(`${W}/ATTRIBUTIONS.txt`, credits.join("\n") + "\n");
 console.log(`assets: ${credits.length}, without image: ${missing}, vision cost: $${cost.toFixed(4)}`);
-console.log(`RESULT ${JSON.stringify({ cost, assets: credits.length, missing })}`);
+console.log(`RESULT ${JSON.stringify({ cost, assets: credits.length, missing, portraits: portraitCount, backdrops })}`);

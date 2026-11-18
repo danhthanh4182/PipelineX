@@ -29,7 +29,7 @@ Return ONLY JSON:
  "timeline": [{"date": string, "event": string (max 12 words), "sources": [n]}],
  "conflicts": [{"topic": string, "versions": [{"claim": string, "sources": [n]}]}],
  "open_questions": [string]}
-Aim for 25-50 facts (never more than 50), ordered from most to least important. Keep each fact under 30 words.`;
+Aim for 35-70 facts (never more than 70), ordered from most to least important: a 7-8 minute video needs background, reactions and what comes next, not only the news. Keep each fact under 30 words.`;
 
 const { json, text, cost, provider } = await chatJson(system, `Reports:\n\n${materialOf(articles, CHARS)}`, {
   maxTokens: 60000,

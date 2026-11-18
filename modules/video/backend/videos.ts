@@ -165,6 +165,9 @@ export async function autoPick(db: Db = sql): Promise<VideoRow | null> {
   return next ? createVideo(next.story_id, "auto", db) : null;
 }
 
+/** Reports per video (VIDEO_MAX_REPORTS, default 20): more reports, a deeper dossier. */
+const MAX_REPORTS = Math.min(40, Math.max(3, Number(process.env.VIDEO_MAX_REPORTS || 20)));
+
 /** The story's reports as the script step reads them (one per article, oldest first). */
 export async function storyMaterial(storyId: number, db: Db = sql) {
   return db<{ id: string; title: string; source: string; url: string; published_at: Date | null; headline: string | null; summary: string | null; body: string }[]>`
@@ -179,7 +182,7 @@ export async function storyMaterial(storyId: number, db: Db = sql) {
       WHERE f.story_id = ${storyId}
       ORDER BY a.id, an.id DESC
     ) x ORDER BY x.published_at NULLS LAST
-    LIMIT 12`;
+    LIMIT ${MAX_REPORTS}`;
 }
 
 /** Whether pg-boss holds a live "video.make" job for this video: one waiting, or one running whose video moved to a

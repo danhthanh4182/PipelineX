@@ -36,13 +36,15 @@ const RENDERER_ENV = [
   "TINYFISH_API_KEY", "TINYFISH_SEARCH_URL", "TINYFISH_FETCH_URL", "PIXABAY_API_KEY",
   "AZURE_SPEECH_KEY", "AZURE_SPEECH_REGION", "VIDEO_TTS",
   "VIDEO_SCRIPT_MODEL", "VIDEO_SCRIPT_WORDS", "VIDEO_MATERIAL_CHARS", "VIDEO_DOSSIER", "VIDEO_DOSSIER_CHARS", "VIDEO_MUSIC",
+  "FRED_API_KEY", "SEC_USER_AGENT", "PEXELS_API_KEY",
 ];
 const rendererEnv = () => ({
   ...Object.fromEntries([...SYSTEM_ENV, ...RENDERER_ENV].flatMap((k) => (process.env[k] === undefined ? [] : [[k, process.env[k]!]]))),
   // The shared renderer works for this checkout's channel: its profile, sources and trusted sites.
   VIDEO_INDUSTRY_DIR: path.join(ROOT, "industry"),
 });
-const LIMITS: Record<Exclude<Step, "story">, number> = { thumbnail: 5 * MINUTE, short: 15 * MINUTE, shortvoice: 10 * MINUTE, shortrender: 20 * MINUTE, background: 10 * MINUTE, dossier: 10 * MINUTE, script: 10 * MINUTE, verify: 10 * MINUTE, assets: 20 * MINUTE, voice: 15 * MINUTE, render: 40 * MINUTE };
+// 7-8 minute videos: a script with an editing pass, about 80 sentences to check and 40 beats of pictures and voice.
+const LIMITS: Record<Exclude<Step, "story">, number> = { thumbnail: 5 * MINUTE, short: 15 * MINUTE, shortvoice: 10 * MINUTE, shortrender: 20 * MINUTE, background: 15 * MINUTE, dossier: 15 * MINUTE, script: 25 * MINUTE, verify: 20 * MINUTE, assets: 35 * MINUTE, voice: 30 * MINUTE, render: 40 * MINUTE };
 
 function command(step: Exclude<Step, "story">, dir: string): [string, string[]] {
   // Node reads the app's .env and the renderer's own (PIXABAY_API_KEY); the worker's env already carries the app's.

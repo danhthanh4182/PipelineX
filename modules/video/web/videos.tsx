@@ -66,7 +66,7 @@ interface Overview {
 }
 
 interface YouTubeStatus { configured: boolean; connected: boolean; channel: { id: string; title: string; connectedAt: string } | null; redirectUri: string }
-interface YouTubeRecord { longId?: string; shortId?: string; uploadedAt?: string; publishedAt?: string; publishedBy?: string; notes?: string[] }
+interface YouTubeRecord { longId?: string; shortId?: string; uploadedAt?: string; publishedAt?: string; publishedBy?: string; thumbnailSet?: boolean; notes?: string[]; pending?: string[] }
 
 interface Detail {
   publish: PublishKit | null;
@@ -453,10 +453,16 @@ function VideoDetail({ d, steps, styles, youtube, run, busy, close }: {
                     <a className="text-accent underline" href={`https://youtu.be/${d.youtube.longId}`} target="_blank" rel="noreferrer">Video</a>
                     {d.youtube.shortId && <a className="text-accent underline" href={`https://youtube.com/shorts/${d.youtube.shortId}`} target="_blank" rel="noreferrer">Short</a>}
                     <a className="text-accent underline" href={`https://studio.youtube.com/video/${d.youtube.longId}/edit`} target="_blank" rel="noreferrer">Open in Studio</a>
-                    <span className="text-ink-3">{d.youtube.publishedAt ? `Public since ${new Date(d.youtube.publishedAt).toLocaleString()}` : "Private"}</span>
+                    <span className="text-ink-3">{d.youtube.pending?.length ? (d.youtube.publishedAt ? `${d.youtube.pending.length} still private` : "Private") : `Public since ${new Date(d.youtube.publishedAt!).toLocaleString()}`}</span>
                   </div>
-                  {!d.youtube.publishedAt && (v.status === "approved"
-                    ? <Button size="sm" tone="primary" busy={busy === "yt-publish"} onClick={() => window.confirm("Make this video and its Short public on YouTube now? Everyone will be able to see them.") && run("yt-publish", `/api/admin/video/videos/${v.id}/youtube/publish`, { confirm: true }, "Published on YouTube")}>Publish on YouTube</Button>
+                  {!d.youtube.thumbnailSet && d.hasThumbnail && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button size="sm" busy={busy === "yt-thumb"} onClick={() => run("yt-thumb", `/api/admin/video/videos/${v.id}/youtube/thumbnail`, {}, "Thumbnail set on YouTube")}>Set thumbnail</Button>
+                      <span className="text-ink-3">YouTube shows a frame until this is set; custom thumbnails need a verified channel (youtube.com/verify).</span>
+                    </div>
+                  )}
+                  {!!d.youtube.pending?.length && (v.status === "approved"
+                    ? <Button size="sm" tone="primary" busy={busy === "yt-publish"} onClick={() => window.confirm(`Make ${d.youtube!.pending!.length === 2 ? "this video and its Short" : d.youtube!.pending![0] === d.youtube!.shortId ? "the Short" : "this video"} public on YouTube now? Everyone will be able to see it.`) && run("yt-publish", `/api/admin/video/videos/${v.id}/youtube/publish`, { confirm: true }, "Published on YouTube")}>Publish on YouTube</Button>
                     : <div className="text-ink-3">Approve the video to publish it.</div>)}
                   {d.youtube.notes?.length ? <ul className="list-disc pl-5 text-hot">{d.youtube.notes.map((n) => <li key={n}>{n}</li>)}</ul> : null}
                 </>

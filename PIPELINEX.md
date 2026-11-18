@@ -92,6 +92,8 @@ channel.json, site.ts, styles).
 
 ## How to work here
 
+- Lessons from the first finance videos, measured numbers and the agent's next tasks: `takeaways.md`.
+
 - Code: `eval/aihot/` (branch `pipelinex`; AIHOT upstream remote `upstream`). Renderer: `eval/aihot/renderer/`.
   Channels: `PipelineX/channels/<name>/`. Plans and research notes: `eval/aihot/docs/pipelinex/` (PLAN, SPEC, RESEARCH, RESEARCH-PROCESS, EVAL-AIHOT; the copies in `PipelineX/` are symlinks).
 - Run: `npm run dev:api`, `npm run dev:worker`, `npm run dev:web` (Node 24: `~/.nvm/versions/node/v24.15.0/bin`).

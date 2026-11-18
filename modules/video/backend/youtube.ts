@@ -135,14 +135,36 @@ async function uploadCaptions(access: string, videoId: string, srt: string) {
   await uploadPart(access, "https://www.googleapis.com/upload/youtube/v3/captions?uploadType=multipart&part=snippet", `multipart/related; boundary=${boundary}`, body);
 }
 
-export interface YouTubeRecord { longId?: string; shortId?: string; uploadedAt?: string; uploadedBy?: string; publishedAt?: string; publishedBy?: string; notes?: string[] }
+export interface YouTubeRecord {
+  longId?: string; shortId?: string; uploadedAt?: string; uploadedBy?: string;
+  /** Ids made public, and when the last of them was. */
+  publicIds?: string[]; publishedAt?: string; publishedBy?: string;
+  thumbnailSet?: boolean; notes?: string[];
+}
 const recordFile = (id: number) => path.join(workDir(id), "youtube.json");
 export const youtubeRecord = (id: number): YouTubeRecord | null => (existsSync(recordFile(id)) ? (JSON.parse(readFileSync(recordFile(id), "utf8")) as YouTubeRecord) : null);
-const saveRecord = (id: number, r: YouTubeRecord) => writeFileSync(recordFile(id), JSON.stringify(r, null, 2));
+/** Merges into the saved record (ids, once known, are never dropped). */
+function saveRecord(id: number, patch: YouTubeRecord): YouTubeRecord {
+  const merged = { ...(youtubeRecord(id) ?? {}), ...Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined)) } as YouTubeRecord;
+  writeFileSync(recordFile(id), JSON.stringify(merged, null, 2));
+  return merged;
+}
+/** One YouTube command per video at a time (a double click, or Publish pressed while the upload still runs). */
+const busy = new Set<number>();
+async function exclusive<T>(id: number, work: () => Promise<T>): Promise<T> {
+  if (busy.has(id)) throw new YouTubeError(`Video #${id} is being sent to YouTube right now; wait for it to finish.`);
+  busy.add(id);
+  try { return await work(); } finally { busy.delete(id); }
+}
+/** Every video still private, for the Videos page: "Publish" stays until both the video and its Short are public. */
+export const pendingPublic = (r: YouTubeRecord | null) => [r?.longId, r?.shortId].filter((v): v is string => !!v && !(r?.publicIds ?? []).includes(v));
 
 /** Uploads the long video and its Short as private, with the kit, thumbnail and captions. Parts that fail after the
  * video itself is up (thumbnail, captions) are noted, not fatal: the human can add them in Studio. */
-export async function uploadPrivate(id: number, actor: string): Promise<YouTubeRecord> {
+export function uploadPrivate(id: number, actor: string): Promise<YouTubeRecord> {
+  return exclusive(id, () => upload(id, actor));
+}
+async function upload(id: number, actor: string): Promise<YouTubeRecord> {
   const done = youtubeRecord(id);
   if (done?.longId) throw new YouTubeError(`Video #${id} is already on YouTube (https://youtu.be/${done.longId}).`);
   const kit = publishKit(id);
@@ -154,35 +176,51 @@ export async function uploadPrivate(id: number, actor: string): Promise<YouTubeR
   const status = { privacyStatus: "private", selfDeclaredMadeForKids: false, containsSyntheticMedia: false, embeddable: true, license: "youtube" };
   const snippet = (p: { title: string; description: string; tags: string[] }) =>
     ({ title: p.title, description: p.description, tags: p.tags, categoryId: CATEGORY[yt?.category ?? "News & Politics"] ?? "25", defaultLanguage: lang, defaultAudioLanguage: lang });
-  const record: YouTubeRecord = { uploadedBy: actor, notes: [] };
+  const notes: string[] = [];
   const long = await uploadFile(access, path.join(dir, "video.mp4"), { snippet: snippet(kit.long), status });
-  record.longId = long.id;
-  saveRecord(id, record);
-  const extra = async (what: string, work: () => Promise<void>) => { try { await work(); } catch (e) { record.notes!.push(`${what}: ${(e as Error).message}`); } };
+  saveRecord(id, { longId: long.id, uploadedBy: actor, notes });
+  const extra = async (what: string, work: () => Promise<void>) => { try { await work(); } catch (e) { notes.push(`${what}: ${(e as Error).message}`); } };
   if (existsSync(path.join(dir, "thumbnail.jpg")))
-    await extra("thumbnail", () => uploadPart(access, `https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${long.id}`, "image/jpeg", readFileSync(path.join(dir, "thumbnail.jpg"))));
+    await extra("thumbnail", async () => { await sendThumbnail(access, id, long.id); saveRecord(id, { thumbnailSet: true }); });
   const srt = captionsSrt(id, "long");
   if (srt) await extra("captions", () => uploadCaptions(access, long.id, srt));
   if (kit.short && existsSync(path.join(dir, "short.mp4"))) {
     await extra("short", async () => {
       const short = await uploadFile(access, path.join(dir, "short.mp4"), { snippet: snippet(kit.short!), status });
-      record.shortId = short.id;
+      saveRecord(id, { shortId: short.id });
       const shortSrt = captionsSrt(id, "short");
       if (shortSrt) await extra("short captions", () => uploadCaptions(access, short.id, shortSrt));
     });
   }
-  record.uploadedAt = new Date().toISOString();
-  saveRecord(id, record);
-  return record;
+  return saveRecord(id, { uploadedAt: new Date().toISOString(), notes });
+}
+
+const sendThumbnail = (access: string, id: number, videoId: string) =>
+  uploadPart(access, `https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${videoId}`, "image/jpeg", readFileSync(path.join(workDir(id), "thumbnail.jpg")));
+
+/** Sets the video's thumbnail again (the first try fails until the channel is verified at youtube.com/verify). */
+export function setThumbnail(id: number): Promise<YouTubeRecord> {
+  return exclusive(id, async () => {
+    const record = youtubeRecord(id);
+    if (!record?.longId) throw new YouTubeError(`Video #${id} is not on YouTube yet: upload it first.`);
+    if (!existsSync(path.join(workDir(id), "thumbnail.jpg"))) throw new YouTubeError(`Video #${id} has no thumbnail.`);
+    await sendThumbnail(await accessToken(), id, record.longId);
+    return saveRecord(id, { thumbnailSet: true, notes: (record.notes ?? []).filter((n) => !n.startsWith("thumbnail:")) });
+  });
 }
 
 /** A human's decision on the Videos page: makes the uploaded video (and its Short) public. */
-export async function publishPublic(id: number, actor: string): Promise<YouTubeRecord> {
+export function publishPublic(id: number, actor: string): Promise<YouTubeRecord> {
+  return exclusive(id, () => publish(id, actor));
+}
+async function publish(id: number, actor: string): Promise<YouTubeRecord> {
   const record = youtubeRecord(id);
   if (!record?.longId) throw new YouTubeError(`Video #${id} is not on YouTube yet: upload it first.`);
+  if (!record.uploadedAt) throw new YouTubeError(`Video #${id} is still being uploaded; publish it when the upload has finished.`);
   const access = await accessToken();
   const status = { privacyStatus: "public", selfDeclaredMadeForKids: false, containsSyntheticMedia: false, embeddable: true, license: "youtube" };
-  for (const videoId of [record.longId, record.shortId].filter((v): v is string => !!v)) {
+  const publicIds = [...(record.publicIds ?? [])];
+  for (const videoId of pendingPublic(record)) {
     try {
       await api(access, "PUT", "/youtube/v3/videos?part=status", { id: videoId, status });
     } catch (e) {
@@ -192,9 +230,8 @@ export async function publishPublic(id: number, actor: string): Promise<YouTubeR
     const check = await api<{ items?: Array<{ status?: { privacyStatus?: string } }> }>(access, "GET", `/youtube/v3/videos?part=status&id=${videoId}`);
     const now = check.items?.[0]?.status?.privacyStatus;
     if (now !== "public") throw new YouTubeError(`YouTube kept ${videoId} ${now ?? "unknown"}: API uploads from an unaudited Google Cloud project stay private. Request YouTube's API audit, or publish it in YouTube Studio for now.`);
+    publicIds.push(videoId);
+    saveRecord(id, { publicIds });
   }
-  record.publishedAt = new Date().toISOString();
-  record.publishedBy = actor;
-  saveRecord(id, record);
-  return record;
+  return saveRecord(id, { publicIds, publishedAt: new Date().toISOString(), publishedBy: actor });
 }

@@ -12,7 +12,7 @@ import { pickCandidates } from "./backend/candidates.ts";
 import { registerEditorMcp } from "./backend/editor-mcp.ts";
 import { editHistory, recordEdit } from "./backend/editing.ts";
 import { captionsSrt, editKit, publishKit } from "./backend/publishing.ts";
-import { connectUrl, finishConnect, publishPublic, uploadPrivate, youtubeRecord, youtubeStatus, YouTubeError } from "./backend/youtube.ts";
+import { connectUrl, finishConnect, pendingPublic, publishPublic, setThumbnail, uploadPrivate, youtubeRecord, youtubeStatus, YouTubeError } from "./backend/youtube.ts";
 import { auditAgent } from "./backend/operations.ts";
 import { decideRule, StyleConflict, styleGuide } from "./backend/style.ts";
 import { STYLE_KEYS, STYLES } from "./backend/styles.ts";
@@ -115,7 +115,7 @@ export const videoServer: ServerModule = {
       const video = await getVideo(id);
       if (!video) return reply.code(404).send({ error: "not_found", detail: "No such video." });
       const done = video.status === "ready" || video.status === "approved" || video.status === "rejected";
-      return { video, ...videoFiles(id), history: editHistory(id), publish: done ? publishKit(id) : null, youtube: youtubeRecord(id) };
+      return { video, ...videoFiles(id), history: editHistory(id), publish: done ? publishKit(id) : null, youtube: youtubeRecord(id) && { ...youtubeRecord(id), pending: pendingPublic(youtubeRecord(id)) } };
     }));
 
     app.get("/api/admin/video/videos/:id/video.mp4", guarded(async (req, reply) => sendVideo(req, reply, videoFile(idParam.parse(req.params).id))));
@@ -197,6 +197,12 @@ export const videoServer: ServerModule = {
       const record = await uploadPrivate(id, actorOf(admin));
       recordEdit(id, { actor: actorOf(admin), kind: "edit", detail: { variant: "youtube", upload: record } });
       await auditAgent(actorOf(admin), "video.youtube.upload", `video:${id}`, null, record);
+      return { youtube: record };
+    }));
+    app.post("/api/admin/video/videos/:id/youtube/thumbnail", guarded(async (req, _reply, admin) => {
+      const { id } = idParam.parse(req.params);
+      const record = await setThumbnail(id);
+      await auditAgent(actorOf(admin), "video.youtube.thumbnail", `video:${id}`, null, { longId: record.longId });
       return { youtube: record };
     }));
     app.post("/api/admin/video/videos/:id/youtube/publish", guarded(async (req, _reply, admin) => {

@@ -14,6 +14,7 @@ import { BudgetExceededError, failedReceiptId, failureKind } from "../providers/
 import { editorialPolicy } from "../modules.ts";
 import { readsWhole } from "../sources/uses.ts";
 import { enqueue, QUEUES, shutdownSignal, work } from "./queue.ts";
+import { config } from "../config.ts";
 
 /** Minutes to wait after the n-th failed attempt; one more failure after the last ends in "failed". */
 const RETRY_MINUTES = [5, 10, 20, 40, 60, 120, 240, 360];
@@ -202,7 +203,7 @@ async function afterFailure(articleId: string, revision: number, error: unknown)
 }
 
 export async function registerContentJobs(boss: PgBoss) {
-  await work(boss, QUEUES.analyze, { localConcurrency: 6, pollingIntervalSeconds: 2 }, ({ articleId, attemptTag }) => processArticle(articleId, { attemptTag }));
+  await work(boss, QUEUES.analyze, { localConcurrency: config.analyzeConcurrency, pollingIntervalSeconds: 2 }, ({ articleId, attemptTag }) => processArticle(articleId, { attemptTag }));
 }
 
 /**

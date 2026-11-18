@@ -12,6 +12,7 @@ import {
   type ReceiptRequest,
 } from "./receipts.ts";
 import { enterModelCircuit, recordModelHealth, type CircuitPermit } from "./circuit.ts";
+import { waitForRate } from "./rate.ts";
 
 export interface ModelSpec extends ModelPreset {
   key: string;
@@ -223,6 +224,7 @@ async function chatOnce<S extends z.ZodType>(opts: ChatJsonOptions<S>, circuit =
     ...(spec.extra ?? {}),
   };
 
+  await waitForRate(spec.service);
   const receipt = await paidRequest(
     { ...request, fallbackFor },
     async () => {

@@ -40,9 +40,11 @@ export const PRESETS: Record<string, ModelPreset> = {
     extra: { thinking: { type: "disabled" } }, jsonMode: true,
   },
   // PipelineX: free providers first, paid last (see pipelinex-chain).
-  // NVIDIA's API: free developer tier, about 40 requests a minute.
+  // NVIDIA's API: free developer tier, about 40 requests a minute, and a tighter limit per model: MiniMax answers 429 well
+  // below 40 when the video steps use it too. It is its own service so its 429s neither trip the circuit for the
+  // Nemotron fallback nor share its MODEL_RPM ceiling.
   "nvidia-minimax": {
-    service: "nvidia", model: "minimaxai/minimax-m3.1-flash", baseUrlEnv: "NVIDIA_BASE_URL", apiKeyEnv: "NVIDIA_API_KEY",
+    service: "nvidia-minimax", model: "minimaxai/minimax-m3.1-flash", baseUrlEnv: "NVIDIA_BASE_URL", apiKeyEnv: "NVIDIA_API_KEY",
     jsonMode: true, vision: false,
   },
   "nvidia-nemotron": {

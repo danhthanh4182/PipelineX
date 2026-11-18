@@ -66,6 +66,11 @@ export const config = {
   // External-action valve: off unless the environment turns it on, like COLLECT_ENABLED (read by the
   // worker).
   modelCallsEnabled: bool("MODEL_CALLS_ENABLED", false),
+  /** PipelineX: requests per minute per model service ("nvidia=30,openrouter-free=18"); unset services are not limited. */
+  modelRpm: Object.fromEntries((env.MODEL_RPM || "").split(",").map((pair) => pair.split("=").map((v) => v.trim()))
+    .filter(([service, n]) => service && Number(n) > 0).map(([service, n]) => [service, Number(n)])) as Record<string, number>,
+  /** PipelineX: articles analysed at once by one worker (each runs several model calls). */
+  analyzeConcurrency: int("ANALYZE_CONCURRENCY", 6),
   devAdmin: env.DEV_AUTH_ROLE === "admin" ? { displayName: env.DEV_AUTH_DISPLAY_NAME || "Dev Admin" } : null,
   /** The admin password (at least 12 characters), for sites with admin pages. */
   adminPassword: env.ADMIN_PASSWORD || null,

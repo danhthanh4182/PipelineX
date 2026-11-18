@@ -28,6 +28,14 @@ test("a story gets one video in progress at a time, and a finished one can be re
   assert.deepEqual([again.status, again.step], ["queued", "assets"]);
 });
 
+test("force restarts a video left running by a worker restart, but only when its job is gone", async () => {
+  const video = await createVideo(await story("Video orphaned"), "test");
+  await markStep(video.id, "render");
+  await assert.rejects(requeueVideo(video.id, "render"), VideoConflict, "running recently: refused without force");
+  const again = await requeueVideo(video.id, "render", sql, true);
+  assert.deepEqual([again.status, again.step], ["queued", "render"]);
+});
+
 test("a failed step is kept with its error", async () => {
   const video = await createVideo(await story("Video failure"), "test");
   await markStep(video.id, "render");

@@ -15,13 +15,16 @@ const dossier = existsSync(`${W}/dossier.json`) ? JSON.parse(readFileSync(`${W}/
 // The long video's beats that have a checked picture or a ready text visual, numbered for the writer.
 const beats: any[] = long.scenes.flatMap((s: any) => s.beats);
 const pictures = beats.map((b, i) => ({ i: i + 1, v: b.visual })).filter(({ v }) =>
-  ((v.type === "photo" || v.type === "broll") && v.asset) || ["article", "stat", "quote", "chart", "timeline"].includes(v.type));
+  ((v.type === "photo" || v.type === "broll") && v.asset) || ["article", "stat", "quote", "chart", "timeline", "compare", "comparison", "code", "terminal"].includes(v.type));
 const describe = (v: any) =>
-  v.type === "photo" || v.type === "broll" ? `${v.asset.kind === "video" ? "video clip" : "photo"}: ${v.query}`
+  v.type === "photo" || v.type === "broll" ? `${v.asset?.kind === "video" ? "video clip" : "photo"}: ${v.query}`
   : v.type === "article" ? `headline card: ${v.name}, "${v.headline}"`
   : v.type === "stat" ? `big number: ${v.value} (${v.label})`
   : v.type === "quote" ? `quote card: ${v.speaker}`
-  : v.type === "chart" ? `chart: ${v.title}` : `timeline: ${(v.events ?? []).length} dates`;
+  : v.type === "chart" ? `chart: ${v.title}`
+  : v.type === "compare" || v.type === "comparison" ? `comparison: ${v.title ?? "comparison table"}`
+  : v.type === "code" || v.type === "terminal" ? `code: ${v.title ?? "code snippet"}`
+  : `timeline: ${(v.events ?? []).length} dates`;
 
 const material = dossier
   ? `ANGLE: ${dossier.angle}\nSUMMARY: ${dossier.summary}\nFACTS:\n${dossier.facts.slice(0, 40).map((f: any) => `${f.id} ${f.text}`).join("\n")}\n` +
@@ -34,7 +37,7 @@ Rules:
 - Facts only from the material; attribute claims ("according to The Verge"); allegations stay allegations; where reports differ, say so.
 - Beat 1 is the hook: ${preset ? preset.short.hook : "the single most surprising fact in under 12 words"}. No greeting, no channel name.${preset ? `\n- Tone: ${preset.script.tone}.${preset.script.rules.map((r) => `\n- ${r}`).join("")}` : ""}
 - 6-9 beats, each 1-2 short sentences (3-7 seconds). Plain spoken English, no emojis, no hashtags in narration.
-- Last beat: one-line takeaway, then "Full story on our channel."
+- Last beat: one concrete takeaway attributed to a named source from the material (e.g. "Bloomberg reports...", "According to The Verge...") or a specific question from the facts, then "Full story on our channel." Never make ungrounded generalizations, editorial judgments, or broad predictions about the future without direct source attribution.
 - Every beat shows ONE visual:
   {"type":"reuse","beat":n} one of the PICTURES below (use each at most once), or
   {"type":"stat","value":"...","label":"..."} a number stated in the material, or

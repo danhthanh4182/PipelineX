@@ -12,6 +12,7 @@ import { editScript, editVisual, recordEdit, videoForEditor } from "./editing.ts
 import { candidates, retryFailedArticles, searchStories, story, systemStatus } from "./operations.ts";
 import { thumbnailImage, videoFrames } from "./media.ts";
 import { editKit, publishKit } from "./publishing.ts";
+import { listStalledArticles, rescueVideoScript } from "./rescue.ts";
 import { fetchPage, ResearchUnavailable, webSearch } from "./research.ts";
 import { MAX_ACTIVE, proposeRule, StyleConflict, styleGuide } from "./style.ts";
 import { createVideo, getVideo, listVideos, requeueVideo, reviewVideo, setStyle, STEPS, VideoConflict, type Step } from "./videos.ts";
@@ -103,14 +104,48 @@ export function buildEditorServer(makeQueue: ModuleQueue<{ id: number; from: Ste
   }));
 
   server.registerTool("remake", {
-    description: `Queue a video to be made again from a step, keeping everything before it. After edit_script: 'voice' re-records the long video (pictures kept), 'thumbnail' redraws the thumbnail, 'shortvoice' re-records the Short. Steps: ${STEPS.join(", ")}.`,
-    inputSchema: z.strictObject({ id: z.number().int().positive(), from: z.enum(STEPS), note: z.string().trim().max(500).optional() }),
+    description: `Queue a video to be made again from a step, keeping everything before it. After edit_script: 'voice' re-records the long video (pictures kept), 'thumbnail' redraws the thumbnail, 'shortvoice' re-records the Short. A video still marked queued or running is refused; if the worker was restarted mid-video, force: true restarts it (only when no job for it is left in the queue). Steps: ${STEPS.join(", ")}.`,
+    inputSchema: z.strictObject({
+      id: z.number().int().positive(),
+      from: z.enum(STEPS),
+      force: z.boolean().default(false).describe("Restart a video left marked running by a worker restart. Refused while its job is still queued or running."),
+      note: z.string().trim().max(500).optional(),
+    }),
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
-  }, async ({ id, from, note }) => safely(async () => {
-    await requeueVideo(id, from);
+  }, async ({ id, from, force, note }) => safely(async () => {
+    await requeueVideo(id, from, undefined, force);
     await enqueueOn(makeQueue, { id, from });
-    recordEdit(id, { actor: ACTOR, kind: "remake", detail: { from }, note });
+    recordEdit(id, { actor: ACTOR, kind: "remake", detail: { from, force }, note });
     return ok(`Video #${id} is queued from '${from}'. Check list_videos for when it is ready again.`, { id, from });
+  }));
+
+  server.registerTool("rescue_video_script", {
+    description: "Only when the script step keeps failing (see get_video / system_status): write the whole long-video script yourself from the video's research (get_video), then it is made again from 'verify', so every sentence is still fact-checked. Use facts from the research only and attribute claims. Refused while the video is queued or being made.",
+    inputSchema: z.strictObject({
+      id: z.number().int().positive(),
+      title: z.string().trim().min(5).max(90),
+      description: z.string().trim().max(1000).optional(),
+      thumbnailText: z.string().trim().min(2).max(40).optional().describe("2-5 words for the thumbnail."),
+      scenes: z.array(z.strictObject({
+        kind: z.enum(["hook", "story", "outro"]),
+        kicker: z.string().trim().min(2).max(40).describe("2-4 words, e.g. WHAT HAPPENED."),
+        headline: z.string().trim().min(2).max(60),
+        beats: z.array(z.strictObject({
+          narration: z.string().trim().min(3).max(600),
+          visual: z.strictObject({
+            type: z.enum(["photo", "broll", "card"]).describe("photo: a real person/place/product; broll: generic footage; card: words on screen."),
+            query: z.string().trim().min(2).max(60).optional().describe("Search words for photo/broll."),
+            text: z.string().trim().min(2).max(100).optional().describe("Words for a card."),
+          }),
+          facts: z.array(z.string().trim().max(10)).max(10).optional().describe("Fact ids from the dossier the beat uses (e.g. F3)."),
+        })).min(1).max(10),
+      })).min(2).max(15),
+      note: z.string().trim().max(500).optional().describe("Why: shown to the human editor."),
+    }),
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  }, async ({ id, note, ...script }) => safely(async () => {
+    const out = await rescueVideoScript(id, ACTOR, script, makeQueue, note);
+    return ok(out.message, out as unknown as Record<string, unknown>);
   }));
 
   server.registerTool("list_candidates", {
@@ -198,6 +233,15 @@ export function buildEditorServer(makeQueue: ModuleQueue<{ id: number; from: Ste
   }, async ({ group, reason }) => safely(async () => {
     const out = await retryFailedArticles(group ?? null, reason, ACTOR);
     return ok(`Requeued ${out.requeued} article(s).`, out as unknown as Record<string, unknown>);
+  }));
+
+  server.registerTool("list_stalled_articles", {
+    description: "Articles that failed, or wait to retry after a model provider error (403, 429, timeouts): id, title, source, error, attempts. To send failed ones through the analysis again, use retry_failed_articles; articles are always scored by the system, never by hand.",
+    inputSchema: z.strictObject({ limit: z.number().int().min(1).max(50).default(20) }),
+    annotations: { readOnlyHint: true, openWorldHint: false },
+  }, async ({ limit }) => safely(async () => {
+    const rows = await listStalledArticles(limit);
+    return ok(rows.map((r) => `[${r.id}] (${r.state}) ${r.source}: ${r.title} — error: ${r.error ?? "none"} (attempts: ${r.attempts})`).join("\n") || "No stalled articles.", { articles: rows });
   }));
 
   server.registerTool("look_at_video", {

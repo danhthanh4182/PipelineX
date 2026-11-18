@@ -40,7 +40,29 @@ def duration(path: Path) -> float:
     return float(out.strip())
 
 
-ENGINES: dict = {"azure": 0, "edge": 0}
+ENGINES: dict = {"azure": 0, "edge": 0, "cached": 0}
+
+
+PREFERRED = "azure" if USE_AZURE else "edge"
+
+
+def get_cached(name: str, text: str):
+    """A beat recorded before with the same words, voice, rate and engine is reused (remakes from 'voice' after an
+    edit_script re-record only the edited beats). A beat that fell back to edge-tts is recorded again once Azure works."""
+    path, meta_path = OUT / f"{name}.mp3", OUT / f"{name}.meta.json"
+    if not (path.exists() and path.stat().st_size > 0 and meta_path.exists()):
+        return None
+    try:
+        meta = json.loads(meta_path.read_text())
+    except ValueError:
+        return None
+    if (meta.get("engine"), meta.get("voice"), meta.get("rate"), meta.get("text")) != (PREFERRED, VOICE, RATE, text):
+        return None
+    return path, meta.get("words", []), meta.get("duration")
+
+
+def put_cache(name: str, text: str, engine: str, words: list, d: float):
+    (OUT / f"{name}.meta.json").write_text(json.dumps({"engine": engine, "voice": VOICE, "rate": RATE, "text": text, "words": words, "duration": d}))
 
 
 def speak_azure(name: str, text: str):
@@ -72,15 +94,16 @@ async def speak(name: str, text: str):
     if USE_AZURE:
         for attempt in range(3):
             try:
-                out = await asyncio.to_thread(speak_azure, name, text)
+                path, words = await asyncio.to_thread(speak_azure, name, text)
                 ENGINES["azure"] += 1
-                return out
+                return path, words, "azure"
             except Exception as error:  # throttling (429) or a network error: wait, then try again
                 print(f"{name}: Azure failed ({str(error)[:160]}), {'retrying' if attempt < 2 else 'using edge-tts for this beat'}")
                 if attempt < 2:
                     await asyncio.sleep(3 * (attempt + 1))
     ENGINES["edge"] += 1
-    return await speak_edge(name, text)
+    path, words = await speak_edge(name, text)
+    return path, words, "edge"
 
 
 async def speak_edge(name: str, text: str):
@@ -118,8 +141,17 @@ async def main():
         scene_start = t
         beats = []
         for bi, b in enumerate(s["beats"]):
-            path, words = await speak(f"{PREFIX}s{si:02d}b{bi:02d}", b["narration"])
-            d = duration(path)
+            beat_name = f"{PREFIX}s{si:02d}b{bi:02d}"
+            cached = get_cached(beat_name, b["narration"])
+            if cached:
+                path, words, d = cached
+                ENGINES["cached"] += 1
+                if d is None:
+                    d = duration(path)
+            else:
+                path, words, engine = await speak(beat_name, b["narration"])
+                d = duration(path)
+                put_cache(beat_name, b["narration"], engine, words, d)
             gap = SCENE_GAP if bi == len(s["beats"]) - 1 else BEAT_GAP
             beats.append({**b, "audio": f"audio/{path.name}", "start": round(t - scene_start, 3), "duration": round(d + gap, 3), "words": words})
             t += d + gap
@@ -138,7 +170,11 @@ async def main():
     (W / TIMELINE).write_text(json.dumps(timeline, indent=2))
     print(f"total {t:.1f}s")
     chars = sum(len(b["narration"]) for s in script["scenes"] for b in s["beats"])
-    print("RESULT " + json.dumps({"duration": round(t, 1), "engine": "azure" if ENGINES["azure"] and not ENGINES["edge"] else "edge" if not ENGINES["azure"] else "mixed",
+    engine = ("azure" if ENGINES["azure"] and not ENGINES["edge"]
+              else "edge" if ENGINES["edge"] and not ENGINES["azure"]
+              else "mixed" if (ENGINES["azure"] or ENGINES["edge"])
+              else "cached")
+    print("RESULT " + json.dumps({"duration": round(t, 1), "engine": engine,
                                   "beats": ENGINES, "characters": chars}))
 
 

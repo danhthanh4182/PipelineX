@@ -1,7 +1,7 @@
 // Editing a made video's words from outside the pipeline (the editor MCP, editor-mcp.ts): read everything a reviewer
 // needs, change narration, title, description or thumbnail words, and keep a history of every change in edits.json.
 // An edited script is checked against the reports again at once (verify.ts), so the editor sees the new verdicts.
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { run, workDir } from "./pipeline.ts";
 import { getVideo, VideoConflict } from "./videos.ts";
@@ -12,7 +12,10 @@ export interface EditEntry { at: string; actor: string; kind: "edit" | "review" 
 
 const file = (id: number, name: string) => path.join(workDir(id), name);
 const readJson = <T>(id: number, name: string): T | null => (existsSync(file(id, name)) ? (JSON.parse(readFileSync(file(id, name), "utf8")) as T) : null);
-const writeJson = (id: number, name: string, value: unknown) => writeFileSync(file(id, name), JSON.stringify(value, null, 2));
+const writeJson = (id: number, name: string, value: unknown) => {
+  mkdirSync(workDir(id), { recursive: true });
+  writeFileSync(file(id, name), JSON.stringify(value, null, 2));
+};
 
 export function editHistory(id: number): EditEntry[] {
   return readJson<EditEntry[]>(id, "edits.json") ?? [];

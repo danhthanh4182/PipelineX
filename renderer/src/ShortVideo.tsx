@@ -18,7 +18,9 @@ const Backdrop = () => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill style={{ background: C.bg }}>
-      <AbsoluteFill style={{ background: `radial-gradient(circle at 50% ${30 + 8 * Math.sin(f / 70)}%, ${C.accent}33, transparent 60%)` }} />
+      <AbsoluteFill style={{ background: `radial-gradient(circle at 50% ${30 + 8 * Math.sin(f / 70)}%, ${C.accent}38, transparent 60%)` }} />
+      <AbsoluteFill style={{ background: `radial-gradient(circle at 50% ${75 - 6 * Math.cos(f / 80)}%, ${C.hot}1c, transparent 50%)` }} />
+      <AbsoluteFill style={{ background: "radial-gradient(ellipse at center, transparent 40%, rgba(4,6,11,0.65) 100%)" }} />
     </AbsoluteFill>
   );
 };
@@ -71,7 +73,7 @@ const Stat = ({ v }: { v: Visual }) => {
     <AbsoluteFill>
       <Backdrop />
       <AbsoluteFill style={{ alignItems: "center", paddingTop: 420, padding: "420px 60px 0", textAlign: "center", fontFamily: SANS }}>
-        <div style={{ color: C.accent, fontSize: String(text).length > 8 ? 150 : 210, fontWeight: 900, letterSpacing: -4 }}>{text}</div>
+        <div style={{ color: C.accent, fontSize: String(text).length > 8 ? 150 : 210, fontWeight: 900, letterSpacing: -4, textShadow: `0 0 50px ${C.accent}55, 0 8px 30px rgba(0,0,0,0.7)` }}>{text}</div>
         <div style={{ color: C.ink, fontSize: 52, fontWeight: 700, marginTop: 10, lineHeight: 1.2 }}>{v.label}</div>
       </AbsoluteFill>
     </AbsoluteFill>
@@ -99,17 +101,41 @@ const phrasesOf = (words: Word[], max: number) => {
   return groups;
 };
 
-/** Big captions, 4 words at a time, the spoken word in yellow; on a text-only beat they sit higher and larger. */
+/** Big captions, 4 words at a time with spring kinetic pop on active spoken words; on a text-only beat they sit higher and larger. */
 const Captions = ({ words, center }: { words: Word[]; center: boolean }) => {
-  const t = useCurrentFrame() / FPS;
+  const f = useCurrentFrame();
+  const t = f / FPS;
   const g = phrasesOf(words, 4).find((grp) => t >= grp[0]!.start - 0.05 && t <= grp[grp.length - 1]!.end + 0.2);
   if (!g) return null;
   return (
-    <div style={{ position: "absolute", left: 50, right: 50, top: center ? 760 : 1180, textAlign: "center", fontFamily: SANS }}>
-      <span style={{ fontSize: center ? 104 : 84, fontWeight: 900, lineHeight: 1.12, color: C.ink,
-        textShadow: "0 6px 0 rgba(0,0,0,0.6), 0 0 30px rgba(0,0,0,0.8)", WebkitTextStroke: "3px rgba(0,0,0,0.55)" }}>
-        {g.map((w, i) => <span key={i} style={{ color: t >= w.start && t <= w.end + 0.08 ? C.yellow : C.ink }}>{w.text.toUpperCase()} </span>)}
-      </span>
+    <div style={{ position: "absolute", left: 40, right: 40, top: center ? 760 : 1180, textAlign: "center", fontFamily: SANS }}>
+      <div style={{ fontSize: center ? 104 : 86, fontWeight: 900, lineHeight: 1.15, color: C.ink,
+        textShadow: "0 6px 0 rgba(0,0,0,0.65), 0 0 32px rgba(0,0,0,0.85)", WebkitTextStroke: "3px rgba(0,0,0,0.55)" }}>
+        {g.map((w, i) => {
+          const active = t >= w.start && t <= w.end + 0.08;
+          const isNumber = /[\d%$]/.test(w.text);
+          // Kinetic Word Pop: spring scale bounce on the active spoken word
+          const wordFrame = Math.max(0, Math.round((t - w.start) * FPS));
+          const pop = spring({ frame: wordFrame, fps: FPS, config: { damping: 14, stiffness: 220 } });
+          const scale = active ? interpolate(pop, [0, 1], [1.18, 1.05]) : 1.0;
+          const wordColor = active ? (isNumber ? C.accent : C.yellow) : C.ink;
+          const glowColor = isNumber ? C.accent : C.yellow;
+          return (
+            <span
+              key={i}
+              style={{
+                display: "inline-block",
+                transform: `scale(${scale})`,
+                color: wordColor,
+                textShadow: active ? `0 0 28px ${glowColor}, 0 6px 0 rgba(0,0,0,0.85)` : undefined,
+                margin: "0 8px 4px",
+              }}
+            >
+              {w.text.toUpperCase()}
+            </span>
+          );
+        })}
+      </div>
     </div>
   );
 };
@@ -161,7 +187,19 @@ export const ShortVideo = ({ scenes, total, music, palette, brand = DEFAULT_BRAN
       <div style={{ position: "absolute", left: 60, right: 60, bottom: 260, opacity: cta, transform: `translateY(${(1 - cta) * 40}px)`, textAlign: "center", fontFamily: SANS }}>
         <div style={{ display: "inline-block", background: C.hot, color: "white", fontWeight: 900, fontSize: 52, padding: "18px 36px", borderRadius: 18 }}>Full story on {brand.name}</div>
       </div>
-      {music && <Audio src={staticFile(music)} loop volume={(fr) => interpolate(fr, [0, 15, end, end + SHORT_TAIL * FPS], [0, 0.06, 0.06, 0], { extrapolateRight: "clamp" })} />}
+      {music && (
+        <Audio
+          src={staticFile(music)}
+          loop
+          volume={(fr) => {
+            // Dynamic Audio Ducking: swell during closing CTA (end onwards), duck during speech
+            if (fr >= end) {
+              return interpolate(fr, [end, end + 15, end + SHORT_TAIL * FPS - 10, end + SHORT_TAIL * FPS], [0.038, 0.09, 0.09, 0], { extrapolateRight: "clamp" });
+            }
+            return interpolate(fr, [0, 15], [0, 0.038], { extrapolateRight: "clamp" });
+          }}
+        />
+      )}
     </AbsoluteFill>
   );
 };

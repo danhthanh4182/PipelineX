@@ -43,26 +43,29 @@ export const Thumbnail = (t: Timeline & { thumbnail_text?: string | null }) => {
   return (
     <AbsoluteFill style={{ background: C.bg, fontFamily: SANS }}>
       {pic && (
-        <AbsoluteFill style={{ left: "38%" }}>
-          <Img src={staticFile(pic)} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "saturate(1.15) contrast(1.08)" }} />
+        <AbsoluteFill style={{ left: "36%" }}>
+          <Img src={staticFile(pic)} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "saturate(1.2) contrast(1.1)" }} />
         </AbsoluteFill>
       )}
-      <AbsoluteFill style={{ background: `linear-gradient(90deg, ${C.bg} 0%, ${C.bg} 36%, rgba(11,15,23,0.85) 50%, rgba(11,15,23,0.15) 72%, transparent 100%)` }} />
-      <AbsoluteFill style={{ background: `radial-gradient(circle at 18% 30%, ${C.accent}38, transparent 45%)` }} />
+      <AbsoluteFill style={{ background: `linear-gradient(90deg, ${C.bg} 0%, ${C.bg} 38%, rgba(11,15,23,0.88) 52%, rgba(11,15,23,0.25) 75%, transparent 100%)` }} />
+      <AbsoluteFill style={{ background: `radial-gradient(circle at 18% 30%, ${C.accent}44, transparent 48%)` }} />
+      <AbsoluteFill style={{ background: "radial-gradient(ellipse at center, transparent 45%, rgba(5,8,14,0.7) 100%)" }} />
+      {/* Top accent line */}
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 6, background: `linear-gradient(90deg, ${C.hot}, ${C.accent}, transparent)` }} />
       <div style={{ position: "absolute", left: 56, top: 48, display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ width: 18, height: 18, borderRadius: 9, background: C.hot }} />
-        <div style={{ color: C.ink, fontWeight: 900, fontSize: 34, letterSpacing: 5 }}>{brand.name.toUpperCase()}</div>
-        <div style={{ background: C.accent, color: "#06110c", fontWeight: 900, fontSize: 24, letterSpacing: 3, padding: "4px 12px", borderRadius: 6 }}>{brand.label}</div>
+        <div style={{ width: 18, height: 18, borderRadius: 9, background: C.hot, boxShadow: `0 0 12px ${C.hot}` }} />
+        <div style={{ color: C.ink, fontWeight: 900, fontSize: 34, letterSpacing: 5, textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>{brand.name.toUpperCase()}</div>
+        <div style={{ background: C.accent, color: "#06110c", fontWeight: 900, fontSize: 24, letterSpacing: 3, padding: "4px 12px", borderRadius: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}>{brand.label}</div>
       </div>
-      <div style={{ position: "absolute", left: 56, bottom: 64, width: 760 }}>
+      <div style={{ position: "absolute", left: 56, bottom: 64, width: 780 }}>
         {kicker && (
-          <div style={{ display: "inline-block", background: C.hot, color: C.ink, fontWeight: 900, fontSize: 28, letterSpacing: 3, padding: "6px 14px", borderRadius: 6, marginBottom: 18 }}>
+          <div style={{ display: "inline-block", background: C.hot, color: C.ink, fontWeight: 900, fontSize: 28, letterSpacing: 3, padding: "6px 14px", borderRadius: 6, marginBottom: 18, boxShadow: `0 4px 16px rgba(255, 92, 92, 0.45)` }}>
             {kicker.toUpperCase()}
           </div>
         )}
         {lines.map((l, i) => (
           <div key={i} style={{ color: i === 1 ? C.yellow : C.ink, fontWeight: 900, fontSize: size, lineHeight: 0.98, letterSpacing: -2,
-            textShadow: "0 6px 0 rgba(0,0,0,0.55), 0 0 40px rgba(0,0,0,0.6)", WebkitTextStroke: "2px rgba(0,0,0,0.35)" }}>{l}</div>
+            textShadow: "0 6px 0 rgba(0,0,0,0.75), 0 0 50px rgba(0,0,0,0.85)", WebkitTextStroke: "2px rgba(0,0,0,0.4)" }}>{l}</div>
         ))}
       </div>
     </AbsoluteFill>

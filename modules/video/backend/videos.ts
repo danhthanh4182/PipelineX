@@ -53,11 +53,14 @@ export async function createVideo(storyId: number, createdBy: string, db: Db = s
   return row!;
 }
 
-/** Queue a video again from a step; only a video that is not queued or (recently) running. */
-export async function requeueVideo(id: number, from: Step, db: Db = sql): Promise<VideoRow> {
+/** Queue a video again from a step; only a video that is not queued or (recently) running. With force, also a video
+ * left marked queued/running by a worker restart: allowed only when the job queue holds no live job for it. */
+export async function requeueVideo(id: number, from: Step, db: Db = sql, force = false): Promise<VideoRow> {
+  const orphaned = force && !(await hasLiveJob(id, db));
+  if (force && !orphaned) throw new VideoConflict("This video's job is still queued or running; wait for it or stop the worker first.");
   const [row] = await db<VideoRow[]>`
     UPDATE video_jobs SET status = 'queued', step = ${from}, error = NULL, finished_at = NULL, updated_at = now()
-    WHERE id = ${id} AND (status NOT IN ('queued', 'running') OR updated_at < now() - make_interval(mins => ${STALE_MINUTES}))
+    WHERE id = ${id} AND (${orphaned} OR status NOT IN ('queued', 'running') OR updated_at < now() - make_interval(mins => ${STALE_MINUTES}))
     RETURNING *`;
   if (!row) throw new VideoConflict("This video is queued or being made right now.");
   return row;
@@ -150,4 +153,18 @@ export async function storyMaterial(storyId: number, db: Db = sql) {
       ORDER BY a.id, an.id DESC
     ) x ORDER BY x.published_at NULLS LAST
     LIMIT 12`;
+}
+
+/** Whether pg-boss holds a live "video.make" job for this video: one waiting, or one running whose video moved to a
+ * new step in the last FORCE_QUIET_MINUTES (every step updates the video). A worker killed mid-video leaves its job
+ * "active" until it expires (2 hours); a quiet active job is taken to be such a leftover. */
+export const FORCE_QUIET_MINUTES = 15;
+async function hasLiveJob(id: number, db: Db): Promise<boolean> {
+  const [queue] = await db<{ ok: boolean }[]>`SELECT to_regclass('pgboss.job') IS NOT NULL AS ok`;
+  if (!queue?.ok) return false; // no job queue yet (a fresh database before the worker first ran)
+  const [row] = await db<{ n: number }[]>`
+    SELECT count(*)::int AS n FROM pgboss.job j
+    WHERE j.name = 'video.make' AND j.data->>'id' = ${String(id)} AND (j.state IN ('created', 'retry')
+      OR (j.state = 'active' AND EXISTS (SELECT 1 FROM video_jobs v WHERE v.id = ${id} AND v.updated_at > now() - make_interval(mins => ${FORCE_QUIET_MINUTES}))))`;
+  return (row?.n ?? 0) > 0;
 }

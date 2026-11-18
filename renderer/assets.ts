@@ -128,19 +128,62 @@ Reply with one word: YES or NO.`;
   }
 }
 
+// When nothing found for a beat's own query fits, try a few broader queries picked by what the beat is about, then
+// give up (a text card). Every candidate costs a vision check, so a beat is checked at most MAX_CHECKS times.
+const MAX_FALLBACKS = 2;
+const MAX_CHECKS = 12;
+const BROADER: ReadonlyArray<[RegExp, string[]]> = [
+  [/\b(stocks?|shares|ticker|markets?|trad(e|ing|ers)|investors?|wall street|nasdaq|s&p|dow)\b/, ["stock market screen", "trading floor"]],
+  [/\b(revenue|earnings|profit|results|quarter|forecast|guidance)\b/, ["financial chart screen", "business report charts"]],
+  [/\b(fed|central bank|rates?|inflation|economy|jobs)\b/, ["federal reserve building", "us dollar bills"]],
+  [/\b(bitcoin|crypto|ethereum|blockchain|token)\b/, ["cryptocurrency coins", "bitcoin chart screen"]],
+  [/\b(pay(ment)?s?|wallet|checkout|shopping|purchase)\b/, ["contactless payment", "mobile payment"]],
+  [/\b(apps?|software|smartphone|phone|users?)\b/, ["person using smartphone", "laptop screen app"]],
+  [/\b(servers?|cloud|data cent(er|re)|chips?|gpus?|security|cyber|hack(ed|ers?)?)\b/, ["data center servers", "computer chip closeup"]],
+  [/\b(ceo|chief|executive|founder|president|chair(man|woman)?|spokes(man|woman|person))\b/, ["business executive speaking", "corporate press conference"]],
+  [/\b(headquarters|campus|offices?|company)\b/, ["modern office building exterior", "corporate office interior"]],
+  [/\b(court|lawsuit|judge|regulators?|sec|probe|investigation)\b/, ["courthouse exterior", "legal documents desk"]],
+];
+function fallbackQueries(query: string, narration: string): string[] {
+  const about = `${query} ${narration}`.toLowerCase();
+  const broader = BROADER.filter(([re]) => re.test(about)).flatMap(([, qs]) => qs);
+  // The query without words that rarely match free media (logos, titles).
+  const plain = query.replace(/\b(app|application|logo|headquarters|ceo|vp|screen|official|photo)\b/gi, " ").replace(/\s+/g, " ").trim();
+  return [...new Set([query, ...(plain.length > 2 ? [plain] : []), ...broader])].slice(0, 1 + MAX_FALLBACKS);
+}
+
 let n = 0, missing = 0;
 for (const scene of script.scenes) for (const beat of scene.beats) {
   const v = beat.visual; const i = n++;
   if (v.type !== "photo" && v.type !== "broll") continue;
-  const cands = v.type === "photo" ? [...(await commons(v.query)).slice(0, 4), ...(await openverse(v.query)).slice(0, 2)]
-    : [...(await pixabay(v.query, true)).slice(0, 3), ...(await pixabay(v.query, false)).slice(0, 2),
-       ...(await openverse(v.query)).slice(0, 2)]; // no Commons for b-roll: it surfaces real documents and private people
+
+  const queries = fallbackQueries(v.query.trim(), beat.narration);
   let found: Cand | null = null, tried = 0;
-  for (const c of cands.slice(0, 8)) {
-    tried++;
-    if (await fits(c, v.query, v.type, script.title, beat.narration)) { found = c; used.add(c.url); break; }
+
+  for (const query of queries) {
+    if (tried >= MAX_CHECKS) break;
+    const cands = v.type === "photo"
+      ? [...(await commons(query)).slice(0, 4), ...(await openverse(query)).slice(0, 2)]
+      : [...(await pixabay(query, true)).slice(0, 3), ...(await pixabay(query, false)).slice(0, 2),
+         ...(await openverse(query)).slice(0, 2)]; // no Commons for b-roll: it surfaces real documents and private people
+    if (cands.length === 0) continue;
+
+    for (const c of cands.slice(0, query === v.query.trim() ? 8 : 4)) {
+      if (tried >= MAX_CHECKS || used.has(c.url)) continue;
+      tried++;
+      if (await fits(c, query, v.type, script.title, beat.narration)) {
+        found = c;
+        used.add(c.url);
+        break;
+      }
+    }
+    if (found) {
+      if (query !== v.query.trim()) console.log(`  (matched via fallback query "${query}")`);
+      break;
+    }
   }
-  if (!found) { missing++; console.log(`beat ${i} ${v.type} "${v.query}": nothing fitting (${tried} checked) -> text card`); v.type = "card"; continue; }
+
+  if (!found) { missing++; console.log(`beat ${i} ${v.type} "${v.query}": nothing fitting (${tried} checked across ${queries.length} queries) -> text card`); v.type = "card"; continue; }
   const ext = found.kind === "video" ? "mp4" : (found.url.split("?")[0].match(/\.(jpe?g|png|webp)$/i)?.[1] ?? "jpg").toLowerCase();
   const file = `assets/beat-${String(i).padStart(2, "0")}.${ext}`;
   const img = await get(found.url, { "user-agent": UA }, 120_000);

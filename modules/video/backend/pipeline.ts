@@ -56,15 +56,19 @@ function command(step: Exclude<Step, "story">, dir: string): [string, string[]] 
     case "voice": return [path.join(RENDERER, ".venv", "bin", "python"), ["tts.py"]];
     case "thumbnail": return [path.join(RENDERER, "node_modules", ".bin", "remotion"), [
       "still", "src/index.ts", "Thumbnail", path.join(dir, "thumbnail.jpg"), `--props=${path.join(dir, "timeline.json")}`,
-      `--public-dir=${path.join(dir, "public")}`, "--image-format=jpeg", "--jpeg-quality=88"]];
+      `--public-dir=${path.join(dir, "public")}`, "--image-format=jpeg", "--jpeg-quality=88", "--bundle-cache"]];
     case "short": return node("short.ts");
     case "shortvoice": return [path.join(RENDERER, ".venv", "bin", "python"), ["tts.py"]];
     case "shortrender": return [path.join(RENDERER, "node_modules", ".bin", "remotion"), [
       "render", "src/index.ts", "ShortVideo", path.join(dir, "short.mp4"), `--props=${path.join(dir, "timeline-short.json")}`,
-      `--public-dir=${path.join(dir, "public")}`, "--codec", "h264", "--crf", "20", "--concurrency", process.env.VIDEO_RENDER_CONCURRENCY || "4"]];
+      `--public-dir=${path.join(dir, "public")}`, "--codec", "h264", "--crf", "20",
+      "--bundle-cache", "--hardware-acceleration", "if-possible",
+      "--concurrency", process.env.VIDEO_RENDER_CONCURRENCY || "4"]];
     case "render": return [path.join(RENDERER, "node_modules", ".bin", "remotion"), [
       "render", "src/index.ts", "NewsVideo", path.join(dir, "video.mp4"), `--props=${path.join(dir, "timeline.json")}`,
-      `--public-dir=${path.join(dir, "public")}`, "--codec", "h264", "--crf", "20", "--concurrency", process.env.VIDEO_RENDER_CONCURRENCY || "4"]];
+      `--public-dir=${path.join(dir, "public")}`, "--codec", "h264", "--crf", "20",
+      "--bundle-cache", "--hardware-acceleration", "if-possible",
+      "--concurrency", process.env.VIDEO_RENDER_CONCURRENCY || "4"]];
   }
 }
 

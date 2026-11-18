@@ -40,6 +40,7 @@ modules/video (shared code)                          renderer/ (one copy, shared
 | **Free LLM models only**: `pipelinex-chain` = NVIDIA API → OpenRouter `:free` → OrcaRouter free → `LLM_*` (a `:free` model). Never add a paid model to the chain or to `VIDEO_PROVIDERS` without asking. | The owner wants cost near zero; a paid fallback silently spent $0.41 on 2026-11-17. |
 | A paid model is planned only for a future **orchestrator** role (editorial decisions: pick stories, plan, final QA). Not built. | Low volume, high impact. |
 | **Antigravity is the editor/operator** through the editor MCP (`/api/admin/video/mcp`, direct local connections + `VIDEO_EDITOR_TOKEN`). It cannot publish, change sources, settings, keys or models. Every action is logged (video `edits.json` + Audit Log). | The owner wants the local agent to take part, with guardrails. |
+| **The system scores and selects articles, never an agent.** Agents may list stuck articles and send them back through AIHOT's analysis (`retry_failed_articles`); when the script step stalls an agent may write a video script (`rescue_video_script`), which is still fact-checked from `verify`. A tool that wrote agent scores into `analyses` was removed on 2026-11-18. | Selection uses the channel's own prompts, two independent scores, thresholds and receipts; an agent's score bypasses all of it. |
 | **A human publishes.** No YouTube upload automation yet; when built, publishing stays a human click. | Public and hard to undo. |
 | **One channel = one type, chosen at creation**; changing type means a new channel. Each channel has its own sources. | Clear identity per channel; no mixing old and new data. |
 | **Facts are grounded**: dossier (facts with outlets) → script cites facts → sentence-by-sentence verify against full report text; quotes/numbers re-checked by words. Allegations attributed. | Accuracy; A/B on 3 stories: errors 6.0% → 2.2%. |
@@ -87,7 +88,7 @@ channel.json, site.ts, styles).
 ## How to work here
 
 - Code: `eval/aihot/` (branch `pipelinex`; AIHOT upstream remote `upstream`). Renderer: `eval/aihot/renderer/`.
-  Channels: `PipelineX/channels/<name>/`. Research notes: `PipelineX/RESEARCH-PROCESS.md`, `EVAL-AIHOT.md`.
+  Channels: `PipelineX/channels/<name>/`. Plans and research notes: `eval/aihot/docs/pipelinex/` (PLAN, SPEC, RESEARCH, RESEARCH-PROCESS, EVAL-AIHOT; the copies in `PipelineX/` are symlinks).
 - Run: `npm run dev:api`, `npm run dev:worker`, `npm run dev:web` (Node 24: `~/.nvm/versions/node/v24.15.0/bin`).
 - Check: `npm run typecheck`; `DATABASE_URL=postgres://$USER@127.0.0.1:5432/pipelinex_test npm test`;
   `npm run build -w @aihot/web && npm run test:web`. Module tests live in `modules/video/tests/`.

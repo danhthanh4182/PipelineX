@@ -36,6 +36,8 @@ const Grid = () => {
       <AbsoluteFill style={{ backgroundImage: `linear-gradient(${C.line} 1px, transparent 1px), linear-gradient(90deg, ${C.line} 1px, transparent 1px)`,
         backgroundSize: "80px 80px", backgroundPosition: `${shift}px ${shift}px`, opacity: 0.5 }} />
       <AbsoluteFill style={{ background: `radial-gradient(circle at ${35 + 10 * Math.sin(f / 90)}% 40%, ${C.accent}24, transparent 55%)` }} />
+      <AbsoluteFill style={{ background: `radial-gradient(circle at ${75 - 8 * Math.cos(f / 100)}% ${65 + 6 * Math.sin(f / 80)}%, ${C.hot}16, transparent 50%)` }} />
+      <AbsoluteFill style={{ background: "radial-gradient(ellipse at center, transparent 40%, rgba(4,6,11,0.7) 100%)" }} />
     </AbsoluteFill>
   );
 };
@@ -128,7 +130,7 @@ const StatBeat = ({ v }: { v: Visual }) => {
     <AbsoluteFill>
       <Grid />
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", fontFamily: SANS, textAlign: "center" }}>
-        <div style={{ color: C.accent, fontSize: 230, fontWeight: 900, letterSpacing: -6 }}>{text}</div>
+        <div style={{ color: C.accent, fontSize: 230, fontWeight: 900, letterSpacing: -6, textShadow: `0 0 60px ${C.accent}44, 0 10px 40px rgba(0,0,0,0.6)` }}>{text}</div>
         <div style={{ color: C.ink, fontSize: 52, fontWeight: 600, maxWidth: 1300, opacity: lab, transform: `translateY(${(1 - lab) * 30}px)` }}>{v.label}</div>
       </AbsoluteFill>
     </AbsoluteFill>
@@ -188,6 +190,182 @@ const TimelineBeat = ({ v, frames }: { v: Visual; frames: number }) => {
                   <div style={{ color: C.accent, fontSize: 40, fontWeight: 900, height: 90 }}>{e.date}</div>
                   <div style={{ width: 34, height: 34, borderRadius: 17, background: C.accent, border: `6px solid ${C.bg}`, marginTop: 8 }} />
                   <div style={{ color: C.ink, fontSize: 36, fontWeight: 600, marginTop: 34, lineHeight: 1.25 }}>{e.text}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
+/** A comparison table / side-by-side card for specs, benchmarks, pricing or versions. */
+const ComparisonBeat = ({ v }: { v: Visual }) => {
+  const enter = useSpring();
+  const leftLabel = v.left_label ?? v.left?.label ?? "Option A";
+  const rightLabel = v.right_label ?? v.right?.label ?? "Option B";
+  const items: Array<{ label: string; left: string; right: string }> = v.items ?? (
+    v.left && v.right ? [{ label: v.metric ?? "Value", left: String(v.left.value ?? v.left), right: String(v.right.value ?? v.right) }] : []
+  );
+
+  return (
+    <AbsoluteFill>
+      <Grid />
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", padding: "0 140px", fontFamily: SANS }}>
+        <div style={{ width: "100%", maxWidth: 1400, opacity: enter, transform: `translateY(${(1 - enter) * 40}px)` }}>
+          {v.title && (
+            <div style={{ color: C.ink, fontSize: 52, fontWeight: 900, marginBottom: 36, textAlign: "center", letterSpacing: -1 }}>
+              {v.title}
+            </div>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 16, marginBottom: 16, padding: "0 24px" }}>
+            <div />
+            <div style={{ color: C.dim, fontSize: 30, fontWeight: 800, textAlign: "center", textTransform: "uppercase", letterSpacing: 2 }}>{leftLabel}</div>
+            <div style={{ color: C.accent, fontSize: 30, fontWeight: 800, textAlign: "center", textTransform: "uppercase", letterSpacing: 2 }}>{rightLabel}</div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {items.map((row, i) => {
+              const rowEnter = useSpring(10 + i * 8);
+              return (
+                <div key={i} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", alignItems: "center", gap: 16,
+                  background: "linear-gradient(135deg, rgba(20, 27, 43, 0.94), rgba(12, 16, 26, 0.96))", border: `1px solid ${C.line}`,
+                  padding: "20px 28px", borderRadius: 14, opacity: rowEnter, transform: `translateX(${(1 - rowEnter) * -20}px)` }}>
+                  <div style={{ color: C.ink, fontSize: 32, fontWeight: 700 }}>{row.label}</div>
+                  <div style={{ color: C.dim, fontSize: 32, fontWeight: 600, textAlign: "center" }}>{row.left}</div>
+                  <div style={{ color: C.accent, fontSize: 34, fontWeight: 800, textAlign: "center" }}>{row.right}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
+/** A stylized developer terminal/code window with syntax accent. */
+const CodeBeat = ({ v, frames }: { v: Visual; frames: number }) => {
+  const enter = useSpring();
+  const f = useCurrentFrame();
+  const codeLines: string[] = typeof v.code === "string" ? v.code.split("\n") : Array.isArray(v.code) ? v.code : [String(v.snippet ?? "")];
+  const shownLines = Math.min(codeLines.length, Math.ceil(interpolate(f, [10, Math.min(frames * 0.7, 90)], [1, codeLines.length], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })));
+
+  return (
+    <AbsoluteFill>
+      <Grid />
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", padding: "0 120px", fontFamily: SANS }}>
+        <div style={{ width: "100%", maxWidth: 1360, background: "#0e131d", borderRadius: 18, overflow: "hidden",
+          border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 30px 100px rgba(0,0,0,0.7)", opacity: enter, transform: `scale(${0.96 + 0.04 * enter})` }}>
+          <div style={{ background: "#161c28", padding: "16px 24px", display: "flex", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ width: 14, height: 14, borderRadius: 7, background: "#ff5f56" }} />
+              <div style={{ width: 14, height: 14, borderRadius: 7, background: "#ffbd2e" }} />
+              <div style={{ width: 14, height: 14, borderRadius: 7, background: "#27c93f" }} />
+            </div>
+            <div style={{ flex: 1, textAlign: "center", color: C.dim, fontSize: 22, fontWeight: 600, fontFamily: "ui-monospace, monospace" }}>
+              {v.title ?? v.filename ?? "terminal ~ zsh"}
+            </div>
+          </div>
+          <div style={{ padding: "36px 44px", fontFamily: "'SF Mono', Monaco, Menlo, Consolas, monospace", fontSize: 32, lineHeight: 1.6, color: C.ink }}>
+            {codeLines.slice(0, shownLines).map((line, i) => (
+              <div key={i} style={{ display: "flex", gap: 24 }}>
+                <span style={{ color: "#475266", userSelect: "none", width: 40, textAlign: "right", fontSize: 26 }}>{i + 1}</span>
+                <span style={{ color: line.startsWith("$") || line.startsWith("#") ? C.accent : line.includes("import") || line.includes("export") || line.includes("const") ? "#ff79c6" : C.ink }}>
+                  {line}
+                </span>
+              </div>
+            ))}
+            {shownLines < codeLines.length && (
+              <span style={{ display: "inline-block", width: 12, height: 26, background: C.accent, marginLeft: 64, opacity: Math.sin(f / 4) > 0 ? 1 : 0 }} />
+            )}
+          </div>
+        </div>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
+/** Semantic vector icon for structured card items */
+const CardIcon = ({ text, index }: { text: string; index: number }) => {
+  const lower = text.toLowerCase();
+  if (lower.includes("pay") || lower.includes("card") || lower.includes("purchase") || lower.includes("bill") || lower.includes("$") || lower.includes("cost") || lower.includes("fee")) {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="20" height="14" x="2" y="5" rx="2" /><line x1="2" x2="22" y1="10" y2="10" />
+      </svg>
+    );
+  }
+  if (lower.includes("security") || lower.includes("safe") || lower.includes("privacy") || lower.includes("isolated") || lower.includes("virtual machine") || lower.includes("vm")) {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+      </svg>
+    );
+  }
+  if (lower.includes("call") || lower.includes("phone") || lower.includes("voice") || lower.includes("speak") || lower.includes("dealership")) {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+      </svg>
+    );
+  }
+  if (lower.includes("app") || lower.includes("mobile") || lower.includes("toggle") || lower.includes("device") || lower.includes("account")) {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" />
+      </svg>
+    );
+  }
+  if (lower.includes("cap") || lower.includes("limit") || lower.includes("setting") || lower.includes("control") || lower.includes("spend")) {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="4" x2="4" y1="21" y2="14" /><line x1="4" x2="4" y1="10" y2="3" />
+        <line x1="12" x2="12" y1="21" y2="12" /><line x1="12" x2="12" y1="8" y2="3" />
+        <line x1="20" x2="20" y1="21" y2="16" /><line x1="20" x2="20" y1="12" y2="3" />
+        <line x1="2" x2="6" y1="14" y2="14" /><line x1="10" x2="14" y1="8" y2="8" /><line x1="18" x2="22" y1="16" y2="16" />
+      </svg>
+    );
+  }
+  if (lower.includes("allow") || lower.includes("check") || lower.includes("opt") || lower.includes("feedback") || lower.includes("disconnect") || lower.includes("confirm")) {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+      </svg>
+    );
+  }
+  return <span>{index + 1}</span>;
+};
+
+/** Key takeaways or structured points card. */
+const CardBeat = ({ v }: { v: Visual }) => {
+  const enter = useSpring();
+  const items: string[] = Array.isArray(v.items) ? v.items : typeof v.text === "string" ? [v.text] : [];
+
+  return (
+    <AbsoluteFill>
+      <Grid />
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", padding: "0 160px", fontFamily: SANS }}>
+        <div style={{ width: "100%", maxWidth: 1300, opacity: enter, transform: `translateY(${(1 - enter) * 30}px)` }}>
+          {v.title && (
+            <div style={{ color: C.accent, fontSize: 34, fontWeight: 900, letterSpacing: 4, textTransform: "uppercase", marginBottom: 30 }}>
+              {v.title}
+            </div>
+          )}
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {items.map((item, i) => {
+              const itemEnter = useSpring(8 + i * 8);
+              return (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 24,
+                  background: "linear-gradient(135deg, rgba(20, 27, 43, 0.94), rgba(12, 16, 26, 0.96))",
+                  border: `1px solid ${C.line}`, padding: "26px 36px", borderRadius: 16,
+                  opacity: itemEnter, transform: `translateX(${(1 - itemEnter) * -20}px)` }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 24, background: `${C.accent}22`, border: `2px solid ${C.accent}`,
+                    color: C.accent, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 20, flexShrink: 0,
+                    boxShadow: `0 0 16px ${C.accent}28` }}>
+                    <CardIcon text={item} index={i} />
+                  </div>
+                  <div style={{ color: C.ink, fontSize: 38, fontWeight: 600, lineHeight: 1.35, paddingTop: 4 }}>{item}</div>
                 </div>
               );
             })}
@@ -292,14 +470,18 @@ const Outro = ({ sources, brand }: { sources: Array<{ n: number; name: string; t
 
 const Header = ({ at, total, brand }: { at: number; total: number; brand: Brand }) => {
   const f = useCurrentFrame();
+  const pct = Math.min(100, (at / total) * 100);
   return (
     <div style={{ position: "absolute", top: 40, left: 64, right: 64, display: "flex", alignItems: "center", gap: 16, fontFamily: SANS }}>
-      <div style={{ width: 14, height: 14, borderRadius: 7, background: C.hot, opacity: 0.6 + 0.4 * Math.sin(f / 6) }} />
+      <div style={{ position: "relative", width: 14, height: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ position: "absolute", width: "100%", height: "100%", borderRadius: 7, background: C.hot, opacity: 0.8 }} />
+        <div style={{ position: "absolute", width: "180%", height: "180%", borderRadius: 14, background: C.hot, opacity: 0.3 * (1 + Math.sin(f / 6)) }} />
+      </div>
       <div style={{ color: C.ink, fontWeight: 800, fontSize: 24, letterSpacing: 3, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{brand.name.toUpperCase()}</div>
       <div style={{ color: "#c6ccd8", fontSize: 22, letterSpacing: 2, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{brand.label}</div>
       <div style={{ flex: 1 }} />
       <div style={{ width: 300, height: 6, background: "rgba(255,255,255,0.18)", borderRadius: 3, overflow: "hidden" }}>
-        <div style={{ width: `${Math.min(100, (at / total) * 100)}%`, height: "100%", background: C.accent }} />
+        <div style={{ width: `${pct}%`, height: "100%", background: `linear-gradient(90deg, ${C.accent}, ${C.hot})`, borderRadius: 3 }} />
       </div>
     </div>
   );
@@ -313,8 +495,12 @@ const LowerThird = ({ scene }: { scene: Scene }) => {
   return (
     <div style={{ position: "absolute", left: 64, top: 104, fontFamily: SANS, opacity: inn * out, transform: `translateX(${(1 - inn) * -60}px)` }}>
       <div style={{ display: "inline-block", background: scene.kind === "hook" ? C.hot : C.accent, color: "#06110c", fontWeight: 900,
-        fontSize: 26, letterSpacing: 4, padding: "8px 18px", borderRadius: 6 }}>{scene.kicker.toUpperCase()}</div>
-      <div style={{ marginTop: 10, background: "rgba(5,8,14,0.85)", color: C.ink, fontWeight: 800, fontSize: 40, padding: "10px 20px", borderRadius: 8 }}>
+        fontSize: 26, letterSpacing: 4, padding: "8px 18px", borderRadius: 6, boxShadow: "0 4px 14px rgba(0,0,0,0.4)" }}>
+        {scene.kicker.toUpperCase()}
+      </div>
+      <div style={{ marginTop: 10, background: "linear-gradient(135deg, rgba(8, 12, 20, 0.95), rgba(4, 6, 10, 0.97))",
+        border: "1px solid rgba(255,255,255,0.12)",
+        color: C.ink, fontWeight: 800, fontSize: 40, padding: "12px 24px", borderRadius: 10, boxShadow: "0 10px 30px rgba(0,0,0,0.5)" }}>
         {scene.headline}
       </div>
     </div>
@@ -329,9 +515,18 @@ const Captions = ({ words }: { words: Word[] }) => {
   if (!g) return null;
   return (
     <div style={{ position: "absolute", bottom: 64, left: 0, right: 0, display: "flex", justifyContent: "center", fontFamily: SANS }}>
-      <div style={{ background: "rgba(5,8,14,0.82)", padding: "14px 28px", borderRadius: 14, maxWidth: 1500, textAlign: "center",
-        fontSize: 44, fontWeight: 700, lineHeight: 1.25, color: C.ink }}>
-        {g.map((w, i) => <span key={i} style={{ color: t >= w.start && t <= w.end + 0.08 ? C.accent : C.ink }}>{w.text} </span>)}
+      <div style={{ background: "linear-gradient(135deg, rgba(8, 12, 20, 0.95), rgba(4, 6, 10, 0.97))",
+        border: "1px solid rgba(255,255,255,0.12)",
+        padding: "16px 32px", borderRadius: 16, maxWidth: 1500, textAlign: "center",
+        boxShadow: "0 12px 36px rgba(0,0,0,0.55)", fontSize: 44, fontWeight: 700, lineHeight: 1.25, color: C.ink }}>
+        {g.map((w, i) => {
+          const active = t >= w.start && t <= w.end + 0.08;
+          return (
+            <span key={i} style={{ color: active ? C.accent : C.ink, textShadow: active ? `0 0 16px ${C.accent}aa` : undefined }}>
+              {w.text}{" "}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
@@ -340,10 +535,25 @@ const Captions = ({ words }: { words: Word[] }) => {
 const BeatView = ({ scene, beat, index, at, total, repeat, brand }: { scene: Scene; beat: Beat; index: number; at: number; total: number; repeat: boolean; brand: Brand }) => {
   const frames = Math.round(beat.duration * FPS);
   const f = useCurrentFrame();
-  // Enter: a short fade with a slight zoom-out, so cuts feel like moves rather than flashes.
+  // Enter: smooth cinematic transition with subtle directional variety across beats
   const enter = interpolate(f, [0, 10], [0, 1], { extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) });
+
+  // Directional motion dynamics: push-in, right-glide, pull-back, left-glide
+  const mod = index % 4;
+  const transform = mod === 0
+    ? `scale(${1.035 - 0.035 * enter})`
+    : mod === 1
+    ? `scale(${1.015 - 0.015 * enter}) translateX(${(1 - enter) * 28}px)`
+    : mod === 2
+    ? `scale(${0.98 + 0.02 * enter})`
+    : `scale(${1.015 - 0.015 * enter}) translateX(${(1 - enter) * -28}px)`;
+
+  // Subtle luminous accent hairline sweeping across the top on beat cut
+  const sweep = interpolate(f, [0, 12], [0, 100], { extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) });
+  const sweepOpacity = interpolate(f, [0, 9, 13], [0.85, 0.85, 0], { extrapolateRight: "clamp" });
+
   const v = beat.visual;
-  const kinetic = (v.type === "photo" || v.type === "broll") ? !v.asset : v.type === "card" || (v.type === "article" && repeat);
+  const kinetic = (v.type === "photo" || v.type === "broll") ? !v.asset : (v.type === "card" && !v.items && !v.text) || (v.type === "article" && repeat);
   const body = kinetic ? <KineticBeat scene={scene} beat={beat} />
     : v.type === "photo" || v.type === "broll" ? <PhotoBeat v={v} frames={frames} index={index} />
     : <Push frames={frames}>{
@@ -352,14 +562,23 @@ const BeatView = ({ scene, beat, index, at, total, repeat, brand }: { scene: Sce
         : v.type === "stat" ? <StatBeat v={v} />
         : v.type === "chart" ? <ChartBeat v={v} />
         : v.type === "timeline" ? <TimelineBeat v={v} frames={frames} />
+        : v.type === "compare" || v.type === "comparison" ? <ComparisonBeat v={v} />
+        : v.type === "code" || v.type === "terminal" ? <CodeBeat v={v} frames={frames} />
+        : v.type === "card" && (v.items || v.text) ? <CardBeat v={v} />
         : <KineticBeat scene={scene} beat={beat} />
       }</Push>;
   return (
-    <AbsoluteFill style={{ opacity: enter, transform: `scale(${1.03 - 0.03 * enter})` }}>
+    <AbsoluteFill style={{ opacity: enter, transform }}>
       {body}
       <Header at={at + f / FPS} total={total} brand={brand} />
       {!kinetic && <Captions words={beat.words} />}
       <Audio src={staticFile(beat.audio)} />
+      {/* Broadcast accent sweep hairline on cut */}
+      {sweepOpacity > 0 && (
+        <div style={{ position: "absolute", top: 0, left: 0, height: 3, width: `${sweep}%`,
+          background: `linear-gradient(90deg, transparent, ${C.accent}, ${C.hot})`, opacity: sweepOpacity,
+          boxShadow: `0 0 10px ${C.accent}` }} />
+      )}
     </AbsoluteFill>
   );
 };
@@ -401,7 +620,25 @@ export const NewsVideo = ({ scenes, total, title, sources = [], music, date, pal
         ))}
       </Sequence>
       <Sequence from={end}><Outro sources={sources} brand={brand} /></Sequence>
-      {music && <Audio src={staticFile(music)} loop volume={(f) => interpolate(f, [0, 30, end, end + OUTRO * FPS - 30, end + OUTRO * FPS], [0, 0.07, 0.07, 0.16, 0], { extrapolateRight: "clamp" })} />}
+      {music && (
+        <Audio
+          src={staticFile(music)}
+          loop
+          volume={(f) => {
+            const introFrames = INTRO * FPS;
+            // Dynamic Audio Ducking: Confident branded theme music during Intro
+            if (f < introFrames) {
+              return interpolate(f, [0, 20, introFrames - 15, introFrames], [0, 0.10, 0.10, 0.038], { extrapolateRight: "clamp" });
+            }
+            // Swell up during Outro card
+            if (f >= end) {
+              return interpolate(f, [end, end + 30, end + OUTRO * FPS - 30, end + OUTRO * FPS], [0.038, 0.15, 0.15, 0], { extrapolateRight: "clamp" });
+            }
+            // Narrated speech body: Ducked to 0.038 for punchy voice intelligibility
+            return 0.038;
+          }}
+        />
+      )}
     </AbsoluteFill>
   );
 };

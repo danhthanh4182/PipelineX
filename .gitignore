@@ -23,3 +23,4 @@ renderer/out/
 renderer/data/
 renderer/public/
 renderer/work/
+renderer/__pycache__/

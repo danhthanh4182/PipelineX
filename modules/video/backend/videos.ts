@@ -96,14 +96,50 @@ export async function finishVideo(id: number, error: string | null, db: Db = sql
 }
 
 /** Candidates with the latest video made for each, for the admin page. */
+/** What each candidate story offers a video: readable sources (editorial ones; title-only heat signals and paywalled
+ * outlets not counted), the selection score of its best reports, and how recent its latest report is. */
+const STORY_SIGNALS = sql`
+  LEFT JOIN LATERAL (
+    SELECT count(DISTINCT a.source_id) FILTER (WHERE src.participation_mode = 'editorial')::int AS readable,
+           max(coalesce(a.published_at, a.discovered_at)) AS latest
+    FROM facts f JOIN fact_articles fa ON fa.fact_id = f.id JOIN articles a ON a.id = fa.article_id JOIN sources src ON src.id = a.source_id
+    WHERE f.story_id = c.story_id) r ON true
+  LEFT JOIN LATERAL (
+    SELECT avg(score)::float AS quality FROM (
+      SELECT score FROM (
+        SELECT DISTINCT ON (a.id) an.score FROM facts f JOIN fact_articles fa ON fa.fact_id = f.id JOIN articles a ON a.id = fa.article_id
+        JOIN analyses an ON an.article_id = a.id WHERE f.story_id = c.story_id AND an.score IS NOT NULL ORDER BY a.id, an.id DESC) latest
+      ORDER BY score DESC LIMIT 3) best) q ON true`;
+
+export interface Priority { total: number; heat: number; quality: number; readable: number; fresh: number }
+type Signals = { heat: string | number; readable: number | null; quality: number | null; latest: Date | null };
+/**
+ * A candidate's priority, 0-100 (owner's rule, 2026-11-18): heat 35 (against the hottest candidate), report quality 30
+ * (the average selection score of its 3 best reports), readable sources 20 (full at 6), freshness 15 (full for 12 hours,
+ * none after 48).
+ */
+export function priorityOf(c: Signals, maxHeat: number, now = Date.now()): Priority {
+  const heat = 35 * (maxHeat > 0 ? Number(c.heat) / maxHeat : 0);
+  const quality = 30 * Math.min(1, Math.max(0, (c.quality ?? 0) / 100));
+  const readable = 20 * Math.min(1, (c.readable ?? 0) / 6);
+  const ageH = c.latest ? (now - new Date(c.latest).getTime()) / 3_600_000 : 48;
+  const fresh = 15 * Math.max(0, Math.min(1, 1 - (ageH - 12) / 36));
+  const r = (n: number) => Math.round(n * 10) / 10;
+  return { total: r(heat + quality + readable + fresh), heat: r(heat), quality: r(quality), readable: r(readable), fresh: r(fresh) };
+}
+
 export async function candidatesWithVideos(db: Db = sql) {
-  return db<{ id: number; story_id: number; title: string; heat: string; sources: number; status: string; created_at: Date; video_id: number | null; video_status: VideoStatus | null }[]>`
-    SELECT c.id, c.story_id, coalesce(s.title, c.title) AS title, c.heat, c.sources, c.status, c.created_at, v.id AS video_id, v.status AS video_status
+  const rows = await db<{ id: number; story_id: number; title: string; heat: string; sources: number; status: string; created_at: Date; video_id: number | null; video_status: VideoStatus | null; readable: number | null; quality: number | null; latest: Date | null }[]>`
+    SELECT c.id, c.story_id, coalesce(s.title, c.title) AS title, c.heat, c.sources, c.status, c.created_at, v.id AS video_id, v.status AS video_status,
+           r.readable, q.quality, r.latest
     FROM video_candidates c
     LEFT JOIN stories s ON s.id = c.story_id
     LEFT JOIN LATERAL (SELECT id, status FROM video_jobs WHERE story_id = c.story_id ORDER BY id DESC LIMIT 1) v ON true
+    ${STORY_SIGNALS}
     ORDER BY c.created_at::date DESC, c.heat DESC, c.id DESC
     LIMIT 40`;
+  const maxHeat = Math.max(0, ...rows.map((x) => Number(x.heat)));
+  return rows.map((x) => ({ ...x, priority: priorityOf(x, maxHeat) }));
 }
 
 /** Sets a video's style; it applies from the next remake (from "script" for the words, "voice" for pace and look). */
@@ -143,22 +179,23 @@ const topicWords = (title: string) => new Set((title.toLowerCase().match(/[a-z][
   .filter((w) => !/^(says|said|after|amid|over|into|from|with|will|could|would|than|that|this|their|about|report|reports|news|first|ends?|ending|rules?|amid)$/.test(w)));
 
 /**
- * One automatic video, when today's count is under DAILY_TARGET and nothing is being made: the best candidate of the
- * last 48 hours. Best = hottest, with a bonus for more independent sources (up to 8); a story sharing two or more
- * topic words with a video of the last 3 days is skipped (no second Nvidia video in a row).
+ * One automatic video, when today's count is under DAILY_TARGET and nothing is being made: the candidate of the last
+ * 48 hours with the highest priority (priorityOf); a story sharing two or more topic words with a video of the last
+ * 3 days is skipped (no second Nvidia video in a row).
  */
 export async function autoPick(db: Db = sql): Promise<VideoRow | null> {
   if ((await videosToday(db)) >= DAILY_TARGET()) return null;
   const [busy] = await db`SELECT id FROM video_jobs WHERE status IN ('queued', 'running') LIMIT 1`;
   if (busy) return null;
   const recent = (await db<{ title: string }[]>`SELECT title FROM video_jobs WHERE created_at > now() - interval '3 days'`).map((r) => topicWords(r.title));
-  const candidates = await db<{ story_id: number; title: string; heat: number; sources: number }[]>`
-    SELECT c.story_id, c.title, c.heat::float AS heat, c.sources FROM video_candidates c
+  const rows = await db<{ story_id: number; title: string; heat: number; readable: number | null; quality: number | null; latest: Date | null }[]>`
+    SELECT c.story_id, c.title, c.heat::float AS heat, r.readable, q.quality, r.latest FROM video_candidates c
+    ${STORY_SIGNALS}
     WHERE c.status = 'new' AND c.created_at > now() - interval '48 hours'
-      AND NOT EXISTS (SELECT 1 FROM video_jobs v WHERE v.story_id = c.story_id)
-    ORDER BY c.heat * (1 + 0.1 * least(greatest(c.sources - 3, 0), 5)) DESC
-    LIMIT 30`;
-  const next = candidates.find((c) => {
+      AND NOT EXISTS (SELECT 1 FROM video_jobs v WHERE v.story_id = c.story_id)`;
+  const maxHeat = Math.max(0, ...rows.map((x) => x.heat));
+  const ranked = rows.map((x) => ({ ...x, p: priorityOf(x, maxHeat).total })).sort((a, b) => b.p - a.p);
+  const next = ranked.find((c) => {
     const words = topicWords(c.title);
     return !recent.some((r) => [...words].filter((w) => r.has(w)).length >= 2);
   });

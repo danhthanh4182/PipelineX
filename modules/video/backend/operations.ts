@@ -6,8 +6,9 @@ import { requeueFailedArticles, runsOverview } from "@aihot/backend/admin/runs";
 import { candidatesWithVideos, storyMaterial } from "./videos.ts";
 
 export async function candidates() {
-  return (await candidatesWithVideos()).map((c) => ({
-    storyId: c.story_id, title: c.title, heat: Number(c.heat), sources: c.sources, pickedAt: c.created_at,
+  return (await candidatesWithVideos()).sort((a, b) => b.priority.total - a.priority.total).map((c) => ({
+    storyId: c.story_id, title: c.title, heat: Number(c.heat), sources: c.sources, readableSources: c.readable ?? 0, pickedAt: c.created_at,
+    priority: c.priority,
     video: c.video_id ? { id: c.video_id, status: c.video_status } : null,
   }));
 }

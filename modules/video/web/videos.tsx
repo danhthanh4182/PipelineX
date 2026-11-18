@@ -35,6 +35,8 @@ interface Candidate {
   title: string;
   heat: string;
   sources: number;
+  readable: number | null;
+  priority: { total: number; heat: number; quality: number; readable: number; fresh: number };
   status: string;
   created_at: string;
   video_id: number | null;
@@ -226,12 +228,15 @@ export default function VideosAdmin({ loaderData }: { loaderData: { overview: Ov
 
         <Card title="Candidate stories" right={<span className="text-[12.5px] text-ink-3">hot stories with 3+ sources</span>} pad={false}>
           <DataTable
-            rows={o.candidates}
+            rows={[...o.candidates].sort((a, b) => b.priority.total - a.priority.total)}
             rowKey={(c) => c.id}
             empty="No candidates yet: a story needs reports from 3 or more sources and heat in the last 48 hours."
             columns={[
               { key: "title", label: "Story", render: (c) => <span className="line-clamp-2">{c.title}</span> },
-              { key: "src", label: "Sources", align: "right", render: (c) => <span className="tabular-nums">{c.sources}</span> },
+              { key: "prio", label: "Priority", align: "right", render: (c) => (
+                <span className="tabular-nums font-semibold" title={`heat ${c.priority.heat}/35 · quality ${c.priority.quality}/30 · readable sources ${c.priority.readable}/20 · freshness ${c.priority.fresh}/15`}>{c.priority.total}</span>
+              ) },
+              { key: "src", label: "Sources", align: "right", render: (c) => <span className="tabular-nums" title="readable / all outlets">{c.readable ?? 0}/{c.sources}</span> },
               { key: "heat", label: "Heat", align: "right", render: (c) => <span className="tabular-nums">{num(c.heat)}</span> },
               {
                 key: "act", label: "",

@@ -25,6 +25,6 @@ Selection thresholds are calibrated on labelled examples, not guessed.
 | Type | Status | Notes |
 |---|---|---|
 | `ai` | ready | the original AIHOT AI pack (39 sources); the main checkout ran it until 2026-11-18 (backup: `PipelineX/backups/ai-channel-20261118/`) |
-| `finance` | running (main checkout :3000, channel `markets` :3010) | 32 sources after the 2026-11-18 review (see FORK_CHANGES.md): 10 official, free full-text news (CNBC, Axios, BBC, Guardian, NPR, MarketWatch, Kiplinger, NerdWallet, Wolf Street), crypto CoinDesk/Decrypt, paywalled and title-only outlets as heat signals only; 7 categories; 8 item types; styles markets/earnings/macro/crypto; thresholds copied from AI, to calibrate |
+| `finance` | running (main checkout :3000; trial channel `markets` stopped) | 32 sources after the 2026-11-18 review (see FORK_CHANGES.md): 10 official, free full-text news (CNBC, Axios, BBC, Guardian, NPR, MarketWatch, Kiplinger, NerdWallet, Wolf Street), crypto CoinDesk/Decrypt, paywalled and title-only outlets as heat signals only; 7 categories; 8 item types; styles markets/earnings/macro/crypto; thresholds copied from AI, to calibrate |
 | `world` | planned | |
 | `crime` | planned | |

@@ -58,7 +58,7 @@ throwaway channel, then removed).
 
 Open items:
 - World and Crime packs (Finance is running, see below); a real name for the finance channel (owner's shortlist: Market Decoded, Basis Point, Plain Money, The Ticker Desk, Signal Over Noise).
-- Two finance sites run now: main checkout :3000 and channel `markets` :3010 (same pack). Owner to decide whether to keep both.
+- **One channel only for now (owner, 2026-11-18): finance on the main checkout :3000.** Expand to more channels (AI, World, Crime) only once it does well.
 - Unified studio: one admin page and one MCP across all channels (today each channel has its own).
 - Azure Speech key (voice code ready; edge-tts is unlicensed for commercial use and throttles — it failed a whole video's voice step twice on 2026-11-18).
 - OrcaRouter key is rejected as invalid (chain skips it).
@@ -68,9 +68,11 @@ Open items:
 
 ## Finance channel — running (2026-11-18)
 
-- Channel `markets` (type `finance`, "PipelineX Markets", placeholder name until the owner picks one): checkout
-  `PipelineX/channels/markets/`, web :3010, api :3011, database `pipelinex_markets`. Start/stop with
-  `npm run channel -- start|stop markets`.
+- **The finance channel is the main checkout** (web :3000, api :3001, database `pipelinex_eval`), the only channel
+  running. Channel `markets` (:3010, the first finance trial) is stopped, not removed: checkout `PipelineX/channels/markets/`,
+  branch `channel/markets`, database `pipelinex_markets`; backup in `PipelineX/backups/markets-channel-20261118/`
+  (database dump + its video #1, Nvidia earnings, ready and not published). `npm run channel -- remove markets --yes`
+  deletes it for good.
 - Pack `packs/finance/`: 32 sources after the 2026-11-18 review on real yields (750 articles, 67 selected).
   Official (T1): Fed press + speeches, SEC, ECB, BEA, BLS and US Treasury (via Google News), Bank of England, CFTC,
   NY Fed Liberty Street. News with free text: CNBC markets/finance/earnings/economy, MarketWatch, Axios, Kiplinger,
@@ -78,9 +80,8 @@ Open items:
   (not analysed; count outlets for hot stories): Bloomberg, FT, WSJ, Economist, Reuters and AP via Google News, Google
   News "Federal Reserve"/"stock market". Dropped: Seeking Alpha, Abnormal Returns, The Big Picture, The Block,
   Cointelegraph (noise or ~0 selected). 7 categories, 8 item types, finance prompts (no investment advice).
-  Channel `markets` still has the first 25 (its pack is its own; apply the review there by hand if kept).
 - Finance video styles: markets, earnings, macro, crypto (chosen by category; investigation only on legal words).
-- First video (#1, Nvidia earnings, style earnings): 4 min + Short + thumbnail, fact-check 27/30 supported, 0 wrong, $0.
+- First video (on `markets`, #1, Nvidia earnings, style earnings): 4 min + Short + thumbnail, fact-check 27/30 supported, 0 wrong, $0.
 - Selection taste fixed once on real scores: a large move with a stated cause is an event; evergreen advice
   (Kiplinger-style tips) is not news. Thresholds are still the AI channel's: calibrate on labelled finance items.
 - Engine tests that typed AI categories now read `CATEGORIES` from the pack, so `npm run typecheck` passes on any pack.

@@ -1,3 +1,10 @@
+# PipelineX (this fork) — read first
+
+This checkout is **PipelineX**: AIHOT forked into automated English YouTube news channels (AI, Finance, World,
+Crime). Before any work, read **`PIPELINEX.md`** (goal, architecture, decisions that must be kept, status, next
+steps) and log engine changes in **`FORK_CHANGES.md`**. Key rules: free LLM models only; a human publishes; the
+local agent edits through the editor MCP; one channel per checkout with its type fixed at creation.
+
 # Agent Instructions (AIHOT Framework)
 
 This is an industry trending news website framework: it ingests sources, screens and writes using LLMs, clusters events, generates daily/weekly/monthly reports, and serves them via Web, RSS, Public API, Agent Markdown, and MCP. The default configuration is a sample site for the AI industry. Read `README.md` first, then read the relevant documents in `docs/` according to your task.

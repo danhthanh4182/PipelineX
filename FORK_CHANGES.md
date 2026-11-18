@@ -73,3 +73,4 @@ Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cậ
 - `modules/video/backend/editing.ts`: đọc/sửa kịch bản, lịch sử `edits.json` (trước/sau, ghi chú), hiện trên trang Videos ("Edit history").
 - `apps/web/app/lib/api-proxy.server.ts`: proxy web luôn gắn `Via: 1.1 pipelinex-web` (ghi đè giá trị client gửi) để API phân biệt yêu cầu đi qua web.
 - Test: `modules/video/tests/editor.test.ts`.
+- (18/11) Công cụ vận hành cho agent: `list_candidates`, `search_stories`, `get_story`, `make_video` (tối đa 3 video/24 giờ do agent tạo, kèm lý do), `edit_visual` (đổi hình một beat rồi làm lại từ `assets`), `system_status` (dữ liệu trang Operations + provider giờ qua + video), `retry_failed_articles` (dùng `requeueFailedArticles` của AIHOT). Mọi hành động của agent vào cả `edits.json` của video lẫn Audit Log (`video.create|edit|remake|review`). `.env` bật `VIDEO_AUTO_ENABLED=true`.

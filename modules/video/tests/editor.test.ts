@@ -9,7 +9,8 @@ import { config } from "@aihot/backend/config";
 // Each video's files go to a scratch folder; the modules read it when they load.
 process.env.VIDEO_WORK_DIR = mkdtempSync(path.join(tmpdir(), "pipelinex-editor-"));
 process.env.VIDEO_EDITOR_TOKEN = "t".repeat(32);
-const { editHistory, editScript } = await import("../backend/editing.ts");
+const { editHistory, editScript, editVisual } = await import("../backend/editing.ts");
+const { searchStories, story } = await import("../backend/operations.ts");
 const { admitted } = await import("../backend/editor-mcp.ts");
 const { createVideo, finishVideo, markStep } = await import("../backend/videos.ts");
 
@@ -67,4 +68,40 @@ test("the editor answers only a direct local connection with the token", () => {
   const saved = process.env.VIDEO_EDITOR_TOKEN;
   process.env.VIDEO_EDITOR_TOKEN = "";
   try { assert.equal(admitted(req(good)), "disabled"); } finally { process.env.VIDEO_EDITOR_TOKEN = saved; }
+});
+
+test("a picture change rewrites both long scripts, drops the old picture, and is kept in the history and the audit log", async () => {
+  const { video, dir } = await madeVideo();
+  await markStep(video.id, "render");
+  await finishVideo(video.id, null);
+  const final = JSON.parse(readFileSync(path.join(dir, "script-final.json"), "utf8"));
+  final.scenes[0].beats[0].visual = { type: "broll", query: "office building", asset: { file: "assets/beat-00.jpg" } };
+  writeFileSync(path.join(dir, "script-final.json"), JSON.stringify(final));
+  await editVisual(video.id, "editor-mcp", { scene: 0, beat: 0, visual: { type: "broll", query: "courtroom gavel" }, note: "mood" });
+  for (const name of ["script.json", "script-final.json"]) {
+    assert.deepEqual(JSON.parse(readFileSync(path.join(dir, name), "utf8")).scenes[0].beats[0].visual, { type: "broll", query: "courtroom gavel" });
+  }
+  const entry = editHistory(video.id).at(-1)!;
+  assert.deepEqual(entry.detail.visual, { scene: 0, beat: 0, before: { type: "broll", query: "office building" }, after: { type: "broll", query: "courtroom gavel" } });
+  await new Promise((r) => setTimeout(r, 50));
+  const [row] = await sql`SELECT actor, action, reason FROM audit_log WHERE subject = ${`video:${video.id}`} ORDER BY id DESC LIMIT 1`;
+  assert.deepEqual({ ...row }, { actor: "editor-mcp", action: "video.edit", reason: "mood" });
+});
+
+test("stories can be found by title words and read with their reports", async () => {
+  const [s] = await sql<{ id: number }[]>`INSERT INTO stories (public_id, title) VALUES (gen_random_uuid(), 'Zebra Labs ships Quokka model') RETURNING id`;
+  const [fact] = await sql`INSERT INTO facts (public_id, story_id, title) VALUES (gen_random_uuid()::text, ${s!.id}, 'fact') RETURNING id`;
+  for (const i of [0, 1]) {
+    const id = `editor-story-${s!.id}-${i}`;
+    await sql`INSERT INTO sources (id, name, kind, tier) VALUES (${id}, ${"Outlet " + i}, 'rss', 'T2') ON CONFLICT (id) DO NOTHING`;
+    await sql`INSERT INTO articles (id, source_id, identity_key, url, title, discovered_at, timeline_at, body_text)
+      VALUES (${id}, ${id}, ${id}, ${"https://example.com/" + id}, ${"Report " + i}, now(), now(), 'Body text')`;
+    await sql`INSERT INTO fact_articles (fact_id, article_id) VALUES (${fact.id}, ${id})`;
+  }
+  const found = await searchStories("quokka", 7);
+  assert.deepEqual(found.map((f) => [f.storyId, f.sources, f.reports]), [[s!.id, 2, 2]]);
+  const read = await story(s!.id);
+  assert.equal(read!.reports.length, 2);
+  assert.equal(read!.videos.length, 0);
+  assert.equal(await story(999_999_999), null);
 });

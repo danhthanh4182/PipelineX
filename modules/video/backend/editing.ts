@@ -5,9 +5,10 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { run, workDir } from "./pipeline.ts";
 import { getVideo, VideoConflict } from "./videos.ts";
+import { auditAgent } from "./operations.ts";
 
 export type Variant = "long" | "short";
-export interface EditEntry { at: string; actor: string; kind: "edit" | "review" | "remake"; detail: Record<string, unknown>; note?: string }
+export interface EditEntry { at: string; actor: string; kind: "edit" | "review" | "remake" | "create"; detail: Record<string, unknown>; note?: string }
 
 const file = (id: number, name: string) => path.join(workDir(id), name);
 const readJson = <T>(id: number, name: string): T | null => (existsSync(file(id, name)) ? (JSON.parse(readFileSync(file(id, name), "utf8")) as T) : null);
@@ -17,8 +18,10 @@ export function editHistory(id: number): EditEntry[] {
   return readJson<EditEntry[]>(id, "edits.json") ?? [];
 }
 
+/** Kept in the video's own history and, for the whole site, in the admin's Audit Log. */
 export function recordEdit(id: number, entry: Omit<EditEntry, "at">) {
   writeJson(id, "edits.json", [...editHistory(id), { at: new Date().toISOString(), ...entry }]);
+  void auditAgent(entry.actor, `video.${entry.kind}`, `video:${id}`, entry.note ?? null, entry.detail).catch(() => {});
 }
 
 type Script = { title: string; description?: string; thumbnail_text?: string | null; scenes: Array<{ kind: string; kicker: string; headline: string; beats: Array<{ narration: string; visual: Record<string, unknown>; facts?: string[] }> }> };
@@ -52,6 +55,30 @@ export async function videoForEditor(id: number) {
 }
 
 export interface ScriptEdit { scene: number; beat: number; narration: string }
+
+export type VisualChange = { type: "card" } | { type: "photo" | "broll"; query: string };
+
+/**
+ * Changes what one beat of the long video shows: kinetic text, a named subject's photo, or stock b-roll for a query.
+ * Takes effect when the video is made again from step "assets" (pictures are searched again and checked).
+ */
+export async function editVisual(id: number, actor: string, input: { scene: number; beat: number; visual: VisualChange; note?: string }) {
+  const video = await getVideo(id);
+  if (!video) throw new VideoConflict(`No video #${id}.`);
+  if (video.status === "queued" || video.status === "running") throw new VideoConflict(`Video #${id} is being made; edit it when it is finished.`);
+  const names = ["script.json", "script-final.json"];
+  const scripts = names.map((n) => ({ n, s: readJson<Script>(id, n) })).filter((x): x is { n: string; s: Script } => !!x.s);
+  // What the video shows now is in script-final.json (after pictures were found); script.json is the plan before it.
+  const shown = (scripts.find((x) => x.n === "script-final.json") ?? scripts[0])?.s.scenes[input.scene]?.beats[input.beat];
+  if (!shown) throw new VideoConflict(`There is no scene ${input.scene}, beat ${input.beat} in the long script.`);
+  const before = { type: shown.visual?.type, query: shown.visual?.query ?? null };
+  for (const { n, s } of scripts) {
+    s.scenes[input.scene]!.beats[input.beat]!.visual = { ...input.visual };
+    writeJson(id, n, s);
+  }
+  recordEdit(id, { actor, kind: "edit", detail: { variant: "long", visual: { scene: input.scene, beat: input.beat, before, after: input.visual } }, note: input.note });
+  return { scene: input.scene, beat: input.beat, before, after: input.visual, next: "Remake from step 'assets' to find and check the new picture (the voice and render follow)." };
+}
 
 /**
  * Applies edits to the long script (script.json and script-final.json, so a remake from any later step keeps them)

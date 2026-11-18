@@ -71,7 +71,7 @@ interface Detail {
   credits: string[];
   log: string;
   hasVideo: boolean;
-  history: Array<{ at: string; actor: string; kind: "edit" | "review" | "remake"; detail: Record<string, any>; note?: string }>;
+  history: Array<{ at: string; actor: string; kind: "edit" | "review" | "remake" | "create"; detail: Record<string, any>; note?: string }>;
   hasShort: boolean;
   hasThumbnail: boolean;
   short: null | {
@@ -425,7 +425,7 @@ function VideoDetail({ d, steps, run, busy, close }: {
             {[...d.history].reverse().map((h, i) => (
               <li key={i}>
                 <span className="text-ink-4">{ago(h.at)} · {h.actor} · </span>
-                <b className="text-ink-2">{h.kind === "edit" ? `edited the ${h.detail.variant === "short" ? "Short" : "script"}` : h.kind === "remake" ? `made again from ${h.detail.from}` : `marked ${h.detail.verdict}`}</b>
+                <b className="text-ink-2">{h.kind === "create" ? "started this video" : h.kind === "edit" ? (h.detail.visual ? "changed a picture" : `edited the ${h.detail.variant === "short" ? "Short" : "script"}`) : h.kind === "remake" ? `made again from ${h.detail.from}` : `marked ${h.detail.verdict}`}</b>
                 {h.note && <span className="text-ink-3"> — {h.note}</span>}
                 {h.kind === "edit" && (h.detail.beats ?? []).map((b: any, j: number) => (
                   <div key={j} className="mt-1 pl-3 text-ink-3">
@@ -433,6 +433,9 @@ function VideoDetail({ d, steps, run, busy, close }: {
                     <div className="text-ink-2">{b.after}</div>
                   </div>
                 ))}
+                {h.kind === "edit" && h.detail.visual && (
+                  <div className="mt-1 pl-3 text-ink-3">beat ({h.detail.visual.scene},{h.detail.visual.beat}): {h.detail.visual.before?.type}{h.detail.visual.before?.query ? ` "${h.detail.visual.before.query}"` : ""} → <span className="text-ink-2">{h.detail.visual.after?.type}{h.detail.visual.after?.query ? ` "${h.detail.visual.after.query}"` : ""}</span></div>
+                )}
                 {h.kind === "edit" && ["title", "description", "thumbnailText"].filter((k) => h.detail[k]).map((k) => (
                   <div key={k} className="mt-1 pl-3 text-ink-3">{k}: <span className="line-through">{String(h.detail[k].before ?? "")}</span> → <span className="text-ink-2">{String(h.detail[k].after)}</span></div>
                 ))}

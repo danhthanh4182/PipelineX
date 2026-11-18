@@ -87,8 +87,9 @@ export const videoServer: ServerModule = {
   queues: [makeQueue as never],
   schedules: [
     { name: "video-pick-candidates", cron: "*/10 * * * *", missed: "skip", run: () => pickCandidates() },
-    // Shanghai 09:30 = 01:30 UTC: after the 08:00 daily edition, so the day's stories are grouped.
-    { name: "video-daily", cron: "30 9 * * *", missed: "once", when: AUTO_ENABLED, run: async () => {
+    // Three slots a day (cron in Asia/Shanghai): 08:30, 13:30, 18:30 = 07:30, 12:30, 17:30 in Vietnam. Each makes one video
+    // while today's count is under VIDEO_DAILY_TARGET (autoPick), so later videos can use the day's news.
+    { name: "video-daily", cron: "30 8,13,18 * * *", missed: "once", when: AUTO_ENABLED, run: async () => {
       const video = await autoPick();
       if (video) await enqueue(video.id, "story");
       return { video: video?.id ?? null };

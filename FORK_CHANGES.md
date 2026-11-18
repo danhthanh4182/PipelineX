@@ -152,3 +152,10 @@ Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cậ
 - Route: `GET /api/admin/video/youtube/connect|callback`, `POST /api/admin/video/videos/:id/youtube/upload|publish` (phiên admin + CSRF; state OAuth dùng một lần, 10 phút, gắn với admin bắt đầu). Audit Log: `video.youtube.connect|upload|publish`. Editor MCP không có công cụ YouTube.
 - Trang Videos: trạng thái kết nối ở đầu trang (link "connect the channel"), khung YouTube trong chi tiết video.
 - Test: `modules/video/tests/youtube.test.ts`.
+
+## 3 video mỗi ngày, chất lượng trước số lượng (18/11)
+
+- Quyết định của chủ dự án: tối đa 3 video/ngày (tin chất lượng, video chất lượng), tăng sau khi kênh ổn.
+- `videos.ts`: `DAILY_TARGET` (`VIDEO_DAILY_TARGET`, mặc định 3) tính chung video tự động và của agent; `videosToday()` đếm video bắt đầu hôm nay theo giờ Việt Nam, không tính video lỗi hoặc bị từ chối. `autoPick`: chỉ chọn khi chưa đủ chỉ tiêu và không có video nào đang làm; ứng viên 48 giờ qua xếp theo độ nóng × (1 + 0,1 × số nguồn vượt 3, tối đa +50%); bỏ câu chuyện có ≥ 2 từ chủ đề trùng với video trong 3 ngày (không hai video Nvidia liên tiếp).
+- `server.ts`: lịch `video-daily` chạy 3 lần: 08:30, 13:30, 18:30 giờ Thượng Hải (07:30, 12:30, 17:30 giờ Việt Nam).
+- `make_video` của agent: từ chối khi hôm nay đã đủ chỉ tiêu (trước đây: 3 video riêng của agent trong 24 giờ). Tạo tay trên trang Videos không bị giới hạn (người quyết).

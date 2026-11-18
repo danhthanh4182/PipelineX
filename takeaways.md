@@ -97,6 +97,9 @@ changes in `FORK_CHANGES.md`.
 1. **Your uncommitted `renderer/lib.ts` / `assets.ts` changes**: show the owner the diff and one measured run (time
    and `finish_reason` per provider, before and after), then log them in `FORK_CHANGES.md`. Done when the owner has
    approved them and they are committed.
+   Seen on 2026-11-18 while testing pictures on a copy of #2: with your chain, the first member (`nvidia`, Mistral
+   Large) timed out on every vision check, then MiniMax answered 429 and OpenRouter free had used its 1,000 calls for
+   the day; NVIDIA also refused some images with 422 "media could not be screened". Measure before keeping Mistral first.
 2. **Short of video #1**: re-cut it to 60 s or less (`edit_script` on the Short, then `remake` from `shortvoice`).
    Done when `timeline-short.json` total ≤ 60 and the Short's fact-check has 0 partial, 0 unsupported.
 3. **Video #3**: when it is ready, review it with `get_video` and `look_at_video`; it is styled "crime" because of the

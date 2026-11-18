@@ -126,15 +126,42 @@ export async function styleInputs(storyId: number, db: Db = sql) {
     ORDER BY a.id, an.id DESC`;
 }
 
-/** The day's automatic video: the hottest candidate not made yet, once a day. */
+/** Videos a day, the automatic ones and the agent's together (VIDEO_DAILY_TARGET, default 3): few, well made. */
+export const DAILY_TARGET = () => Math.max(1, Number(process.env.VIDEO_DAILY_TARGET || 3));
+
+/** Videos started today (Vietnam time), whoever started them; failed and rejected ones do not count. */
+export async function videosToday(db: Db = sql): Promise<number> {
+  const [row] = await db<{ n: number }[]>`
+    SELECT count(*)::int AS n FROM video_jobs
+    WHERE created_at >= (date_trunc('day', now() AT TIME ZONE 'Asia/Ho_Chi_Minh') AT TIME ZONE 'Asia/Ho_Chi_Minh')
+      AND status NOT IN ('failed', 'rejected')`;
+  return row?.n ?? 0;
+}
+
+/** Words that name what a story is about (for "is this the same story as a recent video?"). */
+const topicWords = (title: string) => new Set((title.toLowerCase().match(/[a-z][a-z0-9'-]{3,}/g) ?? [])
+  .filter((w) => !/^(says|said|after|amid|over|into|from|with|will|could|would|than|that|this|their|about|report|reports|news|first|ends?|ending|rules?|amid)$/.test(w)));
+
+/**
+ * One automatic video, when today's count is under DAILY_TARGET and nothing is being made: the best candidate of the
+ * last 48 hours. Best = hottest, with a bonus for more independent sources (up to 8); a story sharing two or more
+ * topic words with a video of the last 3 days is skipped (no second Nvidia video in a row).
+ */
 export async function autoPick(db: Db = sql): Promise<VideoRow | null> {
-  const [today] = await db`SELECT id FROM video_jobs WHERE created_by = 'auto' AND created_at > now() - interval '20 hours'`;
-  if (today) return null;
-  const [next] = await db<{ story_id: number }[]>`
-    SELECT c.story_id FROM video_candidates c
+  if ((await videosToday(db)) >= DAILY_TARGET()) return null;
+  const [busy] = await db`SELECT id FROM video_jobs WHERE status IN ('queued', 'running') LIMIT 1`;
+  if (busy) return null;
+  const recent = (await db<{ title: string }[]>`SELECT title FROM video_jobs WHERE created_at > now() - interval '3 days'`).map((r) => topicWords(r.title));
+  const candidates = await db<{ story_id: number; title: string; heat: number; sources: number }[]>`
+    SELECT c.story_id, c.title, c.heat::float AS heat, c.sources FROM video_candidates c
     WHERE c.status = 'new' AND c.created_at > now() - interval '48 hours'
       AND NOT EXISTS (SELECT 1 FROM video_jobs v WHERE v.story_id = c.story_id)
-    ORDER BY c.heat DESC LIMIT 1`;
+    ORDER BY c.heat * (1 + 0.1 * least(greatest(c.sources - 3, 0), 5)) DESC
+    LIMIT 30`;
+  const next = candidates.find((c) => {
+    const words = topicWords(c.title);
+    return !recent.some((r) => [...words].filter((w) => r.has(w)).length >= 2);
+  });
   return next ? createVideo(next.story_id, "auto", db) : null;
 }
 

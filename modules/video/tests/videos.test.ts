@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { sql } from "@aihot/backend/db";
-import { autoPick, createVideo, finishVideo, markStep, recordStep, requeueVideo, reviewVideo, VideoConflict } from "../backend/videos.ts";
+import { autoPick, createVideo, finishVideo, markStep, recordStep, requeueVideo, reviewVideo, VideoConflict, videosToday } from "../backend/videos.ts";
 
 async function story(title: string) {
   const [row] = await sql<{ id: number }[]>`INSERT INTO stories (public_id, title) VALUES (gen_random_uuid(), ${title}) RETURNING id`;
@@ -44,15 +44,33 @@ test("a failed step is kept with its error", async () => {
   assert.deepEqual({ ...row }, { status: "failed", step: "render", error: "render exited 1: out of memory" });
 });
 
-test("the daily automatic video takes the hottest new candidate, once a day", async () => {
+test("automatic videos: the best candidate, one at a time, at most the daily target, never the same topic twice", async () => {
   await sql`UPDATE video_candidates SET status = 'skipped'`;
-  await sql`DELETE FROM video_jobs WHERE created_by = 'auto'`;
-  const cool = await story("Cool story");
-  const hot = await story("Hot story");
-  await sql`INSERT INTO video_candidates (story_id, title, heat, sources) VALUES (${cool}, 'Cool story', 5, 3), (${hot}, 'Hot story', 50, 4)`;
+  await sql`DELETE FROM video_jobs`;
+  process.env.VIDEO_DAILY_TARGET = "2";
+  const add = async (title: string, heat: number, sources: number) => {
+    const id = await story(title);
+    await sql`INSERT INTO video_candidates (story_id, title, heat, sources) VALUES (${id}, ${title}, ${heat}, ${sources})`;
+    return id;
+  };
+  const cool = await add("Cool story about tariffs", 5, 3);
+  const wide = await add("Nvidia earnings beat estimates", 40, 8); // 40 x 1.5 = 60 beats 50 x 1.0
+  const hot = await add("Bitcoin falls below support", 50, 3);
+  const twin = await add("Nvidia earnings: what analysts expect", 45, 6);
+
   const first = await autoPick();
-  assert.equal(first?.story_id, hot);
-  assert.equal(await autoPick(), null, "one automatic video a day");
-  const [c] = await sql`SELECT status FROM video_candidates WHERE story_id = ${hot}`;
-  assert.equal(c!.status, "selected");
+  assert.equal(first?.story_id, wide, "more independent sources outweigh a little more heat");
+  assert.equal(await autoPick(), null, "nothing new while a video is being made");
+  await finishVideo(first!.id, null);
+
+  const second = await autoPick();
+  assert.equal(second?.story_id, hot, "the Nvidia follow-up shares the topic of today's video and is skipped");
+  await finishVideo(second!.id, null);
+  assert.equal(await autoPick(), null, "the daily target is reached");
+  assert.equal(await videosToday(), 2);
+
+  const [c] = await sql`SELECT status FROM video_candidates WHERE story_id = ${twin}`;
+  assert.equal(c!.status, "new", "a skipped twin stays a candidate");
+  void cool;
+  delete process.env.VIDEO_DAILY_TARGET;
 });

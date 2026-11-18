@@ -30,7 +30,8 @@ SCENE_GAP = 0.3 if SHORT else 0.7   # pause between scenes
 # The video's style (style-preset.json, written by the pipeline) sets the pace and the music's mood.
 PRESET = json.loads((W / "style-preset.json").read_text()) if (W / "style-preset.json").exists() else None
 # The channel's brand for the title cards (industry/channel.json of the checkout that runs the pipeline).
-CHANNEL = json.loads((Path(os.environ.get("VIDEO_INDUSTRY_DIR", "../industry")) / "channel.json").read_text())
+INDUSTRY = Path(os.environ.get("VIDEO_INDUSTRY_DIR", "../industry"))
+CHANNEL = json.loads((INDUSTRY / "channel.json").read_text())
 RATE = (PRESET["voice"]["shortRate"] if SHORT else PRESET["voice"]["rate"]) if PRESET else ("+10%" if SHORT else "+4%")
 
 
@@ -133,6 +134,19 @@ async def speak_once(name: str, text: str):
     return path, words
 
 
+def brand() -> dict:
+    """The channel's brand for the cards; its mark (brand.mark in channel.json, relative to the industry folder) is
+    copied into the video's public folder so the renderer can draw it."""
+    b = dict(CHANNEL["brand"])
+    mark = INDUSTRY / b["mark"] if b.get("mark") else None
+    if mark and mark.exists():
+        shutil.copy(mark, W / "public" / "brand-mark.svg")
+        b["mark"] = "brand-mark.svg"
+    else:
+        b.pop("mark", None)
+    return b
+
+
 async def main():
     script = json.loads((W / IN).read_text())
     t = 0.0
@@ -166,7 +180,7 @@ async def main():
                 "music": "music.mp3" if music and Path(music).exists() else None,
                 "date": datetime.date.today().strftime("%b %-d, %Y"),
                 "style": PRESET["key"] if PRESET else "news", "palette": PRESET["visual"] if PRESET else None,
-                "brand": CHANNEL["brand"]}
+                "brand": brand()}
     (W / TIMELINE).write_text(json.dumps(timeline, indent=2))
     print(f"total {t:.1f}s")
     chars = sum(len(b["narration"]) for s in script["scenes"] for b in s["beats"])

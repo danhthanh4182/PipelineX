@@ -5,9 +5,10 @@
   "subject": "markets, money and the economy",
   "audience": "people who follow markets, investors and anyone whose money is affected",
   "brand": {
-    "name": "PipelineX Markets",
+    "name": "Market Decoded",
     "label": "MARKETS",
-    "tagline": "The money news that matters, every day."
+    "tagline": "Market news, decoded.",
+    "mark": "brand/mark.svg"
   },
   "tags": [
     "finance news",

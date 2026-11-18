@@ -1,0 +1,22 @@
+{
+  "$comment": "Market Decoded brand kit. Build: node scripts/brand.ts packs/finance. Fonts: Inter (SIL OFL 1.1), any local copy.",
+  "name": [
+    "Market",
+    "Decoded"
+  ],
+  "tagline": "Market news, decoded.",
+  "colors": {
+    "ground": "#0B2239",
+    "accent": "#5DCAA5",
+    "muted": "#9FB3C8",
+    "inkLight": "#0B2239",
+    "inkDark": "#FFFFFF",
+    "accentOnLight": "#0F6E56"
+  },
+  "fonts": {
+    "regular": "/Applications/Cloudflare WARP.app/Contents/Frameworks/App.framework/Versions/A/Resources/flutter_assets/packages/cf_ui/fonts/Inter-Regular.otf",
+    "medium": "/Applications/Cloudflare WARP.app/Contents/Frameworks/App.framework/Versions/A/Resources/flutter_assets/packages/cf_ui/fonts/Inter-Medium.otf",
+    "bold": "/Applications/Cloudflare WARP.app/Contents/Frameworks/App.framework/Versions/A/Resources/flutter_assets/packages/cf_ui/fonts/Inter-Bold.otf"
+  },
+  "bannerLine": "Daily briefings, checked against the sources"
+}

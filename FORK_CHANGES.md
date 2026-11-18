@@ -116,3 +116,10 @@ Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cậ
 - `GET /api/admin/video/videos/:id/captions.srt[?variant=short]`; trang Videos hiện phương án tiêu đề, cài đặt upload và nút tải phụ đề.
 - `channel.json`: thêm `youtube` (category, language, subscribe, disclaimer). Gói finance: News & Politics, câu miễn trừ "not financial advice". Gói AI: Science & Technology.
 - `modules/video/package.json`: dùng `@aihot/industry` (danh mục thực thể của gói).
+
+## Thương hiệu Market Decoded (18/11)
+
+- Chủ dự án chọn tên kênh tài chính: **Market Decoded**, tagline "Market news, decoded.". Logo: ba cây nến tăng dần trong cặp ngoặc code; màu navy #0B2239, xanh ngọc #5DCAA5 (trên nền sáng #0F6E56), xám xanh #9FB3C8; chữ Inter (SIL OFL 1.1), vẽ thành đường nét nên không phải kèm font.
+- `scripts/brand.ts <pack>`: tạo bộ nhận diện từ `<pack>/brand/brand.json`: `mark.svg`, `icon.svg` (vuông, nét đậm cho favicon), `wordmark.svg` / `wordmark-dark.svg`, `favicon.ico`, `icon.png`, `icon-192.png`, `apple-icon.png`, và cho YouTube trong `brand/youtube/`: `avatar-800.png`, `banner-2560x1440.png` (chữ nằm trong vùng an toàn 1546×423 cho điện thoại; `banner-phone-preview.png` để xem trước), `watermark-150.png`. `brand.json` trỏ tới file font Inter trên máy.
+- `packs/finance/`: `brand/`, `site/brand/` (logo, icon, `Logo.tsx`: `Mark`, `Wordmark` có logo + tên tách màu, `RingMark` khi đứng yên là logo, khi xoay vẫn là vòng tải), `site/public/manifest.webmanifest` (màu navy), `site.ts` (tên, tiêu đề trang chủ, `mcpPrefix: market_decoded`, `MarketDecodedBot/1.0`), `channel.json` (`brand.name`, `tagline`, `mark: brand/mark.svg`). Checkout chính dùng các bản này. Bộ logo cũ của gói AI để ở `packs/ai/site/`.
+- Video: `tts.py` chép `brand.mark` của kênh vào thư mục `public/` của video (`brand-mark.svg`) và ghi vào `timeline.brand`; `NewsVideo` (intro, thanh tiêu đề, outro), `Thumbnail`, `ShortVideo` vẽ logo qua `BrandMark` (không có logo thì vẫn là chấm màu như cũ). Outro bỏ nhãn "(background)" khỏi tên nguồn.

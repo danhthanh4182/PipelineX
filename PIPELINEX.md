@@ -57,7 +57,7 @@ background research, dossier, fact-check, styles, thumbnail, Short, publish kit 
 throwaway channel, then removed).
 
 Open items:
-- World and Crime packs (Finance is running, see below); a real name for the finance channel (owner's shortlist: Market Decoded, Basis Point, Plain Money, The Ticker Desk, Signal Over Noise).
+- World and Crime packs, later (see the one-channel decision).
 - **One channel only for now (owner, 2026-11-18): finance on the main checkout :3000.** Expand to more channels (AI, World, Crime) only once it does well.
 - Unified studio: one admin page and one MCP across all channels (today each channel has its own).
 - Azure Speech key (voice code ready; edge-tts is unlicensed for commercial use and throttles — it failed a whole video's voice step twice on 2026-11-18).
@@ -68,7 +68,8 @@ Open items:
 
 ## Finance channel — running (2026-11-18)
 
-- **The finance channel is the main checkout** (web :3000, api :3001, database `pipelinex_eval`), the only channel
+- **The finance channel is "Market Decoded"** (brand kit in `packs/finance/brand/`, YouTube avatar/banner/watermark in
+  `packs/finance/brand/youtube/`, rebuilt with `node scripts/brand.ts packs/finance`), run from **the main checkout** (web :3000, api :3001, database `pipelinex_eval`), the only channel
   running. Channel `markets` (:3010, the first finance trial) is stopped, not removed: checkout `PipelineX/channels/markets/`,
   branch `channel/markets`, database `pipelinex_markets`; backup in `PipelineX/backups/markets-channel-20261118/`
   (database dump + its video #1, Nvidia earnings, ready and not published). `npm run channel -- remove markets --yes`

@@ -1,7 +1,7 @@
 // Vertical YouTube Short (1080×1920) from timeline-short.json: full-bleed pictures the long video already checked,
 // big word-by-word captions in the middle, a progress bar, and a closing call to the full story.
 import { AbsoluteFill, Audio, Img, Loop, OffthreadVideo, Sequence, interpolate, spring, staticFile, useCurrentFrame, Easing } from "remotion";
-import { applyPalette, DEFAULT_BRAND, FPS, type Timeline } from "./NewsVideo";
+import { applyPalette, BrandMark, DEFAULT_BRAND, FPS, type Timeline } from "./NewsVideo";
 
 /** Seconds the closing card stays after the last word. */
 export const SHORT_TAIL = 1.5;
@@ -176,7 +176,7 @@ export const ShortVideo = ({ scenes, total, music, palette, brand = DEFAULT_BRAN
       ))}
       {/* Brand and progress along the top. */}
       <div style={{ position: "absolute", top: 70, left: 50, right: 50, display: "flex", alignItems: "center", gap: 14, fontFamily: SANS }}>
-        <div style={{ width: 16, height: 16, borderRadius: 8, background: C.hot }} />
+        <BrandMark brand={brand} size={60} color={C.hot} />
         <div style={{ color: C.ink, fontWeight: 900, fontSize: 32, letterSpacing: 5, textShadow: "0 2px 10px rgba(0,0,0,0.7)" }}>{brand.name.toUpperCase()}</div>
         <div style={{ background: C.accent, color: "#06110c", fontWeight: 900, fontSize: 22, letterSpacing: 3, padding: "3px 10px", borderRadius: 6 }}>{brand.label}</div>
       </div>

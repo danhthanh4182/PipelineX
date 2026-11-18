@@ -1,7 +1,7 @@
 // YouTube thumbnail (1280×720 still): the video's main picture, two to five huge words, channel mark and topic.
 // Rendered with `remotion still … Thumbnail` from the same timeline props as the video.
 import { AbsoluteFill, Img, staticFile } from "remotion";
-import { applyPalette, DEFAULT_BRAND, type Timeline } from "./NewsVideo";
+import { applyPalette, BrandMark, DEFAULT_BRAND, type Timeline } from "./NewsVideo";
 
 const C = { bg: "#0b0f17", ink: "#ffffff", accent: "#36d399", hot: "#ff3b3b", yellow: "#ffd23f" };
 const SANS = "Inter, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif";
@@ -53,7 +53,7 @@ export const Thumbnail = (t: Timeline & { thumbnail_text?: string | null }) => {
       {/* Top accent line */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 6, background: `linear-gradient(90deg, ${C.hot}, ${C.accent}, transparent)` }} />
       <div style={{ position: "absolute", left: 56, top: 48, display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ width: 18, height: 18, borderRadius: 9, background: C.hot, boxShadow: `0 0 12px ${C.hot}` }} />
+        <BrandMark brand={brand} size={64} color={C.hot} />
         <div style={{ color: C.ink, fontWeight: 900, fontSize: 34, letterSpacing: 5, textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>{brand.name.toUpperCase()}</div>
         <div style={{ background: C.accent, color: "#06110c", fontWeight: 900, fontSize: 24, letterSpacing: 3, padding: "4px 12px", borderRadius: 6, boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}>{brand.label}</div>
       </div>

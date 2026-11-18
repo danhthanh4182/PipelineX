@@ -41,7 +41,15 @@ export const PRESETS: Record<string, ModelPreset> = {
   },
   // PipelineX: free providers first, paid last (see pipelinex-chain).
   // NVIDIA's API: free developer tier, about 40 requests a minute.
+  "nvidia-minimax": {
+    service: "nvidia", model: "minimaxai/minimax-m3.1-flash", baseUrlEnv: "NVIDIA_BASE_URL", apiKeyEnv: "NVIDIA_API_KEY",
+    jsonMode: true, vision: false,
+  },
   "nvidia-nemotron": {
+    service: "nvidia", model: "nvidia/nemotron-3.5-lightning-30b-a3b", baseUrlEnv: "NVIDIA_BASE_URL", apiKeyEnv: "NVIDIA_API_KEY",
+    reasoningTokens: 8000, jsonMode: true, vision: false,
+  },
+  "nvidia-nemotron-vl": {
     service: "nvidia", model: "nvidia/nemotron-3.5-super-vl-120b-a12b", baseUrlEnv: "NVIDIA_BASE_URL", apiKeyEnv: "NVIDIA_API_KEY",
     reasoningTokens: 8000, jsonMode: true, vision: true,
   },
@@ -65,7 +73,7 @@ export const PRESETS: Record<string, ModelPreset> = {
     service: "chain", model: "pipelinex-chain", baseUrlEnv: "LLM_BASE_URL", apiKeyEnv: "LLM_API_KEY", jsonMode: true, vision: true,
     // Last, the deployment's own LLM_* model (PipelineX sets a free one in .env): a final resort, and the engine tests' stand-in.
     // Free members only: OpenRouter and OrcaRouter are asked for their free models, never their paid ones.
-    chain: ["nvidia-nemotron", "openrouter-free-nemotron", "orcarouter-free-deepseek", "default"],
+    chain: ["nvidia-minimax", "nvidia-nemotron", "openrouter-free-nemotron", "orcarouter-free-deepseek", "default"],
   },
   "qwen3-vl-flash": {
     service: "dashscope", model: "qwen3-vl-flash", baseUrlEnv: "DASHSCOPE_BASE_URL", apiKeyEnv: "DASHSCOPE_API_KEY",

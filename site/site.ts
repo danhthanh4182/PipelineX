@@ -1,4 +1,4 @@
-// Site identity, branding, and reader-facing copy (PipelineX finance pack: copied over site/site.ts in a finance channel).
+// Site identity, branding, and reader-facing copy (Market Decoded, the PipelineX finance pack: copied over site/site.ts in a finance channel).
 // Read by both web and backend; changes take effect upon rebuild (e.g. docker compose up --build).
 // The public domain is set via the environment variable SITE_URL.
 
@@ -18,11 +18,11 @@ export const EDITION_WHEN = {
 
 export const SITE = {
   /** Site name: used in navigation, page titles, OG cards, RSS, MCP, and admin. */
-  name: "PipelineX Markets",
+  name: "Market Decoded",
   /** Industry keyword: interpolated into phrases like "AI Briefing", "AI Updates". */
   subject: "Markets",
   /** Homepage full title (browser tab, search engines). */
-  homeTitle: "PipelineX Markets — Finance & Economy News · Daily Briefings & Curated Feed",
+  homeTitle: "Market Decoded — Market News, Decoded · Daily Briefings & Curated Feed",
   /** Topics directory page (/topics) title. */
   topicsTitle: "Finance Topics: Institutions, Companies, Markets & Story Types",
   /** Feedback form input placeholder. */
@@ -50,7 +50,7 @@ export const SITE = {
   /** Root directory icons list. */
   rootIcons: [] as string[],
   /** MCP tool name prefix (e.g. pipelinex_get_latest). */
-  mcpPrefix: "pipelinex_markets",
+  mcpPrefix: "market_decoded",
   /** Public interface version. */
   interfaceVersion: "4.0.0",
   /** Contact email address. */
@@ -67,11 +67,11 @@ export const SITE = {
   poweredBy: { name: "AIHOT", url: "https://aihot.news" } as { name: string; url: string } | null,
   /** Organization operator for structured metadata. */
   organization: {
-    name: "PipelineX Markets",
+    name: "Market Decoded",
     founder: null as Founder | null,
   },
   /** User-Agent identification header used during scraping. */
-  crawlerName: "PipelineXMarketsBot/1.0",
+  crawlerName: "MarketDecodedBot/1.0",
 } as const;
 
 /** Policy and terms pages. */

@@ -7,11 +7,16 @@ type Visual = Record<string, any> & { type: string };
 type Beat = { narration: string; visual: Visual; audio: string; start: number; duration: number; words: Word[] };
 type Scene = { kind: string; kicker: string; headline: string; start: number; duration: number; beats: Beat[] };
 export type Palette = { accent: string; accent2: string; kicker: string };
-export type Brand = { name: string; label: string; tagline: string };
+export type Brand = { name: string; label: string; tagline: string; mark?: string };
 export type Timeline = { title: string; total: number; scenes: Scene[]; sources?: Array<{ n: number; name: string; title?: string }>; music?: string | null; date?: string;
   style?: string; palette?: Palette | null; brand?: Brand };
 /** The channel's brand on the cards (the timeline's, from industry/channel.json). */
 export const DEFAULT_BRAND: Brand = { name: "PipelineX", label: "AI NEWS", tagline: "The AI news that matters, every day." };
+
+/** The channel's mark (brand.mark, copied into the video's public folder by the voice step), else a dot. */
+export const BrandMark = ({ brand, size, color }: { brand: Brand; size: number; color: string }) =>
+  brand.mark ? <Img src={staticFile(brand.mark)} style={{ width: size, height: size, flexShrink: 0 }} />
+    : <div style={{ width: size * 0.5, height: size * 0.5, borderRadius: size, background: color, flexShrink: 0 }} />;
 
 /** Branded opening and the end card, around the narrated part (seconds). */
 export const INTRO = 3;
@@ -430,7 +435,7 @@ const Intro = ({ title, date, brand }: { title: string; date?: string; brand: Br
       <Grid />
       <AbsoluteFill style={{ padding: "0 160px", justifyContent: "center", fontFamily: SANS }}>
         <div style={{ display: "flex", alignItems: "center", gap: 18, opacity: a, transform: `translateX(${(1 - a) * -40}px)` }}>
-          <div style={{ width: 22, height: 22, borderRadius: 11, background: C.hot }} />
+          <BrandMark brand={brand} size={72} color={C.hot} />
           <div style={{ color: C.ink, fontWeight: 900, fontSize: 44, letterSpacing: 8 }}>{brand.name.toUpperCase()}</div>
           <div style={{ color: C.dim, fontSize: 36, letterSpacing: 4 }}>{brand.label}{date ? ` · ${date}` : ""}</div>
         </div>
@@ -445,7 +450,8 @@ const Intro = ({ title, date, brand }: { title: string; date?: string; brand: Br
 const Outro = ({ sources, brand }: { sources: Array<{ n: number; name: string; title?: string }>; brand: Brand }) => {
   const f = useCurrentFrame();
   const a = spring({ frame: f, fps: FPS, config: { damping: 200 } });
-  const outlets = [...new Set(sources.map((s) => s.name))];
+  // Background pages are listed by site ("cnbc.com (background)"): show the site once, without the label.
+  const outlets = [...new Set(sources.map((s) => s.name.replace(/\s*\(background\)$/, "")))];
   return (
     <AbsoluteFill>
       <Grid />
@@ -457,7 +463,10 @@ const Outro = ({ sources, brand }: { sources: Array<{ n: number; name: string; t
             return <div key={o} style={{ color: C.ink, fontSize: 34, fontWeight: 600, padding: "10px 22px", borderRadius: 10, background: C.panel, border: `1px solid ${C.line}`, opacity: s }}>{o}</div>;
           })}
         </div>
-        <div style={{ marginTop: 90, color: C.ink, fontSize: 84, fontWeight: 900 }}>{brand.tagline}</div>
+        <div style={{ marginTop: 90, display: "flex", alignItems: "center", gap: 32 }}>
+          {brand.mark && <BrandMark brand={brand} size={132} color={C.hot} />}
+          <div style={{ color: C.ink, fontSize: 84, fontWeight: 900 }}>{brand.tagline}</div>
+        </div>
         <div style={{ marginTop: 34, display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: 18, background: C.hot, color: "white",
           fontSize: 44, fontWeight: 900, padding: "18px 40px", borderRadius: 14, transform: `scale(${1 + 0.03 * Math.sin(f / 8)})` }}>Subscribe</div>
         <div style={{ marginTop: 26, color: C.dim, fontSize: 30 }}>Links to every report are in the description.</div>
@@ -473,10 +482,12 @@ const Header = ({ at, total, brand }: { at: number; total: number; brand: Brand 
   const pct = Math.min(100, (at / total) * 100);
   return (
     <div style={{ position: "absolute", top: 40, left: 64, right: 64, display: "flex", alignItems: "center", gap: 16, fontFamily: SANS }}>
-      <div style={{ position: "relative", width: 14, height: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ position: "absolute", width: "100%", height: "100%", borderRadius: 7, background: C.hot, opacity: 0.8 }} />
-        <div style={{ position: "absolute", width: "180%", height: "180%", borderRadius: 14, background: C.hot, opacity: 0.3 * (1 + Math.sin(f / 6)) }} />
-      </div>
+      {brand.mark ? <BrandMark brand={brand} size={40} color={C.hot} /> : (
+        <div style={{ position: "relative", width: 14, height: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ position: "absolute", width: "100%", height: "100%", borderRadius: 7, background: C.hot, opacity: 0.8 }} />
+          <div style={{ position: "absolute", width: "180%", height: "180%", borderRadius: 14, background: C.hot, opacity: 0.3 * (1 + Math.sin(f / 6)) }} />
+        </div>
+      )}
       <div style={{ color: C.ink, fontWeight: 800, fontSize: 24, letterSpacing: 3, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{brand.name.toUpperCase()}</div>
       <div style={{ color: "#c6ccd8", fontSize: 22, letterSpacing: 2, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{brand.label}</div>
       <div style={{ flex: 1 }} />

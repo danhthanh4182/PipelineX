@@ -13,7 +13,7 @@ export const readArticles = (): Article[] => [
 export const outlet = (a: Article) => a.source.replace(/\s*·.*$/, "");
 
 /**
- * The providers to try, in order (VIDEO_PROVIDERS, default "nvidia,openrouter-free,orcarouter,openrouter"): each is <NAME>_BASE_URL, <NAME>_API_KEY
+ * The providers to try, in order (VIDEO_PROVIDERS, default "nvidia,openrouter-free,orcarouter": free models only): each is <NAME>_BASE_URL, <NAME>_API_KEY
  * and <NAME>_MODEL, the last defaulting to Nemotron's id there. Unconfigured ones are skipped; with none configured,
  * the app's LLM_* is used. A provider that throttles, fails, times out or refuses the key hands the call to the next.
  */
@@ -23,7 +23,7 @@ const DEFAULT_MODEL: Record<string, string> = {
 /** Providers whose default model cannot read images: calls with an image skip them. */
 const TEXT_ONLY = new Set(["orcarouter"]);
 export function providers() {
-  const list = (process.env.VIDEO_PROVIDERS || "nvidia,openrouter-free,orcarouter,openrouter").split(",").map((p) => p.trim().toLowerCase()).filter(Boolean).flatMap((name) => {
+  const list = (process.env.VIDEO_PROVIDERS || "nvidia,openrouter-free,orcarouter").split(",").map((p) => p.trim().toLowerCase()).filter(Boolean).flatMap((name) => {
     // "<provider>-free" is that provider's free variant of the same model (OpenRouter's ":free" ids).
     const base = name.replace(/-free$/, "");
     const env = (k: string) => process.env[`${base.toUpperCase()}_${k}`];

@@ -1,4 +1,9 @@
-"""Step 3 prototype: script-final.json -> one MP3 per beat + word timings (edge-tts) -> src/timeline.json.
+"""Step "voice": the script -> one MP3 per beat + word timings -> timeline.json.
+
+Voice: Azure AI Speech when AZURE_SPEECH_KEY and AZURE_SPEECH_REGION are set (licensed for commercial use; free tier
+500,000 characters a month), else edge-tts (the Edge browser's read-aloud service: no commercial licence, throttles).
+Both speak the same neural voice, so a beat Azure fails on can fall back to edge-tts without a change of voice.
+VIDEO_TTS=edge forces edge-tts.
 
 Usage: VIDEO_WORKDIR=<dir> [VIDEO_VARIANT=short] python tts.py [voice]
   (reads <dir>/script-final.json or script-short.json, writes <dir>/public/audio and <dir>/timeline.json or timeline-short.json)
@@ -7,6 +12,10 @@ import asyncio, datetime, json, os, shutil, subprocess, sys
 from pathlib import Path
 
 import edge_tts
+
+AZURE_KEY = os.environ.get("AZURE_SPEECH_KEY", "")
+AZURE_REGION = os.environ.get("AZURE_SPEECH_REGION", "")
+USE_AZURE = bool(AZURE_KEY and AZURE_REGION) and os.environ.get("VIDEO_TTS", "") != "edge"
 
 VOICE = sys.argv[1] if len(sys.argv) > 1 else "en-US-AndrewMultilingualNeural"
 W = Path(os.environ.get("VIDEO_WORKDIR", "work"))
@@ -27,7 +36,50 @@ def duration(path: Path) -> float:
     return float(out.strip())
 
 
+ENGINES: dict = {"azure": 0, "edge": 0}
+
+
+def speak_azure(name: str, text: str):
+    """Azure AI Speech: SSML with the same voice and rate; word timings from its word-boundary events."""
+    import azure.cognitiveservices.speech as sdk
+    from xml.sax.saxutils import escape
+    path = OUT / f"{name}.mp3"
+    cfg = sdk.SpeechConfig(subscription=AZURE_KEY, region=AZURE_REGION)
+    cfg.set_speech_synthesis_output_format(sdk.SpeechSynthesisOutputFormat.Audio24Khz96KBitRateMonoMp3)
+    synth = sdk.SpeechSynthesizer(speech_config=cfg, audio_config=sdk.audio.AudioOutputConfig(filename=str(path)))
+    words = []
+
+    def boundary(evt):
+        if evt.boundary_type == sdk.SpeechSynthesisBoundaryType.Word:
+            start = evt.audio_offset / 1e7
+            words.append({"text": evt.text, "start": round(start, 3), "end": round(start + evt.duration.total_seconds(), 3)})
+    synth.synthesis_word_boundary.connect(boundary)
+    ssml = (f'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US"><voice name="{VOICE}">'
+            f'<prosody rate="{RATE}">{escape(text)}</prosody></voice></speak>')
+    result = synth.speak_ssml_async(ssml).get()
+    if result.reason != sdk.ResultReason.SynthesizingAudioCompleted:
+        detail = result.cancellation_details
+        raise RuntimeError(f"Azure TTS {result.reason}: {getattr(detail, 'reason', '')} {getattr(detail, 'error_details', '')}".strip())
+    del synth  # closes the output file
+    return path, words
+
+
 async def speak(name: str, text: str):
+    if USE_AZURE:
+        for attempt in range(3):
+            try:
+                out = await asyncio.to_thread(speak_azure, name, text)
+                ENGINES["azure"] += 1
+                return out
+            except Exception as error:  # throttling (429) or a network error: wait, then try again
+                print(f"{name}: Azure failed ({str(error)[:160]}), {'retrying' if attempt < 2 else 'using edge-tts for this beat'}")
+                if attempt < 2:
+                    await asyncio.sleep(3 * (attempt + 1))
+    ENGINES["edge"] += 1
+    return await speak_edge(name, text)
+
+
+async def speak_edge(name: str, text: str):
     # The service sometimes answers with no audio; try again before failing the video.
     # The service throttles bursts: wait longer each time (5, 10, 20, 40 s) before giving up.
     for attempt in range(5):
@@ -78,7 +130,9 @@ async def main():
                 "date": datetime.date.today().strftime("%b %-d, %Y")}
     (W / TIMELINE).write_text(json.dumps(timeline, indent=2))
     print(f"total {t:.1f}s")
-    print("RESULT " + json.dumps({"duration": round(t, 1)}))
+    chars = sum(len(b["narration"]) for s in script["scenes"] for b in s["beats"])
+    print("RESULT " + json.dumps({"duration": round(t, 1), "engine": "azure" if ENGINES["azure"] and not ENGINES["edge"] else "edge" if not ENGINES["azure"] else "mixed",
+                                  "beats": ENGINES, "characters": chars}))
 
 
 asyncio.run(main())

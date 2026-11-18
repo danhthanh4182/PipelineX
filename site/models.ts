@@ -56,15 +56,16 @@ export const PRESETS: Record<string, ModelPreset> = {
     service: "orcarouter-free", model: "deepseek/deepseek-v4.1-flash-free", baseUrlEnv: "ORCAROUTER_BASE_URL", apiKeyEnv: "ORCAROUTER_API_KEY",
     jsonMode: true, vision: false,
   },
-  // OpenRouter paid: only when the free ones cannot answer.
+  // OpenRouter paid: defined for an explicit choice (admin model page or a step variable); not in pipelinex-chain.
   "openrouter-nemotron": {
     service: "openrouter", model: "nvidia/nemotron-3.5-super-vl", baseUrlEnv: "OPENROUTER_BASE_URL", apiKeyEnv: "OPENROUTER_API_KEY",
     reasoningTokens: 8000, jsonMode: true, vision: true,
   },
   "pipelinex-chain": {
     service: "chain", model: "pipelinex-chain", baseUrlEnv: "LLM_BASE_URL", apiKeyEnv: "LLM_API_KEY", jsonMode: true, vision: true,
-    // Last, the deployment's own LLM_* model: a final resort here, and the stand-in model in the engine's tests.
-    chain: ["nvidia-nemotron", "openrouter-free-nemotron", "orcarouter-free-deepseek", "openrouter-nemotron", "default"],
+    // Last, the deployment's own LLM_* model (PipelineX sets a free one in .env): a final resort, and the engine tests' stand-in.
+    // Free members only: OpenRouter and OrcaRouter are asked for their free models, never their paid ones.
+    chain: ["nvidia-nemotron", "openrouter-free-nemotron", "orcarouter-free-deepseek", "default"],
   },
   "qwen3-vl-flash": {
     service: "dashscope", model: "qwen3-vl-flash", baseUrlEnv: "DASHSCOPE_BASE_URL", apiKeyEnv: "DASHSCOPE_API_KEY",

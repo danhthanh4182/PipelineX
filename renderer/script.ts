@@ -62,9 +62,9 @@ Pictures first: at least 60% of the beats are "photo" or "broll" (people, places
 
 Visual types (pick what best fits the beat):
 - {"type":"article","source":n} show the headline of report n.${dossier ? ` Optional "quote": one of the QUOTES from report n, copied exactly.` : ` Optional "quote": a SHORT exact sentence fragment (max 20 words) copied verbatim from that article's excerpt.`}
-- {"type":"quote","speaker":"Name, role","text":"..."} ${dossier ? "one of the QUOTES, copied exactly." : "a direct quote that appears verbatim in the material (inside quotation marks there). Max 25 words."}
+- {"type":"quote","speaker":"Name, role","text":"...","perspective":"defense"|"prosecution"|"analyst"|"official"} ${dossier ? "one of the QUOTES, copied exactly." : "a direct quote that appears verbatim in the material (inside quotation marks there). Max 25 words."} Optional "perspective" labels contrasting views and triggers dynamic vocal perspective cues.
 - {"type":"stat","value":"$105B","label":"what the number is"} one striking number${dossier ? " from NUMBERS" : " from the material"}.
-- {"type":"chart","data":"D1"} a chart of one of the DATA SERIES (when given): use one wherever a series shows the trend the narration talks about (rates, prices, jobs, revenue), and say in the narration what the chart shows, with its source. Otherwise {"type":"chart","title":"...","unit":"$","points":[{"label":"Oct 6","value":239.24},...]} only when there are at least 2 dated values of the same measure.
+- {"type":"chart","data":"D1"} a chart of one of the DATA SERIES (when given): use one wherever a series shows the trend the narration talks about (rates, prices, jobs, revenue), and say in the narration what the chart shows, with its source. Otherwise {"type":"chart","title":"...","unit":"$","points":[{"label":"Oct 6","value":239.24},...]} only when there are at least 2 dated values of the same measure. (Style rule [2d6d2b81]: when a dossier/material has 2+ dated numeric values of a metric, generate a dynamic animated SVG chart instead of a plain text card).
 - {"type":"timeline","events":[{"date":"Nov 8","text":"max 8 words"},...]} 3-5 dated events.
 - {"type":"flow","title":"HOW IT SPREADS","steps":["Fed raises rates","Mortgage rates climb","Home sales slow"]} a cause-and-effect chain of 3-5 steps (max 6 words each) that the sources describe; the beat's facts must support every step.
 - {"type":"versus","label":"Q3 revenue","left":{"name":"Expected","value":"$109.1B"},"right":{"name":"Reported","value":"$115.8B"}} two figures to compare (estimate vs actual, this year vs last, company vs rival), both from the material.
@@ -79,7 +79,7 @@ Return ONLY JSON:
  "description": string (2-3 sentences),
  "scenes": [{"kind": "hook"|"story"|"outro", "kicker": string (2-4 words, e.g. "WHAT HAPPENED"),
    "headline": string (max 60 chars),
-   "beats": [{"narration": string, ${dossier ? `"facts": ["F1"], ` : ""}"visual": {...}}]}]}`;
+   "beats": [{"narration": string, ${dossier ? `"facts": ["F1"], ` : ""}"perspective"?: string, "voice"?: string, "visual": {...}}]}]}`;
 
 const systemWithStyle = system + styleText;
 const material = (dossier ? `Dossier:\n\n${dossierText(dossier)}` : `Material:\n\n${materialOf(articles, Number(process.env.VIDEO_MATERIAL_CHARS || 3000))}`) + dataText;

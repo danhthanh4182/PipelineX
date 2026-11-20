@@ -144,13 +144,24 @@ export function draftKit(id: number): PublishKit | null {
   ].filter(Boolean).join("\n\n").slice(0, LIMITS.description);
   const shortTitle = short ? short.title.slice(0, LIMITS.title - 8).trim() + " #Shorts" : "";
   const title = script.title.slice(0, LIMITS.title);
+  const ytRecord = read<{ longId?: string; shortId?: string }>(id, "youtube.json");
+  const mainVideoUrl = ytRecord?.longId ? `https://youtu.be/${ytRecord.longId}` : null;
+  const mainVideoCallout = mainVideoUrl
+    ? `👉 WATCH FULL VIDEO: ${mainVideoUrl}\n(Tap "Related video" above channel name)`
+    : `👉 WATCH FULL DEEP DIVE: [Link auto-inserted when main video uploads]\nFull Video: ${script.title}`;
+
   return {
     long: { title, description, tags, titleOptions: [title] },
     short: short ? {
       title: shortTitle,
-      description: [short.scenes[0]?.beats[0]?.narration ?? "", "Full story on our channel.",
+      description: [
+        mainVideoCallout,
+        short.scenes[0]?.beats[0]?.narration ?? "",
+        "Full story on our channel.",
         sources.length ? `Sources: ${[...new Set(sources.slice(0, 3).map((s) => s.name.replace(/\s*\(background\)/, "")))].join(", ")}` : "",
-        yt?.disclaimer ?? "", ["#Shorts", ...hashtags.slice(0, 3)].join(" ")].filter(Boolean).join("\n\n"),
+        yt?.disclaimer ?? "",
+        ["#Shorts", ...hashtags.slice(0, 3)].join(" ")
+      ].filter(Boolean).join("\n\n").slice(0, LIMITS.description),
       tags,
     } : null,
     settings: {

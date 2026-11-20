@@ -37,7 +37,7 @@ Rules:
 - Facts only from the material; attribute claims ("according to The Verge"); allegations stay allegations; where reports differ, say so.
 - Beat 1 is the hook: ${preset ? preset.short.hook : "the single most surprising fact in under 12 words"}. No greeting, no channel name.${preset ? `\n- Tone: ${preset.script.tone}.${preset.script.rules.map((r) => `\n- ${r}`).join("")}` : ""}
 - 6-9 beats, each 1-2 short sentences (3-7 seconds). Plain spoken English, no emojis, no hashtags in narration.
-- Last beat: one concrete takeaway attributed to a named source from the material (e.g. "Bloomberg reports...", "According to The Verge...") or a specific question from the facts, then "Full story on our channel." Never make ungrounded generalizations, editorial judgments, or broad predictions about the future without direct source attribution.
+- Last beat: one concrete takeaway attributed to a named source from the material (e.g. "Bloomberg reports...", "According to The Verge...") or a specific question from the facts, then a direct call to watch the full breakdown: "Watch the full breakdown linked below." or "Tap below for the full deep dive." Never make ungrounded generalizations, editorial judgments, or broad predictions about the future without direct source attribution.
 - Every beat shows ONE visual:
   {"type":"reuse","beat":n} one of the PICTURES below (use each at most once), or
   {"type":"stat","value":"...","label":"..."} a number stated in the material, or
@@ -77,6 +77,8 @@ const out = (json.beats as any[]).map((b) => {
 
 const short = {
   title: json.title, description: long.description, sources: long.sources, thumbnail_text: null,
+  mainTitle: long.title,
+  mainVideo: { title: long.title, description: long.description },
   scenes: [{ kind: "short", kicker: long.scenes[0]?.kicker ?? CHANNEL.brand.label, headline: json.title, beats: out }],
 };
 writeFileSync(`${W}/script-short.json`, JSON.stringify(short, null, 2));

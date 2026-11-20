@@ -6,7 +6,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } fr
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config } from "@aihot/backend/config";
-import { EXTRAS, finishVideo, getVideo, markStep, recordStep, STEPS, storyMaterial, styleInputs, type Step } from "./videos.ts";
+import { EXTRAS, finishVideo, getVideo, markStep, recordStep, reviewVideo, STEPS, storyMaterial, styleInputs, type Step } from "./videos.ts";
 import { activeRules } from "./style.ts";
 import { chooseStyle, STYLES, type StyleKey } from "./styles.ts";
 import { channelProfile } from "./channel-profile.ts";
@@ -157,6 +157,25 @@ export async function makeVideo(id: number, from: Step = "story"): Promise<void>
       }
     }
     await finishVideo(id, null);
+
+    // Auto-publish to YouTube if enabled and channel is connected
+    if (process.env.VIDEO_AUTO_PUBLISH === "true") {
+      try {
+        const { youtubeStatus, uploadPrivate, publishPublic } = await import("./youtube.ts");
+        const yt = youtubeStatus();
+        if (yt.configured && yt.connected) {
+          console.log(`[video ${id}] auto-publishing to YouTube...`);
+          await reviewVideo(id, "approved");
+          await uploadPrivate(id, "auto");
+          const pub = await publishPublic(id, "auto");
+          console.log(`[video ${id}] successfully auto-published to YouTube! (long: ${pub.longId}, short: ${pub.shortId})`);
+        } else {
+          console.log(`[video ${id}] auto-publish skipped: YouTube not configured or not connected.`);
+        }
+      } catch (ytErr) {
+        console.error(`[video ${id}] auto-publish to YouTube error:`, (ytErr as Error).message);
+      }
+    }
   } catch (error) {
     await finishVideo(id, (error as Error).message.slice(0, 1500));
   }

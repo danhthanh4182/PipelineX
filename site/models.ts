@@ -43,6 +43,10 @@ export const PRESETS: Record<string, ModelPreset> = {
   // NVIDIA's API: free developer tier, about 40 requests a minute, and a tighter limit per model: MiniMax answers 429 well
   // below 40 when the video steps use it too. It is its own service so its 429s neither trip the circuit for the
   // Nemotron fallback nor share its MODEL_RPM ceiling.
+  "nvidia-vl": {
+    service: "nvidia", model: "nvidia/nemotron-3.5-super-vl-120b-a12b", baseUrlEnv: "NVIDIA_BASE_URL", apiKeyEnv: "NVIDIA_API_KEY",
+    reasoningTokens: 8000, jsonMode: true, vision: true,
+  },
   "nvidia-minimax": {
     service: "nvidia-minimax", model: "minimaxai/minimax-m3.1-flash", baseUrlEnv: "NVIDIA_BASE_URL", apiKeyEnv: "NVIDIA_API_KEY",
     jsonMode: true, vision: false,
@@ -73,9 +77,8 @@ export const PRESETS: Record<string, ModelPreset> = {
   },
   "pipelinex-chain": {
     service: "chain", model: "pipelinex-chain", baseUrlEnv: "LLM_BASE_URL", apiKeyEnv: "LLM_API_KEY", jsonMode: true, vision: true,
-    // Last, the deployment's own LLM_* model (PipelineX sets a free one in .env): a final resort, and the engine tests' stand-in.
-    // Free members only: OpenRouter and OrcaRouter are asked for their free models, never their paid ones.
-    chain: ["nvidia-minimax", "nvidia-nemotron", "openrouter-free-nemotron", "orcarouter-free-deepseek", "default"],
+    // Primary: NVIDIA Nemotron 120b Super-VL (nvidia-vl) and MiniMax Flash (nvidia-minimax) with verified 4s, 8s, 12s backoff, then free fallbacks.
+    chain: ["nvidia-vl", "nvidia-minimax", "nvidia-nemotron", "openrouter-free-nemotron", "orcarouter-free-deepseek", "default"],
   },
   "qwen3-vl-flash": {
     service: "dashscope", model: "qwen3-vl-flash", baseUrlEnv: "DASHSCOPE_BASE_URL", apiKeyEnv: "DASHSCOPE_API_KEY",

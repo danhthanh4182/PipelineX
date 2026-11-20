@@ -99,17 +99,40 @@ export const videoServer: ServerModule = {
     // The editor MCP for a local AI agent (Antigravity…): direct local connections with VIDEO_EDITOR_TOKEN only.
     registerEditorMcp(app, makeQueue);
 
-    app.get("/api/admin/video/overview", guarded(async (_req, _reply, admin) => ({
-      csrf: admin.csrf,
-      auto: AUTO_ENABLED(),
-      modelCalls: config.modelCallsEnabled,
-      steps: STEPS,
-      candidates: await candidatesWithVideos(),
-      style: await styleGuide(),
-      styles: STYLE_KEYS.map((k) => ({ key: k, label: STYLES[k].label, for: STYLES[k].for, sensitive: !!STYLES[k].sensitive })),
-      videos: await listVideos(),
-      youtube: youtubeStatus(),
-    })));
+    app.get("/api/admin/video/overview", guarded(async (_req, _reply, admin) => {
+      const rawVideos = await listVideos();
+      const videos = rawVideos.map((v) => {
+        const yt = youtubeRecord(v.id);
+        return {
+          ...v,
+          youtube: yt ? { ...yt, pending: pendingPublic(yt) } : null,
+        };
+      });
+      const rawCandidates = await candidatesWithVideos();
+      const candidates = rawCandidates.map((c) => {
+        const yt = c.video_id ? youtubeRecord(c.video_id) : null;
+        return {
+          ...c,
+          video_youtube: yt ? {
+            uploaded: !!yt.longId,
+            public: !!(yt.longId && yt.publishedAt && (!yt.publicIds || yt.publicIds.includes(yt.longId))),
+            longId: yt.longId,
+          } : null,
+        };
+      });
+      return {
+        csrf: admin.csrf,
+        auto: AUTO_ENABLED(),
+        autoPublish: process.env.VIDEO_AUTO_PUBLISH === "true",
+        modelCalls: config.modelCallsEnabled,
+        steps: STEPS,
+        candidates,
+        style: await styleGuide(),
+        styles: STYLE_KEYS.map((k) => ({ key: k, label: STYLES[k].label, for: STYLES[k].for, sensitive: !!STYLES[k].sensitive })),
+        videos,
+        youtube: youtubeStatus(),
+      };
+    }));
 
     app.get("/api/admin/video/videos/:id", guarded(async (req, reply) => {
       const { id } = idParam.parse(req.params);

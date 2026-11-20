@@ -18,6 +18,8 @@ AZURE_REGION = os.environ.get("AZURE_SPEECH_REGION", "")
 USE_AZURE = bool(AZURE_KEY and AZURE_REGION) and os.environ.get("VIDEO_TTS", "") != "edge"
 
 VOICE = sys.argv[1] if len(sys.argv) > 1 else "en-US-AndrewMultilingualNeural"
+ALT_VOICE_QUOTE = os.environ.get("VIDEO_ALT_VOICE_QUOTE", "en-US-GuyNeural")
+ALT_VOICE_CONFLICT = os.environ.get("VIDEO_ALT_VOICE_CONFLICT", "en-US-AvaMultilingualNeural")
 W = Path(os.environ.get("VIDEO_WORKDIR", "work"))
 VARIANT = os.environ.get("VIDEO_VARIANT", "")
 IN = "script-short.json" if VARIANT == "short" else "script-final.json"
@@ -47,7 +49,19 @@ ENGINES: dict = {"azure": 0, "edge": 0, "cached": 0}
 PREFERRED = "azure" if USE_AZURE else "edge"
 
 
-def get_cached(name: str, text: str):
+def resolve_beat_voice(b: dict) -> str:
+    """Multi-voice dialogue: alternate Edge-TTS neural voices for quotes, conflicts, or distinct speakers."""
+    if b.get("voice"):
+        return b["voice"]
+    vis = b.get("visual") or {}
+    if vis.get("type") == "quote" or vis.get("speaker"):
+        return ALT_VOICE_QUOTE
+    if vis.get("conflict") or b.get("conflict") or vis.get("perspective"):
+        return ALT_VOICE_CONFLICT
+    return VOICE
+
+
+def get_cached(name: str, text: str, voice: str = VOICE):
     """A beat recorded before with the same words, voice, rate and engine is reused (remakes from 'voice' after an
     edit_script re-record only the edited beats). A beat that fell back to edge-tts is recorded again once Azure works."""
     path, meta_path = OUT / f"{name}.mp3", OUT / f"{name}.meta.json"
@@ -57,16 +71,16 @@ def get_cached(name: str, text: str):
         meta = json.loads(meta_path.read_text())
     except ValueError:
         return None
-    if (meta.get("engine"), meta.get("voice"), meta.get("rate"), meta.get("text")) != (PREFERRED, VOICE, RATE, text):
+    if (meta.get("engine"), meta.get("voice"), meta.get("rate"), meta.get("text")) != (PREFERRED, voice, RATE, text):
         return None
     return path, meta.get("words", []), meta.get("duration")
 
 
-def put_cache(name: str, text: str, engine: str, words: list, d: float):
-    (OUT / f"{name}.meta.json").write_text(json.dumps({"engine": engine, "voice": VOICE, "rate": RATE, "text": text, "words": words, "duration": d}))
+def put_cache(name: str, text: str, engine: str, words: list, d: float, voice: str = VOICE):
+    (OUT / f"{name}.meta.json").write_text(json.dumps({"engine": engine, "voice": voice, "rate": RATE, "text": text, "words": words, "duration": d}))
 
 
-def speak_azure(name: str, text: str):
+def speak_azure(name: str, text: str, voice: str = VOICE):
     """Azure AI Speech: SSML with the same voice and rate; word timings from its word-boundary events."""
     import azure.cognitiveservices.speech as sdk
     from xml.sax.saxutils import escape
@@ -81,7 +95,7 @@ def speak_azure(name: str, text: str):
             start = evt.audio_offset / 1e7
             words.append({"text": evt.text, "start": round(start, 3), "end": round(start + evt.duration.total_seconds(), 3)})
     synth.synthesis_word_boundary.connect(boundary)
-    ssml = (f'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US"><voice name="{VOICE}">'
+    ssml = (f'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US"><voice name="{voice}">'
             f'<prosody rate="{RATE}">{escape(text)}</prosody></voice></speak>')
     result = synth.speak_ssml_async(ssml).get()
     if result.reason != sdk.ResultReason.SynthesizingAudioCompleted:
@@ -91,11 +105,11 @@ def speak_azure(name: str, text: str):
     return path, words
 
 
-async def speak(name: str, text: str):
+async def speak(name: str, text: str, voice: str = VOICE):
     if USE_AZURE:
         for attempt in range(3):
             try:
-                path, words = await asyncio.to_thread(speak_azure, name, text)
+                path, words = await asyncio.to_thread(speak_azure, name, text, voice)
                 ENGINES["azure"] += 1
                 return path, words, "azure"
             except Exception as error:  # throttling (429) or a network error: wait, then try again
@@ -103,16 +117,16 @@ async def speak(name: str, text: str):
                 if attempt < 2:
                     await asyncio.sleep(3 * (attempt + 1))
     ENGINES["edge"] += 1
-    path, words = await speak_edge(name, text)
+    path, words = await speak_edge(name, text, voice)
     return path, words, "edge"
 
 
-async def speak_edge(name: str, text: str):
+async def speak_edge(name: str, text: str, voice: str = VOICE):
     # The service sometimes answers with no audio; try again before failing the video.
     # The service throttles bursts: wait longer each time (5, 10, 20, 40 s) before giving up.
     for attempt in range(5):
         try:
-            return await speak_once(name, text)
+            return await speak_once(name, text, voice)
         except edge_tts.exceptions.NoAudioReceived:
             if attempt == 4:
                 raise
@@ -120,10 +134,10 @@ async def speak_edge(name: str, text: str):
             await asyncio.sleep(5 * 2 ** attempt)
 
 
-async def speak_once(name: str, text: str):
+async def speak_once(name: str, text: str, voice: str = VOICE):
     path = OUT / f"{name}.mp3"
     words = []
-    comm = edge_tts.Communicate(text, VOICE, rate=RATE, boundary="WordBoundary")
+    comm = edge_tts.Communicate(text, voice, rate=RATE, boundary="WordBoundary")
     with open(path, "wb") as f:
         async for chunk in comm.stream():
             if chunk["type"] == "audio":
@@ -156,18 +170,19 @@ async def main():
         beats = []
         for bi, b in enumerate(s["beats"]):
             beat_name = f"{PREFIX}s{si:02d}b{bi:02d}"
-            cached = get_cached(beat_name, b["narration"])
+            beat_voice = resolve_beat_voice(b)
+            cached = get_cached(beat_name, b["narration"], beat_voice)
             if cached:
                 path, words, d = cached
                 ENGINES["cached"] += 1
                 if d is None:
                     d = duration(path)
             else:
-                path, words, engine = await speak(beat_name, b["narration"])
+                path, words, engine = await speak(beat_name, b["narration"], beat_voice)
                 d = duration(path)
-                put_cache(beat_name, b["narration"], engine, words, d)
+                put_cache(beat_name, b["narration"], engine, words, d, beat_voice)
             gap = SCENE_GAP if bi == len(s["beats"]) - 1 else BEAT_GAP
-            beats.append({**b, "audio": f"audio/{path.name}", "start": round(t - scene_start, 3), "duration": round(d + gap, 3), "words": words})
+            beats.append({**b, "voice": beat_voice, "audio": f"audio/{path.name}", "start": round(t - scene_start, 3), "duration": round(d + gap, 3), "words": words})
             t += d + gap
         scenes.append({k: s[k] for k in ("kind", "kicker", "headline")} | {"start": round(scene_start, 3), "duration": round(t - scene_start, 3), "beats": beats})
         print(f"scene {si}: {t - scene_start:5.1f}s, {len(beats)} beats")
@@ -177,6 +192,8 @@ async def main():
     if music and Path(music).exists():
         shutil.copy(music, W / "public" / "music.mp3")
     timeline = {"title": script["title"], "thumbnail_text": script.get("thumbnail_text"), "voice": VOICE, "total": round(t, 3), "scenes": scenes, "sources": script["sources"],
+                "mainTitle": script.get("mainTitle"),
+                "mainVideo": script.get("mainVideo"),
                 "music": "music.mp3" if music and Path(music).exists() else None,
                 "date": datetime.date.today().strftime("%b %-d, %Y"),
                 "style": PRESET["key"] if PRESET else "news", "palette": PRESET["visual"] if PRESET else None,

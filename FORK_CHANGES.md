@@ -188,3 +188,32 @@ Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cậ
 - Chủ dự án chọn: ngoài độ nóng, số nguồn đọc được và độ mới, thêm **điểm chất lượng tin** (không cộng điểm cho nguồn chính thức, không xếp theo mục, không ép đa dạng mục trong ngày).
 - `videos.ts` `priorityOf` (0–100): độ nóng 35 (so với ứng viên nóng nhất), chất lượng 30 (trung bình điểm chọn lọc của 3 bài tốt nhất trong câu chuyện), nguồn đọc được 20 (nguồn `editorial`, không tính tín hiệu chỉ có tiêu đề và báo trả phí; đủ điểm ở 6 nguồn), độ mới 15 (đủ trong 12 giờ, hết ở 48 giờ). `autoPick` chọn theo điểm này, vẫn bỏ chủ đề trùng video 3 ngày qua (thay cho luật "độ nóng × thưởng số nguồn" trước đó).
 - Trang Videos: cột Priority (rê chuột xem từng phần), Sources dạng "đọc được/tất cả", xếp theo điểm. MCP `list_candidates` xếp và ghi điểm từng phần.
+
+## Tự động liên kết Short với Video chính (19/11)
+
+- `renderer/short.ts`:
+  - Cập nhật prompt câu kết (last beat) của kịch bản Short: yêu cầu trực tiếp người xem "Watch the full breakdown linked below." hoặc "Tap below for the full deep dive.", tạo lời kêu gọi hành động (call-to-action) rõ ràng bằng giọng đọc.
+  - Tự động gắn metadata `mainTitle` và `mainVideo` ({ title, description }) từ `script-final.json` vào `script-short.json`.
+- `renderer/tts.py`:
+  - Giữ lại `mainTitle` và `mainVideo` vào `timeline-short.json` khi tổng hợp giọng đọc Short.
+- `renderer/src/ShortVideo.tsx`:
+  - Màn hình kết của Short (closing CTA): Chuyển thành khối kêu gọi động nổi bật `WATCH FULL VIDEO ⬇️` với mũi tên nhấp nháy chỉ thẳng xuống vị trí nút "Related video" mặc định của YouTube Shorts.
+  - Hiển thị trực tiếp tiêu đề bài phân tích dài (`▶ [Tiêu đề video chính]`) trong khung nền kính mờ (blur backdrop) để người xem nhận diện ngay video cần bấm.
+- `modules/video/backend/publishing.ts`:
+  - `draftKit`: Tự động đọc mã `longId` từ `youtube.json` (nếu đã upload) hoặc chuẩn bị mẫu link. Chèn dòng kêu gọi kèm link `👉 WATCH FULL VIDEO: https://youtu.be/<longId>` ngay dòng đầu tiên của mô tả Short (`short.description`).
+- `modules/video/backend/youtube.ts`:
+  - Khi upload video dài thành công và có `longId`: Tự động điền link `https://youtu.be/${long.id}` vào đầu mô tả của Short trước khi gửi file `short.mp4` lên YouTube (đây là cách an toàn và tương thích 100% với tài khoản Brand và dự án chưa audit; không gọi API bình luận `commentThreads` tự động vì Google chặn 403 do chính sách chống spam bình luận).
+- `modules/video/web/videos.tsx`:
+  - Hiển thị badge liên kết `🔗 Main Video: https://youtu.be/<longId>` kèm nút copy nhanh trong khung Publish kit của trang quản trị.
+
+## Tự động Public 100% lên YouTube (20/11)
+
+- `VIDEO_AUTO_PUBLISH=true` (`.env`): Bật chế độ tự động đăng công khai (Zero-touch publishing).
+- `modules/video/backend/pipeline.ts`:
+  - Khi pipeline dựng xong toàn bộ các bước (`shortrender` hoàn tất không lỗi, gọi `finishVideo(id, null)`): Nếu `VIDEO_AUTO_PUBLISH=true` và kênh YouTube đã kết nối, hệ thống tự động:
+    1. Đánh dấu duyệt video (`reviewVideo(id, "approved")`).
+    2. Upload video chính, Short, thumbnail và captions (`uploadPrivate(id, "auto")`).
+    3. Đặt trạng thái công khai (`publishPublic(id, "auto")`).
+- `modules/video/server.ts` & `videos.tsx`:
+  - Trả về cờ `autoPublish` trong `/api/admin/video/overview`.
+  - Hiển thị trạng thái "Auto publish: on" trên thanh tiêu đề trang Videos.

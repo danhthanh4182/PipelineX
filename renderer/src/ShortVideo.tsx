@@ -2,6 +2,7 @@
 // big word-by-word captions in the middle, a progress bar, and a closing call to the full story.
 import { AbsoluteFill, Audio, Img, Loop, OffthreadVideo, Sequence, interpolate, spring, staticFile, useCurrentFrame, Easing } from "remotion";
 import { applyPalette, BrandMark, DEFAULT_BRAND, FPS, type Timeline } from "./NewsVideo";
+import { Chart } from "./components/Chart";
 
 /** Seconds the closing card stays after the last word. */
 export const SHORT_TAIL = 1.5;
@@ -80,13 +81,32 @@ const Stat = ({ v }: { v: Visual }) => {
   );
 };
 
-const Quote = ({ v }: { v: Visual }) => (
+const Quote = ({ v }: { v: Visual }) => {
+  const perspective = v.perspective || (v.conflict ? "Disputed Perspective" : undefined);
+  return (
+    <AbsoluteFill>
+      <Backdrop />
+      <AbsoluteFill style={{ padding: "340px 70px 0", fontFamily: SERIF }}>
+        {perspective && (
+          <div style={{ display: "inline-block", background: "rgba(10,16,28,0.85)", border: `2px solid ${C.hot}`,
+            color: C.hot, padding: "8px 20px", borderRadius: 10, fontFamily: SANS, fontSize: 26, fontWeight: 900,
+            letterSpacing: 2, textTransform: "uppercase", marginBottom: 20 }}>
+            {perspective}
+          </div>
+        )}
+        <div style={{ color: C.accent, fontSize: 200, lineHeight: 0.6, height: 100 }}>“</div>
+        <div style={{ color: C.ink, fontSize: 64, lineHeight: 1.2, fontWeight: 600 }}>{v.text}</div>
+        <div style={{ marginTop: 34, fontFamily: SANS, color: C.dim, fontSize: 38 }}>— {v.speaker}</div>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
+const ShortChart = ({ v, frames }: { v: Visual; frames: number }) => (
   <AbsoluteFill>
     <Backdrop />
-    <AbsoluteFill style={{ padding: "360px 70px 0", fontFamily: SERIF }}>
-      <div style={{ color: C.accent, fontSize: 200, lineHeight: 0.6, height: 100 }}>“</div>
-      <div style={{ color: C.ink, fontSize: 64, lineHeight: 1.2, fontWeight: 600 }}>{v.text}</div>
-      <div style={{ marginTop: 34, fontFamily: SANS, color: C.dim, fontSize: 38 }}>— {v.speaker}</div>
+    <AbsoluteFill style={{ padding: "340px 60px 0", justifyContent: "flex-start" }}>
+      <Chart v={v} frames={frames} isVertical={true} accentColor={C.accent} hotColor={C.hot} />
     </AbsoluteFill>
   </AbsoluteFill>
 );
@@ -102,13 +122,32 @@ const phrasesOf = (words: Word[], max: number) => {
 };
 
 /** Big captions, 4 words at a time with spring kinetic pop on active spoken words; on a text-only beat they sit higher and larger. */
-const Captions = ({ words, center }: { words: Word[]; center: boolean }) => {
+const Captions = ({ words, center, perspective }: { words: Word[]; center: boolean; perspective?: string }) => {
   const f = useCurrentFrame();
   const t = f / FPS;
+  if (!words || !words.length) return null;
   const g = phrasesOf(words, 4).find((grp) => t >= grp[0]!.start - 0.05 && t <= grp[grp.length - 1]!.end + 0.2);
   if (!g) return null;
   return (
-    <div style={{ position: "absolute", left: 40, right: 40, top: center ? 760 : 1180, textAlign: "center", fontFamily: SANS }}>
+    <div style={{ position: "absolute", left: 40, right: 40, top: center ? 760 : 1220, textAlign: "center", fontFamily: SANS, zIndex: 60 }}>
+      {perspective && (
+        <div style={{
+          display: "inline-block",
+          background: "rgba(10, 16, 28, 0.92)",
+          border: `2px solid ${C.accent}`,
+          color: C.accent,
+          fontSize: 28,
+          fontWeight: 900,
+          letterSpacing: 2,
+          padding: "6px 20px",
+          borderRadius: 10,
+          marginBottom: 16,
+          textTransform: "uppercase",
+          boxShadow: "0 6px 20px rgba(0,0,0,0.5)"
+        }}>
+          {perspective}
+        </div>
+      )}
       <div style={{ fontSize: center ? 104 : 86, fontWeight: 900, lineHeight: 1.15, color: C.ink,
         textShadow: "0 6px 0 rgba(0,0,0,0.65), 0 0 32px rgba(0,0,0,0.85)", WebkitTextStroke: "3px rgba(0,0,0,0.55)" }}>
         {g.map((w, i) => {
@@ -146,27 +185,30 @@ const BeatView = ({ beat }: { beat: Beat }) => {
   const enter = interpolate(f, [0, 6], [0, 1], { extrapolateRight: "clamp" });
   const v = beat.visual;
   const picture = (v.type === "photo" || v.type === "broll") && v.asset;
+  const perspectiveBadge = v.perspective || (v.conflict ? "Disputed Perspective" : undefined);
   const body = picture ? <Picture v={v} frames={frames} />
     : v.type === "article" ? <Article v={v} />
     : v.type === "stat" ? <Stat v={v} />
     : v.type === "quote" ? <Quote v={v} />
+    : v.type === "chart" ? <ShortChart v={v} frames={frames} />
     : <Backdrop />;
-  const textOnly = !picture && !["article", "stat", "quote"].includes(v.type);
+  const textOnly = !picture && !["article", "stat", "quote", "chart"].includes(v.type);
   return (
     <AbsoluteFill style={{ opacity: enter, transform: `scale(${1.04 - 0.04 * enter})` }}>
       {body}
-      <Captions words={beat.words} center={textOnly} />
+      <Captions words={beat.words} center={textOnly} perspective={perspectiveBadge} />
       <Audio src={staticFile(beat.audio)} />
     </AbsoluteFill>
   );
 };
 
-export const ShortVideo = ({ scenes, total, music, palette, brand = DEFAULT_BRAND }: Timeline) => {
+export const ShortVideo = ({ scenes, total, music, palette, brand = DEFAULT_BRAND, mainTitle, mainVideo }: Timeline) => {
   applyPalette(C, palette);
   const f = useCurrentFrame();
   const beats = scenes.flatMap((s) => s.beats.map((b) => ({ ...b, start: s.start + b.start }))) as Beat[];
   const end = Math.round(total * FPS);
   const cta = spring({ frame: f - end + 12, fps: FPS, config: { damping: 200 } });
+  const targetTitle = mainTitle || mainVideo?.title;
   return (
     <AbsoluteFill style={{ background: C.bg }}>
       {beats.map((b, i) => (
@@ -183,9 +225,57 @@ export const ShortVideo = ({ scenes, total, music, palette, brand = DEFAULT_BRAN
       <div style={{ position: "absolute", top: 40, left: 50, right: 50, height: 8, background: "rgba(255,255,255,0.2)", borderRadius: 4, overflow: "hidden" }}>
         <div style={{ width: `${Math.min(100, (f / Math.max(1, end)) * 100)}%`, height: "100%", background: C.accent }} />
       </div>
-      {/* Closing call to the full story, over the last words. */}
-      <div style={{ position: "absolute", left: 60, right: 60, bottom: 260, opacity: cta, transform: `translateY(${(1 - cta) * 40}px)`, textAlign: "center", fontFamily: SANS }}>
-        <div style={{ display: "inline-block", background: C.hot, color: "white", fontWeight: 900, fontSize: 52, padding: "18px 36px", borderRadius: 18 }}>Full story on {brand.name}</div>
+      {/* Closing call to the full story, pointing directly to YouTube's Related Video link. */}
+      <div style={{ position: "absolute", left: 50, right: 50, bottom: 250, opacity: cta, transform: `translateY(${(1 - cta) * 40}px)`, textAlign: "center", fontFamily: SANS, zIndex: 100 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+          <div style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 14,
+            background: C.hot,
+            color: "white",
+            fontWeight: 900,
+            fontSize: 46,
+            padding: "16px 36px",
+            borderRadius: 22,
+            boxShadow: `0 10px 40px rgba(255, 59, 59, 0.55), 0 0 24px rgba(255, 59, 59, 0.35)`
+          }}>
+            <span>WATCH FULL VIDEO</span>
+            <span style={{ fontSize: 38, transform: `translateY(${Math.sin(f / 6) * 4}px)`, display: "inline-block" }}>⬇️</span>
+          </div>
+          {targetTitle ? (
+            <div style={{
+              background: "rgba(10, 16, 28, 0.94)",
+              border: `1.5px solid ${C.accent}`,
+              backdropFilter: "blur(12px)",
+              color: C.ink,
+              fontSize: 28,
+              fontWeight: 700,
+              padding: "10px 24px",
+              borderRadius: 14,
+              maxWidth: 940,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.65)",
+              display: "flex",
+              alignItems: "center",
+              gap: 12
+            }}>
+              <span style={{ color: C.accent, fontSize: 26, flexShrink: 0 }}>▶</span>
+              <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{targetTitle}</span>
+            </div>
+          ) : (
+            <div style={{
+              background: "rgba(10, 16, 28, 0.85)",
+              border: `1px solid rgba(255,255,255,0.18)`,
+              color: C.dim,
+              fontSize: 28,
+              fontWeight: 600,
+              padding: "8px 22px",
+              borderRadius: 12
+            }}>
+              Full story on {brand.name}
+            </div>
+          )}
+        </div>
       </div>
       {music && (
         <Audio

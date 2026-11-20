@@ -239,6 +239,18 @@ async function chatOnce<S extends z.ZodType>(opts: ChatJsonOptions<S>, circuit =
           signal: AbortSignal.timeout(timeoutMs),
         });
         text = await res.text();
+        let retries = 0;
+        while (res.status === 429 && retries < 3) {
+          retries++;
+          await new Promise((r) => setTimeout(r, retries * 4000));
+          res = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
+            method: "POST",
+            headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
+            body: JSON.stringify(body),
+            signal: AbortSignal.timeout(timeoutMs),
+          });
+          text = await res.text();
+        }
         assertAccepted(spec.service, res.status, text);
       } catch (error) {
         const failure = isConnectFailure(error) ? new ProviderRejectedError(`connect failed: ${String(error)}`, null, true) : error;

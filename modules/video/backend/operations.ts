@@ -4,13 +4,23 @@ import { sql } from "@aihot/backend/db";
 import { audit } from "@aihot/backend/audit";
 import { requeueFailedArticles, runsOverview } from "@aihot/backend/admin/runs";
 import { candidatesWithVideos, storyMaterial } from "./videos.ts";
+import { youtubeRecord } from "./youtube.ts";
 
 export async function candidates() {
-  return (await candidatesWithVideos()).sort((a, b) => b.priority.total - a.priority.total).map((c) => ({
-    storyId: c.story_id, title: c.title, heat: Number(c.heat), sources: c.sources, readableSources: c.readable ?? 0, pickedAt: c.created_at,
-    priority: c.priority,
-    video: c.video_id ? { id: c.video_id, status: c.video_status } : null,
-  }));
+  return (await candidatesWithVideos()).sort((a, b) => b.priority.total - a.priority.total).map((c) => {
+    const yt = c.video_id ? youtubeRecord(c.video_id) : null;
+    return {
+      storyId: c.story_id, title: c.title, heat: Number(c.heat), sources: c.sources, readableSources: c.readable ?? 0, pickedAt: c.created_at,
+      priority: c.priority,
+      video: c.video_id ? {
+        id: c.video_id,
+        status: c.video_status,
+        uploaded: !!yt?.longId,
+        public: !!(yt?.longId && yt.publishedAt && (!yt.publicIds || yt.publicIds.includes(yt.longId))),
+        longId: yt?.longId,
+      } : null,
+    };
+  });
 }
 
 /** Stories (events) of the last `days` whose title matches, with how many outlets reported them. */

@@ -179,6 +179,7 @@ async function upload(id: number, actor: string): Promise<YouTubeRecord> {
   const notes: string[] = [];
   const long = await uploadFile(access, path.join(dir, "video.mp4"), { snippet: snippet(kit.long), status });
   saveRecord(id, { longId: long.id, uploadedBy: actor, notes });
+  const mainUrl = `https://youtu.be/${long.id}`;
   const extra = async (what: string, work: () => Promise<void>) => { try { await work(); } catch (e) { notes.push(`${what}: ${(e as Error).message}`); } };
   if (existsSync(path.join(dir, "thumbnail.jpg")))
     await extra("thumbnail", async () => { await sendThumbnail(access, id, long.id); saveRecord(id, { thumbnailSet: true }); });
@@ -186,8 +187,20 @@ async function upload(id: number, actor: string): Promise<YouTubeRecord> {
   if (srt) await extra("captions", () => uploadCaptions(access, long.id, srt));
   if (kit.short && existsSync(path.join(dir, "short.mp4"))) {
     await extra("short", async () => {
-      const short = await uploadFile(access, path.join(dir, "short.mp4"), { snippet: snippet(kit.short!), status });
+      // Auto-insert or replace main video link into Short's description
+      let shortDesc = kit.short!.description;
+      const placeholderRegex = /👉 WATCH FULL DEEP DIVE: \[Link auto-inserted[^\n]*\n(?:Full Video: [^\n]*\n)?/;
+      if (placeholderRegex.test(shortDesc)) {
+        shortDesc = shortDesc.replace(placeholderRegex, `👉 WATCH FULL VIDEO: ${mainUrl}\n(Tap "Related video" right above the channel name)\n`);
+      } else if (!shortDesc.includes(mainUrl)) {
+        shortDesc = `👉 WATCH FULL VIDEO: ${mainUrl}\n(Tap "Related video" right above the channel name)\n\n` + shortDesc;
+      }
+      kit.short!.description = shortDesc;
+      writeFileSync(path.join(dir, "publish.json"), JSON.stringify(kit, null, 2));
+
+      const short = await uploadFile(access, path.join(dir, "short.mp4"), { snippet: { ...snippet(kit.short!), description: shortDesc }, status });
       saveRecord(id, { shortId: short.id });
+
       const shortSrt = captionsSrt(id, "short");
       if (shortSrt) await extra("short captions", () => uploadCaptions(access, short.id, shortSrt));
     });

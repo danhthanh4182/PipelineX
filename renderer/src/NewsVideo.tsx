@@ -11,7 +11,7 @@ type Scene = { kind: string; kicker: string; headline: string; start: number; du
 export type Palette = { accent: string; accent2: string; kicker: string };
 export type Brand = { name: string; label: string; tagline: string; mark?: string };
 export type Timeline = { title: string; total: number; scenes: Scene[]; sources?: Array<{ n: number; name: string; title?: string }>; music?: string | null; date?: string;
-  style?: string; palette?: Palette | null; brand?: Brand };
+  style?: string; palette?: Palette | null; brand?: Brand; mainTitle?: string; mainVideo?: { title?: string; url?: string; id?: string } };
 /** The channel's brand on the cards (the timeline's, from industry/channel.json). */
 export const DEFAULT_BRAND: Brand = { name: "PipelineX", label: "AI NEWS", tagline: "The AI news that matters, every day." };
 
@@ -183,65 +183,16 @@ const StatBeat = ({ v }: { v: Visual }) => {
   );
 };
 
-/** Bars that grow to each value, with the change between first and last. */
 /** A data series: bars for a few values, an animated line for a longer series (official data: 8-12 months or
  * quarters), the change between first and last (points for a rate, percent otherwise) and the source. */
-const ChartBeat = ({ v }: { v: Visual }) => {
-  const f = useCurrentFrame();
-  const pts = (v.points as Array<{ label: string; value: number }>).map((p) => ({ ...p, value: Number(p.value) }));
-  const first = pts[0]!.value, last = pts[pts.length - 1]!.value;
-  const rate = v.unit === "%";
-  const change = rate ? last - first : first ? ((last - first) / Math.abs(first)) * 100 : 0;
-  const badgeText = `${change > 0 ? "+" : ""}${rate ? `${change.toFixed(2)} pts` : `${change.toFixed(0)}%`}`;
-  const badge = useSpring(40);
-  const fmt = (n: number) => `${v.unit === "$" ? "$" : ""}${n.toLocaleString("en-US", { maximumFractionDigits: 2 })}${v.unit && v.unit !== "$" ? v.unit : ""}`;
-  const W = 1360, H = 520;
-  const lo = Math.min(...pts.map((p) => p.value)), hi = Math.max(...pts.map((p) => p.value));
-  const pad = (hi - lo || Math.abs(hi) || 1) * 0.18;
-  const x = (i: number) => (i / (pts.length - 1)) * W;
-  const y = (val: number) => H - ((val - (lo - pad)) / (hi + pad - (lo - pad))) * H;
-  const draw = interpolate(f, [6, 54], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) });
-  const shown = Math.max(1, Math.ceil(draw * (pts.length - 1)) + 1);
-  const line = pts.slice(0, shown).map((p, i) => `${x(i)},${y(p.value)}`).join(" ");
-  const every = Math.ceil(pts.length / 6);
+const ChartBeat = ({ v, frames = 120 }: { v: Visual; frames?: number }) => {
   return (
     <AbsoluteFill>
       <Backdrop v={v} />
-      <AbsoluteFill style={{ padding: "160px 200px 200px", fontFamily: SANS }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-          <div style={{ color: C.ink, fontSize: 54, fontWeight: 800, flex: 1 }}>{v.title}</div>
-          <div style={{ opacity: badge, transform: `scale(${0.8 + 0.2 * badge})`, background: change < 0 ? C.hot : C.accent,
-            color: "white", fontSize: 50, fontWeight: 900, padding: "12px 28px", borderRadius: 14 }}>{badgeText}</div>
-        </div>
-        {pts.length <= 5 ? (
-          <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: 80, marginTop: 40, paddingLeft: 40 }}>
-            {pts.map((p, i) => <Bar key={i} p={p} max={hi} unit={v.unit} delay={i * 12} last={i === pts.length - 1 && change < 0} />)}
-          </div>
-        ) : (
-          <div style={{ flex: 1, marginTop: 50, position: "relative" }}>
-            <svg width={W} height={H + 60} viewBox={`0 0 ${W} ${H + 60}`} style={{ overflow: "visible" }}>
-              {[0.25, 0.5, 0.75].map((t) => <line key={t} x1={0} x2={W} y1={H * t} y2={H * t} stroke="rgba(255,255,255,0.12)" strokeWidth={2} />)}
-              <polyline points={line} fill="none" stroke={C.accent} strokeWidth={8} strokeLinejoin="round" strokeLinecap="round" />
-              <circle cx={x(shown - 1)} cy={y(pts[shown - 1]!.value)} r={14} fill={C.accent} />
-              <text x={Math.min(x(shown - 1), W - 10)} y={y(pts[shown - 1]!.value) - 30} fill={C.ink} fontSize={46} fontWeight={800} textAnchor={shown - 1 > pts.length / 2 ? "end" : "start"}>{fmt(pts[shown - 1]!.value)}</text>
-              <text x={0} y={y(first) - 26} fill={C.dim} fontSize={34}>{fmt(first)}</text>
-              {pts.map((p, i) => (i % every === 0 || i === pts.length - 1) && <text key={i} x={x(i)} y={H + 52} fill={C.dim} fontSize={30} textAnchor={i === 0 ? "start" : i === pts.length - 1 ? "end" : "middle"}>{p.label}</text>)}
-            </svg>
-          </div>
-        )}
-        {v.source && <div style={{ marginTop: 18, color: "rgba(255,255,255,0.6)", fontSize: 24 }}>Source: {String(v.source)}</div>}
+      <AbsoluteFill style={{ padding: "160px 200px 200px", justifyContent: "center" }}>
+        <Chart v={v} frames={frames} isVertical={false} accentColor={C.accent} hotColor={C.hot} />
       </AbsoluteFill>
     </AbsoluteFill>
-  );
-};
-const Bar = ({ p, max, unit, delay, last }: { p: { label: string; value: number }; max: number; unit?: string; delay: number; last: boolean }) => {
-  const g = useSpring(delay);
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", width: 220 }}>
-      <div style={{ color: C.ink, fontSize: 48, fontWeight: 800, opacity: g, marginBottom: 14 }}>{unit === "$" ? "$" : ""}{p.value}{unit && unit !== "$" ? unit : ""}</div>
-      <div style={{ width: "100%", height: `${(p.value / max) * 75 * g}%`, background: last ? C.hot : C.accent, borderRadius: "12px 12px 0 0" }} />
-      <div style={{ color: C.dim, fontSize: 34, marginTop: 16 }}>{p.label}</div>
-    </div>
   );
 };
 
@@ -674,22 +625,36 @@ const LowerThird = ({ scene }: { scene: Scene }) => {
   );
 };
 
-/** Captions: one line per speech phrase (break at pauses or after 7 words), the spoken word highlighted. */
-const Captions = ({ words }: { words: Word[] }) => {
+/** Captions: one line per speech phrase (break at pauses or after 7 words), the spoken word highlighted, with optional perspective cue. */
+const Captions = ({ words, perspective }: { words: Word[]; perspective?: string }) => {
   const t = useCurrentFrame() / FPS;
+  if (!words || !words.length) return null;
   const groups = phrasesOf(words);
-  const g = groups.find((grp) => t >= grp[0].start - 0.05 && t <= grp[grp.length - 1].end + 0.25);
+  const g = groups.find((grp) => t >= grp[0]!.start - 0.05 && t <= grp[grp.length - 1]!.end + 0.25);
   if (!g) return null;
   return (
-    <div style={{ position: "absolute", bottom: 64, left: 0, right: 0, display: "flex", justifyContent: "center", fontFamily: SANS }}>
+    <div style={{ position: "absolute", bottom: 64, left: 0, right: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, fontFamily: SANS, zIndex: 40 }}>
+      {perspective && (
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(10, 16, 28, 0.90)",
+          border: `1.5px solid ${C.accent}`, color: C.accent, fontSize: 20, fontWeight: 800, letterSpacing: 2,
+          padding: "4px 14px", borderRadius: 8, textTransform: "uppercase", boxShadow: "0 4px 14px rgba(0,0,0,0.4)" }}>
+          <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 4, background: C.accent }} />
+          {perspective}
+        </div>
+      )}
       <div style={{ background: "linear-gradient(135deg, rgba(8, 12, 20, 0.95), rgba(4, 6, 10, 0.97))",
-        border: "1px solid rgba(255,255,255,0.12)",
-        padding: "16px 32px", borderRadius: 16, maxWidth: 1500, textAlign: "center",
-        boxShadow: "0 12px 36px rgba(0,0,0,0.55)", fontSize: 44, fontWeight: 700, lineHeight: 1.25, color: C.ink }}>
+        border: "1px solid rgba(255,255,255,0.14)", backdropFilter: "blur(12px)",
+        padding: "16px 36px", borderRadius: 16, maxWidth: 1520, textAlign: "center",
+        boxShadow: "0 12px 38px rgba(0,0,0,0.65)", fontSize: 44, fontWeight: 700, lineHeight: 1.25, color: C.ink }}>
         {g.map((w, i) => {
           const active = t >= w.start && t <= w.end + 0.08;
+          const isNumeric = /[\d%$]/.test(w.text);
           return (
-            <span key={i} style={{ color: active ? C.accent : C.ink, textShadow: active ? `0 0 16px ${C.accent}aa` : undefined }}>
+            <span key={i} style={{
+              color: active ? (isNumeric ? C.hot : C.accent) : C.ink,
+              fontWeight: active ? 800 : 700,
+              textShadow: active ? `0 0 16px ${isNumeric ? C.hot : C.accent}bb` : undefined,
+            }}>
               {w.text}{" "}
             </span>
           );
@@ -722,13 +687,14 @@ const BeatView = ({ scene, beat, index, at, total, repeat, brand }: { scene: Sce
   const v = beat.visual;
   const pictured = v.type === "photo" || v.type === "broll" || v.type === "illustration";
   const kinetic = pictured ? !v.asset : (v.type === "card" && !v.items && !v.text) || (v.type === "article" && repeat);
+  const perspectiveBadge = v.perspective || (v.conflict ? "Disputed Claim" : undefined);
   const body = kinetic ? <KineticBeat scene={scene} beat={beat} />
     : pictured ? <PhotoBeat v={v} frames={frames} index={index} />
     : <Push frames={frames}>{
         v.type === "article" ? <ArticleBeat v={v} />
         : v.type === "quote" ? <QuoteBeat v={v} frames={frames} />
         : v.type === "stat" ? <StatBeat v={v} />
-        : v.type === "chart" ? <ChartBeat v={v} />
+        : v.type === "chart" ? <ChartBeat v={v} frames={frames} />
         : v.type === "timeline" ? <TimelineBeat v={v} frames={frames} />
         : v.type === "compare" || v.type === "comparison" ? <ComparisonBeat v={v} />
         : v.type === "flow" && Array.isArray(v.steps) && v.steps.length >= 2 ? <FlowBeat v={v} frames={frames} />
@@ -742,7 +708,7 @@ const BeatView = ({ scene, beat, index, at, total, repeat, brand }: { scene: Sce
     <AbsoluteFill style={{ opacity: enter, transform }}>
       {body}
       <Header at={at + f / FPS} total={total} brand={brand} />
-      {!kinetic && <Captions words={beat.words} />}
+      {!kinetic && <Captions words={beat.words} perspective={perspectiveBadge} />}
       <Audio src={staticFile(beat.audio)} />
       {/* Broadcast accent sweep hairline on cut */}
       {sweepOpacity > 0 && (

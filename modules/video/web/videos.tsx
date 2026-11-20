@@ -27,6 +27,7 @@ interface Video {
   created_at: string;
   finished_at: string | null;
   updated_at: string;
+  youtube?: YouTubeRecord | null;
 }
 
 interface Candidate {
@@ -41,6 +42,7 @@ interface Candidate {
   created_at: string;
   video_id: number | null;
   video_status: Status | null;
+  video_youtube?: { uploaded: boolean; public: boolean; longId?: string } | null;
 }
 
 interface StyleRule { id: string; rule: string; why: string; example?: string; status: "proposed" | "active" | "rejected" | "retired"; proposedBy: string; proposedAt: string }
@@ -60,6 +62,7 @@ interface Overview {
   style: StyleRule[];
   csrf: string;
   auto: boolean;
+  autoPublish?: boolean;
   modelCalls: boolean;
   steps: Step[];
   candidates: Candidate[];
@@ -195,7 +198,8 @@ export default function VideosAdmin({ loaderData }: { loaderData: { overview: Ov
       subtitle={
         <>
           One video per story: background → research → script → fact-check → pictures → voice → render, then thumbnail and a vertical Short. Daily automatic video:{" "}
-          <b className={o.auto ? "text-ok" : "text-ink-2"}>{o.auto ? "on" : "off"}</b> (VIDEO_AUTO_ENABLED)
+          <b className={o.auto ? "text-ok" : "text-ink-2"}>{o.auto ? "on" : "off"}</b>
+          {" · "}Auto publish: <b className={o.autoPublish ? "text-ok" : "text-ink-2"}>{o.autoPublish ? "on" : "off"}</b>
           {!o.modelCalls && <span className="text-hot"> · MODEL_CALLS_ENABLED is off: videos cannot be made</span>}
           {" · "}YouTube:{" "}
           {o.youtube.connected ? <b className="text-ok">{o.youtube.channel?.title}</b>
@@ -216,8 +220,51 @@ export default function VideosAdmin({ loaderData }: { loaderData: { overview: Ov
             empty="No videos yet. Pick a story on the right and press Make video."
             columns={[
               { key: "id", label: "#", render: (v) => <span className="tabular-nums text-ink-3">{v.id}</span> },
-              { key: "title", label: "Story", render: (v) => <span className={`line-clamp-2 ${Number(params.get("id")) === v.id ? "font-semibold text-ink" : ""}`}>{v.title}</span> },
+              {
+                key: "title", label: "Story", render: (v) => (
+                  <div className="space-y-0.5">
+                    <span className={`line-clamp-2 ${Number(params.get("id")) === v.id ? "font-semibold text-ink" : ""}`}>{v.title}</span>
+                    {v.youtube?.longId && (
+                      <div className="flex items-center gap-1.5 text-[11.5px]">
+                        {v.youtube.publishedAt ? (
+                          <a
+                            href={`https://youtu.be/${v.youtube.longId}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 font-medium text-ok hover:underline"
+                            title={`Public on YouTube (${v.youtube.longId})`}
+                          >
+                            <span className="size-1.5 rounded-full bg-ok" />
+                            youtu.be/{v.youtube.longId}
+                          </a>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 font-medium text-amber" title="Uploaded as private">
+                            <span className="size-1.5 rounded-full bg-amber" />
+                            YouTube: Private ({v.youtube.longId})
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ),
+              },
               { key: "status", label: "Status", render: (v) => <StatusBadge v={v} /> },
+              {
+                key: "youtube", label: "YouTube", render: (v) => (
+                  v.youtube?.longId ? (
+                    <Badge tone={v.youtube.publishedAt ? "ok" : "warn"} title={v.youtube.publishedAt ? `Public since ${new Date(v.youtube.publishedAt).toLocaleDateString()}` : "Private on YouTube"}>
+                      {v.youtube.publishedAt ? "✓ Đã upload" : "Đã upload (Private)"}
+                    </Badge>
+                  ) : v.status === "approved" ? (
+                    <Badge tone="muted" title="Video đã hoàn tất & duyệt, sẵn sàng upload">
+                      Chưa upload
+                    </Badge>
+                  ) : (
+                    <span className="text-[12px] text-ink-4">–</span>
+                  )
+                ),
+              },
               { key: "style", label: "Style", render: (v) => <span className="text-[12px] text-ink-3">{o.styles.find((s) => s.key === v.style)?.label ?? "–"}</span> },
               { key: "len", label: "Length", align: "right", render: (v) => <span className="tabular-nums">{minutes(v.duration_s)}</span> },
               { key: "cost", label: "Cost", align: "right", render: (v) => <span className="tabular-nums">{usd(v.cost)}</span> },
@@ -241,9 +288,18 @@ export default function VideosAdmin({ loaderData }: { loaderData: { overview: Ov
               {
                 key: "act", label: "",
                 render: (c) => c.video_id ? (
-                  <button type="button" className="text-[12.5px] text-accent hover:underline" onClick={() => open(c.video_id!)}>
-                    Video #{c.video_id} · {STATUS[c.video_status!].label}
-                  </button>
+                  <div className="flex flex-col items-end gap-1">
+                    <button type="button" className="text-[12.5px] text-accent hover:underline" onClick={() => open(c.video_id!)}>
+                      Video #{c.video_id} · {STATUS[c.video_status!].label}
+                    </button>
+                    {c.video_youtube?.uploaded ? (
+                      <Badge tone={c.video_youtube.public ? "ok" : "warn"} title="Đã có video upload trên kênh, tránh làm trùng">
+                        {c.video_youtube.public ? "✓ Đã upload YouTube" : "YouTube (Private)"}
+                      </Badge>
+                    ) : (
+                      <span className="text-[11px] text-ink-4">Chưa upload</span>
+                    )}
+                  </div>
                 ) : (
                   <Button size="sm" tone="primary" busy={busy === `make-${c.story_id}`} disabled={!o.modelCalls} onClick={() => make(c.story_id)}>Make video</Button>
                 ),
@@ -267,7 +323,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
   );
 }
 
-function PublishKitView({ id, kit, run, busy }: { id: number; kit: PublishKit; run: (label: string, path: string, body: unknown, done: string) => Promise<Video | null>; busy: string | null }) {
+function PublishKitView({ id, kit, youtube, run, busy }: { id: number; kit: PublishKit; youtube?: YouTubeRecord | null; run: (label: string, path: string, body: unknown, done: string) => Promise<Video | null>; busy: string | null }) {
   const block = (name: string, part: { title: string; description: string; tags: string[] }) => (
     <div className="min-w-0 flex-1 space-y-2">
       <div className="text-[12.5px] font-semibold text-ink-2">{name}</div>
@@ -283,6 +339,14 @@ function PublishKitView({ id, kit, run, busy }: { id: number; kit: PublishKit; r
     <details className="mt-3 rounded-control ring-1 ring-line">
       <summary className="cursor-pointer px-3 py-2 text-[13px] font-medium text-ink-2">Publish kit (YouTube){kit.editedAt ? " · edited" : ""}</summary>
       <div className="space-y-3 border-t border-line p-3">
+        {youtube?.longId && (
+          <div className="flex items-center gap-2 rounded-control bg-accent/10 px-3 py-1.5 text-[12px] text-accent ring-1 ring-accent/30">
+            <span>🔗 Main Video:</span>
+            <a href={`https://youtu.be/${youtube.longId}`} target="_blank" rel="noreferrer" className="font-semibold underline">https://youtu.be/{youtube.longId}</a>
+            <CopyButton text={`https://youtu.be/${youtube.longId}`} label="Copy link" />
+            <span className="text-ink-4">(Auto-linked in Short description &amp; comment)</span>
+          </div>
+        )}
         <div className="flex flex-col gap-4 lg:flex-row">{block("Video", kit.long)}{kit.short && block("Short", kit.short)}</div>
         {(kit.long.titleOptions?.length ?? 0) > 1 && (
           <div className="space-y-1">
@@ -422,6 +486,13 @@ function VideoDetail({ d, steps, styles, youtube, run, busy, close }: {
         <div className="min-w-0 space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge v={v} />
+            {d.youtube?.longId ? (
+              <Badge tone={d.youtube.publishedAt ? "ok" : "warn"}>
+                {d.youtube.publishedAt ? "✓ Đã upload YouTube (Public)" : "Đã upload YouTube (Private)"}
+              </Badge>
+            ) : (
+              <Badge tone="muted">Chưa upload YouTube</Badge>
+            )}
             <span className="text-[12.5px] text-ink-3">{minutes(v.duration_s)} · {usd(v.cost)} · started {ago(v.created_at)}</span>
           </div>
 
@@ -592,7 +663,7 @@ function VideoDetail({ d, steps, styles, youtube, run, busy, close }: {
         </details>
       )}
 
-      {d.publish && <PublishKitView id={v.id} kit={d.publish} run={run} busy={busy} />}
+      {d.publish && <PublishKitView id={v.id} kit={d.publish} youtube={d.youtube} run={run} busy={busy} />}
 
       {d.history.length > 0 && (
         <details className="mt-3 rounded-control ring-1 ring-line" open>

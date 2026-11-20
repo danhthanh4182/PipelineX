@@ -240,8 +240,14 @@ async function publish(id: number, actor: string): Promise<YouTubeRecord> {
       // Unaudited Cloud projects: YouTube keeps the upload private ("locked") whatever the API asks.
       throw new YouTubeError(`${(e as Error).message} If YouTube says the video is locked as private, the Google Cloud project needs YouTube's API audit before API uploads can go public; until then, publish it in YouTube Studio.`);
     }
-    const check = await api<{ items?: Array<{ status?: { privacyStatus?: string } }> }>(access, "GET", `/youtube/v3/videos?part=status&id=${videoId}`);
-    const now = check.items?.[0]?.status?.privacyStatus;
+    let now: string | undefined;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      if (attempt > 0) await new Promise((r) => setTimeout(r, 5000));
+      const check = await api<{ items?: Array<{ status?: { privacyStatus?: string } }> }>(access, "GET", `/youtube/v3/videos?part=status&id=${videoId}`);
+      now = check.items?.[0]?.status?.privacyStatus;
+      if (now === "public") break;
+      if (attempt < 4) await api(access, "PUT", "/youtube/v3/videos?part=status", { id: videoId, status }).catch(() => {});
+    }
     if (now !== "public") throw new YouTubeError(`YouTube kept ${videoId} ${now ?? "unknown"}: API uploads from an unaudited Google Cloud project stay private. Request YouTube's API audit, or publish it in YouTube Studio for now.`);
     publicIds.push(videoId);
     saveRecord(id, { publicIds });

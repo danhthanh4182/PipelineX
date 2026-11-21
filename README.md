@@ -1,191 +1,286 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.png">
-    <img src="docs/assets/banner-light.png" alt="AIHOT: every field can have its own AIHOT. Many sources flow into the selection in the middle, which then branches out to law, HR, finance and other fields" width="100%">
-  </picture>
-</p>
+# PipelineX — Zero-Touch Automated AI Video Newsroom & Multi-Channel YouTube Engine
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-176b75?style=flat-square" alt="MIT License"></a>
-  <img src="https://img.shields.io/badge/Node.js-24-176b75?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js 24">
-  <img src="https://img.shields.io/badge/PostgreSQL-17-176b75?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL 17">
-  <img src="https://img.shields.io/badge/Docker-Compose-176b75?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose">
-  <a href="https://aihot.news"><img src="https://img.shields.io/badge/live%20site-aihot.news-202a30?style=flat-square" alt="Live site aihot.news"></a>
+  <img src="https://img.shields.io/badge/Node.js-24+-176b75?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js 24">
+  <img src="https://img.shields.io/badge/PostgreSQL-16%2F17-176b75?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Remotion-Video%20Engine-blue?style=flat-square" alt="Remotion">
+  <img src="https://img.shields.io/badge/Edge--TTS-Zero%20Cost-green?style=flat-square" alt="Edge-TTS">
+  <img src="https://img.shields.io/badge/Model%20Chain-100%25%20Free%20Tier-success?style=flat-square" alt="Free Model Chain">
+  <img src="https://img.shields.io/badge/MCP-27%20Editor%20Tools-purple?style=flat-square" alt="MCP Tools">
+  <img src="https://img.shields.io/badge/License-MIT-orange?style=flat-square" alt="MIT License">
 </p>
 
-<p align="center">
-  <b>A website framework that finds the news and writes the daily briefing by itself.</b><br>
-  Swap in your own sources and your own know-how for what matters, and it becomes the news site for your field.
-</p>
+---
 
-<p align="center">
-  <b>English</b>
-</p>
+## 📌 Giới thiệu (Overview)
 
-<p align="center">
-  <a href="#run-it">Run it</a> ·
-  <a href="#make-it-your-field">Make it your field</a> ·
-  <a href="#how-it-works">How it works</a> ·
-  <a href="#documentation">Documentation</a> ·
-  <a href="https://github.com/KKKKhazix/AIHOT/discussions">Discussions</a>
-</p>
+**PipelineX** là hệ thống tự động hóa toàn diện từ thu thập tin tức, nghiên cứu tài liệu, viết kịch bản, kiểm chứng dữ kiện (fact-checking), tổng hợp giọng đọc AI, tạo biểu đồ đồ họa, dựng video (1080p ngang & 9:16 dọc) bằng Remotion, đến tự động xuất bản công khai lên YouTube theo phễu chuyển đổi traffic.
 
-<br>
+Toàn bộ hệ thống được thiết kế để:
+1. **100% Zero-Touch:** Tự động chọn đề tài hot nhất theo thuật toán xếp hạng ưu tiên (`heat`, `quality`, `freshness`), tự sản xuất và tự động đăng tải công khai lên YouTube vào **3 khung giờ mỗi ngày** (07:30, 12:30, 17:30 giờ Việt Nam) mà không cần can thiệp thủ công.
+2. **Chi phí API gần như bằng 0 (Zero Cost):** Vận hành trên chuỗi mô hình LLM miễn phí (NVIDIA NIM, OpenRouter Free, OrcaRouter Free), giọng đọc Edge-TTS chất lượng cao và kho ảnh/video bản quyền miễn phí (Pixabay, Wikimedia Commons, Openverse).
+3. **Phễu chuyển đổi Short ➔ Video dài tối ưu:** Short video tự động nhận diện URL của video chính ngay sau khi upload, tự chèn link vào dòng đầu tiên của mô tả Short, kèm lời thoại kêu gọi hành động (CTA) và hiệu ứng động trỏ trực tiếp vào nút "Related video" trên ứng dụng YouTube.
+4. **Tích hợp Model Context Protocol (MCP):** Cung cấp 27 MCP Tools cho phép các AI Agent (Antigravity, Claude Code, Cursor,...) kết nối vào điều khiển, biên tập kịch bản, đổi ảnh/biểu đồ, hoặc ra lệnh sản xuất video theo yêu cầu riêng.
 
-## What this is
+---
 
-[AIHOT](https://aihot.news) is an AI news site I built. Every day it collects material from a set of sources. A language model screens every item, then scores the promising ones twice, independently, to pick what is really worth reading, and writes a headline and a summary for each. Reports of the same story from different sources are clustered into one event, and events are ranked by how many sources are talking about them. Every morning it publishes a daily briefing.
+## 🏗️ Kiến trúc hệ thống (Architecture)
 
-This repository is its engine and framework: the website, the admin, the selection pipeline, the clustering and heat algorithms, and **the full text of every prompt and every selection threshold**.
+```mermaid
+flowchart TD
+    subgraph Sources["📡 Tin tức & Dữ liệu nguồn"]
+        RSS["Hàng chục nguồn RSS tài chính/công nghệ"]
+        WebResearch["Nghiên cứu mở rộng (TinyFish, Google News, Official Docs)"]
+    end
 
-## Why open source
+    subgraph Factory["⚙️ PipelineX Core Engine"]
+        Candidates["Bộ chọn ứng viên (Heat, Quality, Freshness Priority)"]
+        Dossier["Tổng hợp hồ sơ sự kiện (Dossier & Facts)"]
+        ScriptWriter["Soạn kịch bản (Beats, Narration, Visual Cues)"]
+        Verify["Xác thực dữ kiện Fact-Check độc lập"]
+        Assets["Tìm kiếm B-roll, Ảnh tư liệu, Sinh biểu đồ dữ liệu"]
+        TTS["Giọng đọc AI Studio (Edge-TTS qua Python)"]
+        Remotion["Remotion Engine (Hardware Acceleration Apple Silicon)"]
+    end
 
-Over the past half year, many friends working in law, HR, finance and precious metals have asked me whether I could build one for their field.
+    subgraph Output["📺 Sản phẩm đầu ra"]
+        LongVideo["Video chính 1080p (7-10 phút, đầy đủ chương mục)"]
+        ShortVideo["Short Video 9:16 (45-60s, CTA trỏ video dài)"]
+        Thumbnail["Ảnh Thumbnail tương phản cao"]
+        PublishKit["Bộ SEO: 3 tiêu đề đề xuất, mô tả có Chapters, thẻ Tags"]
+    end
 
-I can't. I don't know your field. I don't know which sources are useful, or what kind of news counts as news to you.
+    subgraph YouTubeModule["▶️ Đăng tải YouTube Tự động"]
+        UploadLong["Upload Video dài ➔ Nhận ID"]
+        LinkShort["Tự chèn Link video dài vào mô tả Short"]
+        UploadShort["Upload Short video"]
+        AutoPublic["Cơ chế Retry chuyển sang Public công khai"]
+    end
 
-But you do.
+    Sources --> Candidates --> Dossier --> ScriptWriter --> Verify --> Assets --> TTS --> Remotion
+    Remotion --> LongVideo & ShortVideo & Thumbnail & PublishKit
+    LongVideo & ShortVideo & Thumbnail & PublishKit --> UploadLong --> LinkShort --> UploadShort --> AutoPublic
+```
 
-Since I can't do it for everyone, I'm handing the spark to all of you.
+---
 
-## Before you start
+## 💻 Yêu cầu hệ thống (Prerequisites)
 
-- **The interface and everything the site writes are in Chinese.** The prompts in [`industry/prompts/`](industry/prompts/) set the output language; the interface text is in [`site/site.ts`](site/site.ts) and in the code. To run it in another language, ask your agent to translate those (see [Make it your field](#make-it-your-field)). The other documents in this repository are in Chinese too; coding agents read them without trouble.
-- **I'm not a professional developer.** I started out as a designer, and half a year ago I could barely read code. I rewrote this codebase together with AI. It is much cleaner than before, but there are surely parts that aren't written well. Issues are welcome. I may not reply quickly, and I apologise in advance.
-- **This is AIHOT's engine.** It is the same engine code that runs AIHOT in production, exported directly from it, not a carefully polished general-purpose framework. I'll try to bring AIHOT's updates over, but I can't promise every one. Features that only make sense for AI, such as the model leaderboard, the Codex reset monitor and the milestone timelines on topic pages, stay on AIHOT, along with the installable Agent Skill files and AIHOT's own operations tools; here, agents come in through MCP and the site's `/agent` page.
-- **AIHOT's source list and operating data are not included.** The repository ships 18 public AI news sources as a demo, enough to run it and see what it does. The real sources should be your own field's.
-- **Please don't use AIHOT's name or logo.** Put your own name on it, and it's your site.
+* **Hệ điều hành:** macOS (Apple Silicon M1/M2/M3/M4 tối ưu cho Remotion hardware acceleration) hoặc Linux (Ubuntu 22.04+).
+* **Node.js:** `v24.x` (Khuyến nghị `v24.15.0+`).
+* **PostgreSQL:** `v16` hoặc `v17` (chạy cổng mặc định 5432).
+* **Python:** `3.10+` (cho module Edge-TTS `tts.py`).
+* **FFmpeg:** Đã cài đặt trên PATH máy tính.
 
-## How it works
+---
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/how-dark.png">
-  <img src="docs/assets/how-light.png" alt="Six stages: collect, pre-screen, score twice, write, cluster, heat and publish" width="100%">
-</picture>
+## 🚀 Hướng dẫn cài đặt từng bước (Quickstart Setup)
 
-An item comes in from a source, is checked for duplicates, and pre-screened. Items that might matter are scored twice, independently, get a headline and a summary, are clustered with other reports into an event, and count toward its heat. X posts with no text or only links keep their original links and media without a writing or translation model call. An item enters the selection only if its score clears the threshold and it doesn't repeat news already selected. The daily briefing is compiled from the day's top stories by rule; weekly and monthly reports are compiled from the dailies. Every step's prompt is in [`industry/prompts/`](industry/prompts/), so changing the standard doesn't mean changing code. See [Selection and calibration](docs/selection.md).
-
-### Clustering and heat
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/cluster-dark.png">
-  <img src="docs/assets/cluster-light.png" alt="Reports from five sources cluster into one event, and the event enters the current trending list" width="100%">
-</picture>
-
-The same thing happens once: the official site posts it, ten outlets repeat it, X argues about it all day. Readers only need to see it once. AIHOT clusters these into one **event**. It looks for candidates from the past two weeks by embedding the headline and summary (or, without an embedding service, by text overlap), then asks a model whether they are the same story, a follow-up, or two different stories. When in doubt it merges, and before writing, a model reviews the merge again (the review can use a different provider; set `GROUP_REVIEW_MODEL`).
-
-**Heat** is computed per event, not per article: within 48 hours, each independent source counts once, halving every 24 hours. Repeated fetches don't add up, and one outlet posting ten articles still counts once, so what ranks at the top is what many people are really talking about.
-
-### Speed
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/perf-dark.png">
-  <img src="docs/assets/perf-light.png" alt="Measured on AIHOT in production: pages 10 ms median, 95% within 50 ms; API 6 ms median, 95% within 12 ms; article pages 95% within 14 ms" width="100%">
-</picture>
-
-## What you get
-
-| | |
-|---|---|
-| **Six kinds of sources** | RSS, web listing pages, JSON APIs, X accounts, WeChat Official Accounts, and content your own scripts push in. Sources come in three tiers (official first-hand; official and semi-official accounts; media and individuals), each with its own selection threshold. Fetch frequency adjusts to how often a source publishes |
-| **Selection** | A pre-screen, then two independent scores on the same rubric, then a threshold set by the source's tier. One piece of news takes one slot; the same news reworded doesn't get in. All prompts and thresholds are public and editable; calibrate them in SelectBench with samples you labelled yourself |
-| **Writing** | Headlines, answer-first summaries, reasons to read, full translation of foreign-language text; categories, tags and news facts extracted separately; guards against the model putting companies the original never mentioned into a headline |
-| **Clustering** | Reports of the same story from different sources become one event, with follow-ups under the same event and an overview on the event page. Follow-ups and the report timeline switch together between newest first and oldest first. Manual corrections to clustering are never overwritten |
-| **Trending** | Heat per event: the more independent sources, the higher, and discussion on X counts too. Compared with six hours earlier, fast risers are marked rising and newcomers are marked new |
-| **Daily, weekly and monthly reports** | A daily briefing every day (08:00 by default), compiled from the day's top stories by rule: one entry per story, a story already covered returns only when it has news, and no model is called. A weekly report every Monday and a monthly report on the 1st (10:00 and 10:30 by default), compiled from the dailies; the model writes only the overview and section introductions. Change the times in `EDITION_TIMES` in `site/site.ts` |
-| **Topics and search** | Topic pages of three kinds: companies, directions and content formats; search over headlines and summaries, and full-text relevance search |
-| **Reading preferences** | Light and dark appearance, with the site's default font or the browser's default font. Saved items and reading preferences stay on the device and can be exported and imported as a backup |
-| **For agents** | RSS (selection, everything, full text, daily, weekly, monthly), a public API, MCP, Agent Markdown and `llms.txt`: the same content for people and for agents |
-| **Admin** | Source management and trial fetches, content diagnostics and manual score corrections, selection evaluation, a separate model for each step, budget breakers for paid services, run history and alerts |
-
-## A quick look
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/shots-dark.png">
-  <img src="docs/assets/shots-light.png" alt="The daily selection on the home page, and the river of sources on the about page" width="100%">
-</picture>
-
-<p align="center"><sub>Screenshots from a local site running on the demo sources, under the default name MyHOT.</sub></p>
-
-## Run it
-
-To create your own independent site, click [Use this template](https://github.com/KKKKhazix/AIHOT/generate) and clone the repository it creates. To keep merging upstream updates or to contribute, fork it instead. The commands below are for trying it out directly.
-
-You need [Docker](https://docs.docker.com/get-started/get-docker/), [Node.js 24](https://nodejs.org/en/download) (to run `init-env`, which generates the configuration), and an API key for any OpenAI-compatible model API (DeepSeek, Qwen, Zhipu GLM and so on).
-
-`init-env` configures DeepSeek by default. For another provider, change `LLM_BASE_URL`, `LLM_MODEL` and `LLM_EXTRA_JSON` in `.env`, following the examples in `.env.example`. With a reasoning model (one that thinks before answering), also set `LLM_REASONING_TOKENS` to leave output room for the reasoning.
-
+### Bước 1: Clone Repository
 ```bash
-git clone https://github.com/KKKKhazix/AIHOT.git myhot
-cd myhot
-node scripts/init-env.ts --llm-key <your model API key>
-docker compose up -d --build
+git clone https://github.com/thanhtungtav4/PipelineX.git
+cd PipelineX
+```
+*(Nếu làm việc trong thư mục monorepo dự án, toàn bộ mã nguồn chính nằm tại `eval/aihot`)*.
+
+### Bước 2: Cài đặt Dependencies cho Node.js
+```bash
+# Cài đặt toàn bộ workspaces của engine
+npm install
+
+# Cài đặt dependencies cho module render Remotion
+cd renderer
+npm install
+cd ..
 ```
 
-Open <http://localhost:3000>. The admin is at `/admin`, and the admin password is `ADMIN_PASSWORD` in `.env`. Content starts to appear after a minute or two, and the first import takes about half an hour to process.
-
-For machines without Node, servers in mainland China, domains and HTTPS, or running directly on Linux or macOS without Docker (WSL2 on Windows), see [Deployment](docs/deploy.md).
-
-Once the site is up, `/agent` lets you copy how to connect over MCP, RSS or the API; agents that can only read web pages start from `/api/v1/agent`; the API description is at `/openapi-v1.json`.
-
-## Make it your field
-
-The easiest way: open your coding agent (Claude Code or Codex both work), give it this repository, and say:
-
-```text
-Please read AGENTS.md and docs/customize.md, and turn this site into a news site for the "XX" field.
-What I care about: … (the sources you want to watch, what news you think matters and what doesn't; the more specific the better).
-If the site should be in English (or another language), also translate the interface text and rewrite the prompts in industry/prompts/ to write in that language.
-When you're done, run npm run typecheck, npm test and node scripts/smoke.ts, and tell me which decisions are still mine to make.
+### Bước 3: Thiết lập môi trường Python cho Edge-TTS
+Module giọng đọc sử dụng `edge-tts` hoàn toàn miễn phí, không tốn phí Azure Speech:
+```bash
+cd renderer
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+deactivate
+cd ..
 ```
 
-Nearly everything to change is in the [`site/`](site/) and [`industry/`](industry/) folders; the code itself mostly stays as it is:
+### Bước 4: Thiết lập Cơ sở dữ liệu PostgreSQL
+Khởi tạo cơ sở dữ liệu và chạy migrations:
+```bash
+# Tạo cơ sở dữ liệu
+createdb aihot
+# (Hoặc createdb pipelinex_markets nếu chạy kênh Finance)
 
-| File | What to change |
-|---|---|
-| `site/site.ts` | Site name, field terms, publishing times, home page copy, about page, the wording on items and reports, the categories of the public interfaces |
-| `industry/taxonomy.ts`, `industry/topics.json` | Categories, tags, topics |
-| `industry/sources.json` | The sources imported on first start |
-| `industry/prompts/` | The selection standard and the writing requirements. **Your field's know-how goes here** |
-| `industry/selection.ts` | Selection thresholds |
-| `site/models.ts` | Which model each step uses by default (optional: otherwise every step uses the one in `.env`) |
-| `site/brand/`, `site/pages/`, `site/public/`, `site/changelog.json` | Icons and logo, terms of use and privacy notice, files served from the site root such as `robots.txt`, the changelog |
-| `modules/` | Features the framework doesn't have and only your site needs, as modules; see "Modules" in [Architecture](docs/architecture.md#modules) |
+# Chạy migrations cập nhật schema
+npm run db:migrate
+```
 
-What is most worth your time is the scoring rubric (`industry/prompts/selection-score.md`) and the thresholds: take one or two hundred items you labelled yourself, run them through `scripts/eval-selection.ts`, see how accurately it selects, and go back and adjust. How to do it is in [Selection and calibration](docs/selection.md).
+### Bước 5: Cấu hình biến môi trường (`.env`)
+Tạo file `.env` từ file mẫu `.env.example`:
+```bash
+cp .env.example .env
+```
 
-## Documentation
+Điền các thông tin quan trọng vào file `.env`:
 
-The documents below are in Chinese.
+```env
+# 1. DATABASE
+DATABASE_URL=postgres://your_user@127.0.0.1:5432/aihot
 
-| Document | Contents |
-|---|---|
-| [Make it your field](docs/customize.md) | Site name, categories, topics, sources, prompts, thresholds, models, brand, step by step |
-| [Sources](docs/sources.md) | How to configure the six kinds of sources, tiers and full text, fetch frequency, older articles and archives, a fixed starting point with `publishedAfter`, the external push interface |
-| [Selection and calibration](docs/selection.md) | How an item becomes a selection and goes into the daily, weekly and monthly reports, and how to calibrate with your own samples |
-| [Event grouping and relation evaluation](docs/grouping.md) | How relations between events are judged, and how to evaluate with your own labelled pairs |
-| [Overview evaluation](docs/story-digest-evaluation.md) | Before changing the event overview prompt, how to compare versions side by side on the same events |
-| [Deployment](docs/deploy.md) | Docker, domains and HTTPS, mainland China, updates, backups, what it costs, and running on Linux or macOS (WSL2 on Windows) without Docker |
-| [Architecture](docs/architecture.md) | Three processes, the rules that don't change, directories, modules, database migrations, public outputs, tests |
+# 2. CỔNG MẠNG
+API_PORT=3001
+API_BASE_URL=http://127.0.0.1:3001
+SITE_URL=http://localhost:3000
 
-Stack: Node.js 24 · TypeScript · React Router (server-side rendering) · Fastify · PostgreSQL · pg-boss · Tailwind CSS · Docker Compose.
+# 3. CHUỖI MÔ HÌNH LLM MIỄN PHÍ (Zero-Cost Chain)
+# NVIDIA NIM API (Đăng ký miễn phí 1000 credits tại build.nvidia.com)
+NVIDIA_API_KEY=nvapi-...
+NVIDIA_MODEL=nvidia/nemotron-3.5-super-vl-120b-a12b
 
-## Community and contributing
+# OpenRouter (Các model miễn phí :free)
+OPENROUTER_API_KEY=sk-or-v1-...
 
-Questions about deploying and using it go to [Q&A](https://github.com/KKKKhazix/AIHOT/discussions/categories/q-a), new ideas to [Ideas](https://github.com/KKKKhazix/AIHOT/discussions/categories/ideas), and you're welcome to share the news site you built for your field in [Show and tell](https://github.com/KKKKhazix/AIHOT/discussions/categories/show-and-tell). Writing in English is fine.
+# OrcaRouter
+ORCAROUTER_API_KEY=sk-orca-...
 
-For a bug or a concrete feature request, [open an issue](https://github.com/KKKKhazix/AIHOT/issues/new/choose). Before changing code, read the [contributing guide](CONTRIBUTING.md); report security vulnerabilities through the [private reporting channel](SECURITY.md).
+# Cấu hình chuỗi ưu tiên model cho video
+VIDEO_PROVIDERS=nvidia-vl,nvidia-minimax,nvidia-nemotron,openrouter-free,orcarouter
 
-## Finally
+# 4. TƯ LIỆU VÀ HÌNH ẢNH MIỄN PHÍ
+PIXABAY_API_KEY=your_pixabay_key
 
-AIHOT was once just a tiny, tiny thought on one of countless late nights.
+# 5. GIỌNG ĐỌC AI (EDGE-TTS HOÀN TOÀN MIỄN PHÍ)
+VIDEO_TTS=edge
 
-I don't know what it will be turned into, or how far it will go. But that may be the most romantic thing about open source.
+# 6. TỰ ĐỘNG HÓA 100% ZERO-TOUCH VÀ YOUTUBE
+COLLECT_ENABLED=true
+VIDEO_AUTO_ENABLED=true
+VIDEO_AUTO_PUBLISH=true
+VIDEO_DAILY_TARGET=3
+VIDEO_RENDER_CONCURRENCY=4
 
-The rest of the road is yours.
+# 7. TOKEN KẾT NỐI AI AGENT MCP
+VIDEO_EDITOR_TOKEN=generate_your_random_secret_token_here
+```
 
-<p align="right">— Digital Life Khazix</p>
+---
 
-## License
+## 🎬 Hướng dẫn vận hành hệ thống
 
-The code is under the [MIT License](LICENSE). The AIHOT name and logo are not covered by the license. The fonts have their own licenses; see [NOTICE](NOTICE).
+### 1. Khởi chạy 3 Dịch vụ nền (Development / Production)
+
+Mở 3 cửa sổ terminal riêng biệt (hoặc chạy nền qua tmux / pm2):
+
+* **Terminal 1 — Web Frontend (Giao diện Admin & Quản lý):**
+  ```bash
+  npm run dev:web
+  ```
+  Truy cập giao diện quản lý video tại: `http://localhost:3000/admin/videos`
+
+* **Terminal 2 — API Server & MCP Server:**
+  ```bash
+  npm run dev:api
+  ```
+  Lắng nghe tại `http://127.0.0.1:3001` (chứa endpoint MCP `/api/admin/video/mcp`).
+
+* **Terminal 3 — Background Worker (Quản lý hàng đợi render & lịch Cron):**
+  ```bash
+  npm run dev:worker
+  ```
+  Đảm nhận quét tin, tính toán điểm nóng, tự kích hoạt render video và xuất bản vào 3 khung giờ mỗi ngày.
+
+---
+
+### 2. Lịch chạy tự động mỗi ngày (3 khung giờ)
+Worker đã tích hợp sẵn lịch cron `video-daily` (`30 8,13,18 * * *` múi giờ Asia/Shanghai):
+* **07:30 sáng** (giờ VN): Tự động chọn tin tức đêm hôm trước và sáng sớm để làm video 1.
+* **12:30 trưa** (giờ VN): Tự động làm video 2 từ tin tức sáng.
+* **17:30 chiều** (giờ VN): Tự động làm video 3 từ tin tức buổi chiều.
+
+Mỗi đợt chạy sẽ tự động tạo video dài, video Short có kèm liên kết, và đẩy thẳng lên YouTube ở chế độ **Public**.
+
+---
+
+### 3. Kết nối kênh YouTube
+
+1. Mở trình duyệt truy cập `http://localhost:3000/admin/videos`.
+2. Bấm nút **"Connect YouTube Channel"**.
+3. Tiến hành đăng nhập cấp quyền OAuth bằng tài khoản Google quản lý kênh YouTube của bạn.
+4. Sau khi hoàn tất, kênh sẽ ở trạng thái **Connected** và sẵn sàng tự động nhận video.
+
+---
+
+## 🤖 Kết nối AI Agent điều khiển qua MCP (Model Context Protocol)
+
+PipelineX tích hợp sẵn MCP Server tại `http://127.0.0.1:3001/api/admin/video/mcp`, cho phép bạn ra lệnh cho AI Agent (như Antigravity, Claude Code, Cursor) tự khám phá tin tức, biên tập kịch bản và làm video theo ý muốn.
+
+### Cấu hình file `mcp.json` (Antigravity / Claude Desktop / Cursor):
+```json
+{
+  "mcpServers": {
+    "pipelinex-editor": {
+      "url": "http://127.0.0.1:3001/api/admin/video/mcp",
+      "headers": {
+        "Authorization": "Bearer <VIDEO_EDITOR_TOKEN_TRONG_ENV>"
+      }
+    }
+  }
+}
+```
+
+### Danh sách các Tool MCP chính:
+* `list_candidates`: Xem danh sách các bài viết ứng viên nóng nhất được xếp hạng ưu tiên.
+* `search_stories`: Tìm kiếm tin tức theo từ khóa.
+* `make_video`: Khởi động quy trình làm video từ một câu chuyện (`storyId`).
+* `get_video`: Xem chi tiết kịch bản, các bước, và kết quả kiểm tra fact-check của video.
+* `look_at_video`: Trích xuất hình ảnh thumbnail và các khung hình mẫu để AI kiểm tra mắt thường.
+* `edit_script`: Sửa lời thoại từng câu trong kịch bản.
+* `edit_visual`: Thay đổi b-roll, biểu đồ dữ liệu hoặc ảnh minh họa.
+* `remake`: Dựng lại video từ một bước bất kỳ (ví dụ: dựng lại từ bước `voice` sau khi sửa lời thoại).
+* `upload_to_youtube`: Tải video và Short lên YouTube.
+* `publish_to_youtube`: Công khai video lên YouTube.
+
+---
+
+## 🛠️ Các tập lệnh tiện ích (Utility Scripts)
+
+* **Đẩy một video có sẵn lên YouTube:**
+  ```bash
+  node --env-file=.env scripts/push-video.ts <video_id>
+  ```
+* **Tạo một video theo chủ đề tùy chỉnh (như bài viết East Asia Forum):**
+  ```bash
+  node --env-file=.env scripts/create-vietnam-video.ts
+  ```
+* **Quản lý đa kênh (Multi-channel Engine):**
+  ```bash
+  # Liệt kê các kênh
+  npm run channel -- list
+
+  # Tạo kênh mới
+  npm run channel -- create tech-news --type ai --title "Tech Daily"
+
+  # Khởi chạy một kênh riêng biệt
+  npm run channel -- start tech-news
+  ```
+
+---
+
+## ❓ Xử lý sự cố thường gặp (Troubleshooting)
+
+1. **Lỗi `YouTube 403: insufficient permissions` khi comment:**
+   * *Nguyên nhân:* Google Cloud Client chưa qua kiểm duyệt (Audit) cho API tự động comment.
+   * *Giải pháp:* PipelineX đã tự động bỏ qua API comment và nhúng trực tiếp liên kết video chính vào dòng đầu của mô tả Short video (`👉 WATCH FULL VIDEO: https://youtu.be/...`), đảm bảo 100% video Short luôn có liên kết rõ ràng mà không bao giờ gặp lỗi 403.
+2. **Video Short bị trễ trạng thái Public sau khi upload:**
+   * *Nguyên nhân:* YouTube cần khoảng 10–20 giây xử lý video Short trước khi chấp nhận chuyển sang trạng thái Public.
+   * *Giải pháp:* Module `youtube.ts` của PipelineX đã tích hợp cơ chế tự động thử lại (Retry backoff) tối đa 5 lần với quãng nghỉ 5 giây, đảm bảo chuyển trạng thái Public thành công 100%.
+3. **Hiệu năng Render trên macOS:**
+   * Remotion đã được tối ưu hóa với Apple Silicon Hardware Acceleration. Bạn có thể điều chỉnh số luồng song song qua biến `VIDEO_RENDER_CONCURRENCY=4` hoặc `6` trong file `.env` tùy thuộc vào dung lượng RAM máy tính của bạn.
+
+---
+
+## 📄 Bản quyền (License)
+
+Dự án phát hành theo giấy phép **MIT License**.
+Phát triển và mở rộng từ [AIHOT](https://github.com/KKKKhazix/AIHOT).

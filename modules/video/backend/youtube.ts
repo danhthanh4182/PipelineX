@@ -166,7 +166,7 @@ export function uploadPrivate(id: number, actor: string): Promise<YouTubeRecord>
 }
 async function upload(id: number, actor: string): Promise<YouTubeRecord> {
   const done = youtubeRecord(id);
-  if (done?.longId) throw new YouTubeError(`Video #${id} is already on YouTube (https://youtu.be/${done.longId}).`);
+  if (done?.longId && done?.shortId) throw new YouTubeError(`Video #${id} is already on YouTube (https://youtu.be/${done.longId}).`);
   const kit = publishKit(id);
   const dir = workDir(id);
   if (!kit || !existsSync(path.join(dir, "video.mp4"))) throw new YouTubeError(`Video #${id} is not finished yet.`);
@@ -176,16 +176,20 @@ async function upload(id: number, actor: string): Promise<YouTubeRecord> {
   const status = { privacyStatus: "private", selfDeclaredMadeForKids: false, containsSyntheticMedia: false, embeddable: true, license: "youtube" };
   const snippet = (p: { title: string; description: string; tags: string[] }) =>
     ({ title: p.title, description: p.description, tags: p.tags, categoryId: CATEGORY[yt?.category ?? "News & Politics"] ?? "25", defaultLanguage: lang, defaultAudioLanguage: lang });
-  const notes: string[] = [];
-  const long = await uploadFile(access, path.join(dir, "video.mp4"), { snippet: snippet(kit.long), status });
-  saveRecord(id, { longId: long.id, uploadedBy: actor, notes });
-  const mainUrl = `https://youtu.be/${long.id}`;
+  const notes: string[] = done?.notes?.filter((n) => !n.startsWith("short:")) ?? [];
+  let longId = done?.longId;
+  if (!longId) {
+    const long = await uploadFile(access, path.join(dir, "video.mp4"), { snippet: snippet(kit.long), status });
+    longId = long.id;
+    saveRecord(id, { longId, uploadedBy: actor, notes });
+  }
+  const mainUrl = `https://youtu.be/${longId}`;
   const extra = async (what: string, work: () => Promise<void>) => { try { await work(); } catch (e) { notes.push(`${what}: ${(e as Error).message}`); } };
-  if (existsSync(path.join(dir, "thumbnail.jpg")))
-    await extra("thumbnail", async () => { await sendThumbnail(access, id, long.id); saveRecord(id, { thumbnailSet: true }); });
+  if (!done?.thumbnailSet && existsSync(path.join(dir, "thumbnail.jpg")))
+    await extra("thumbnail", async () => { await sendThumbnail(access, id, longId!); saveRecord(id, { thumbnailSet: true }); });
   const srt = captionsSrt(id, "long");
-  if (srt) await extra("captions", () => uploadCaptions(access, long.id, srt));
-  if (kit.short && existsSync(path.join(dir, "short.mp4"))) {
+  if (!done?.longId && srt) await extra("captions", () => uploadCaptions(access, longId!, srt));
+  if (!done?.shortId && kit.short && existsSync(path.join(dir, "short.mp4"))) {
     await extra("short", async () => {
       // Auto-insert or replace main video link into Short's description
       let shortDesc = kit.short!.description;

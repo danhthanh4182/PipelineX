@@ -26,6 +26,14 @@ const LOOPBACK = new Set(["127.0.0.1", "::1", "::ffff:127.0.0.1"]);
 // address, port included, proves a direct connection.
 const LOCAL_HOST = /^(127\.0\.0\.1|localhost|\[::1\]):(\d+)$/;
 
+// Fork addition for the Studio bridge (see FORK_CHANGES.md): the operator may name extra direct-connection
+// source addresses in EDITOR_MCP_ALLOWED_SOURCES (comma-separated, as seen by this process — behind Docker
+// Desktop's published ports that is the network gateway, the original client address being lost). Such a
+// source must still carry the token, send no proxy or browser headers, and address the API by a host named
+// in MCP_ALLOWED_HOSTS on the API port. Unset (the default), admission is loopback-only, exactly as upstream.
+const extraSources = () => new Set((process.env.EDITOR_MCP_ALLOWED_SOURCES ?? "").split(",").map((s) => s.trim()).filter(Boolean));
+const extraHosts = () => new Set((process.env.MCP_ALLOWED_HOSTS ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean));
+
 const token = () => process.env.VIDEO_EDITOR_TOKEN ?? "";
 const isMcpPublishEnabled = () => process.env.VIDEO_MCP_PUBLISH_ENABLED !== "false";
 
@@ -474,10 +482,18 @@ export function buildEditorServer(makeQueue: ModuleQueue<{ id: number; from: Ste
 export function admitted(req: Pick<FastifyRequest, "headers" | "socket">): string | null {
   const expected = token();
   if (expected.length < 24) return "disabled";
-  if (!LOOPBACK.has(req.socket.remoteAddress ?? "")) return "forbidden";
+  const remote = req.socket.remoteAddress ?? "";
+  const viaExtraSource = extraSources().has(remote);
+  if (!LOOPBACK.has(remote) && !viaExtraSource) return "forbidden";
   if (req.headers.via || req.headers["x-forwarded-for"] || req.headers["x-forwarded-host"] || req.headers.origin) return "forbidden";
   const host = LOCAL_HOST.exec(String(req.headers.host ?? ""));
-  if (!host || Number(host[2]) !== Number(config.apiPort)) return "forbidden";
+  if (host) {
+    if (Number(host[2]) !== Number(config.apiPort)) return "forbidden";
+  } else if (viaExtraSource) {
+    // A named extra source addresses the API by an allowed host (e.g. the machine's Tailscale address).
+    const named = /^(.+):(\d+)$/.exec(String(req.headers.host ?? ""));
+    if (!named || Number(named[2]) !== Number(config.apiPort) || !extraHosts().has(named[1]!.toLowerCase())) return "forbidden";
+  } else return "forbidden";
   const given = String(req.headers.authorization ?? "").replace(/^Bearer\s+/i, "");
   const a = Buffer.from(given), b = Buffer.from(expected);
   return a.length === b.length && timingSafeEqual(a, b) ? null : "unauthorized";

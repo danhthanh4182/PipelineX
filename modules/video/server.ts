@@ -18,6 +18,7 @@ import { decideRule, StyleConflict, styleGuide } from "./backend/style.ts";
 import { STYLE_KEYS, STYLES } from "./backend/styles.ts";
 import { makeVideo, shortFile, thumbnailFile, videoFile, videoFiles } from "./backend/pipeline.ts";
 import { autoPick, candidatesWithVideos, createVideo, getVideo, listVideos, requeueVideo, reviewVideo, setStyle, STEPS, VideoConflict, type Step } from "./backend/videos.ts";
+import { createLexiconEntry, deleteLexiconEntry, importLexiconFromExportFile, LexiconConflict, lexiconStats, listLexicon, setLexiconEnabled, updateLexiconEntry } from "./backend/lexicon.ts";
 
 export const AUTO_ENABLED = () => process.env.VIDEO_AUTO_ENABLED === "true";
 
@@ -49,7 +50,7 @@ function guarded(fn: Handler) {
     try {
       return await fn(req, reply, admin);
     } catch (error) {
-      if (error instanceof VideoConflict || error instanceof StyleConflict || error instanceof YouTubeError) return reply.code(409).send({ error: "conflict", detail: error.message });
+      if (error instanceof VideoConflict || error instanceof StyleConflict || error instanceof YouTubeError || error instanceof LexiconConflict) return reply.code(409).send({ error: "conflict", detail: error.message });
       if (error instanceof z.ZodError) return reply.code(400).send({ error: "invalid_request", detail: error.issues.map((i) => i.message).join("; ") });
       req.log.error({ err: error }, "video admin error");
       return reply.code(500).send({ error: "internal_error", detail: String((error as Error).message).slice(0, 300) });
@@ -98,6 +99,46 @@ export const videoServer: ServerModule = {
   http(app) {
     // The editor MCP for a local AI agent (Antigravity…): direct local connections with VIDEO_EDITOR_TOKEN only.
     registerEditorMcp(app, makeQueue);
+
+    // Pronunciation lexicon: the readings the renderer speaks instead of the written terms.
+    const lexiconInput = z.object({
+      term: z.string().trim().min(1).max(200),
+      reading: z.string().trim().min(1).max(400),
+      scope: z.enum(["all", "relay", "selfhost"]).optional(),
+      category_scope: z.enum(["all", "tech", "finance"]).optional(),
+      note: z.string().trim().max(500).optional(),
+      enabled: z.boolean().optional(),
+    });
+    app.get("/api/admin/video/lexicon", guarded(async (req, _reply, admin) => {
+      const query = z.object({
+        q: z.string().max(200).optional(),
+        page: z.coerce.number().int().min(1).optional(),
+        pageSize: z.coerce.number().int().min(1).max(200).optional(),
+      }).parse(req.query);
+      const { entries, total } = await listLexicon(query);
+      return { csrf: admin.csrf, entries, total, stats: await lexiconStats() };
+    }));
+    app.post("/api/admin/video/lexicon", guarded(async (req) => {
+      const input = lexiconInput.parse(req.body);
+      return { entry: await createLexiconEntry(input) };
+    }));
+    app.patch("/api/admin/video/lexicon/:id", guarded(async (req) => {
+      const { id } = z.object({ id: z.coerce.number().int().positive() }).parse(req.params);
+      const input = lexiconInput.partial().parse(req.body);
+      return { entry: await updateLexiconEntry(id, input) };
+    }));
+    app.delete("/api/admin/video/lexicon/:id", guarded(async (req) => {
+      const { id } = z.object({ id: z.coerce.number().int().positive() }).parse(req.params);
+      await deleteLexiconEntry(id);
+      return { deleted: id };
+    }));
+    app.post("/api/admin/video/lexicon/enabled", guarded(async (req) => {
+      const input = z.object({ ids: z.array(z.number().int().positive()).max(1000), enabled: z.boolean() }).parse(req.body);
+      return { updated: await setLexiconEnabled(input.ids, input.enabled) };
+    }));
+    app.post("/api/admin/video/lexicon/import", guarded(async () => {
+      return { result: await importLexiconFromExportFile() };
+    }));
 
     app.get("/api/admin/video/overview", guarded(async (_req, _reply, admin) => {
       const rawVideos = await listVideos();

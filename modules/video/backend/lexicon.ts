@@ -46,7 +46,7 @@ export interface LexiconEntryInput {
 export async function regenerateLexiconFile(db: Db = sql): Promise<number> {
   const rows = await db<{ term: string; reading: string; category_scope: string }[]>`
     SELECT term, reading, category_scope FROM pronunciation_lexicon WHERE enabled ORDER BY term`;
-  const payload = { generated_at: new Date().toISOString(), entries: rows };
+  const payload = { version: 1, kind: "pronunciation-lexicon", generated_at: new Date().toISOString(), entries: rows };
   writeFileSync(LEXICON_FILE, JSON.stringify(payload, null, 2) + "\n", "utf8");
   return rows.length;
 }

@@ -3,7 +3,7 @@ import { hydrateRoot } from "react-dom/client";
 import { HydratedRouter } from "react-router/dom";
 import { createRenderErrorHandler } from "./lib/render-recovery";
 import { initI18n } from "./lib/i18n";
-import { SITE } from "@aihot/site/site.ts";
+import { SITE } from "@aihot/site";
 
 // Capture once before hydration; this belongs to the document, not later navigation responses.
 const documentRelease = document.querySelector('meta[name="aihot-release"]')?.getAttribute("content") ?? null;

@@ -27,7 +27,7 @@ const DEFAULT_ACCENT = "#36d399";
 const DEFAULT_HOT = "#ff5c5c";
 const C_INK = "#f4f6fb";
 const C_DIM = "#8b95a8";
-const SANS = "Inter, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif";
+const SANS = "'Be Vietnam Pro', Inter, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif";
 
 export const Chart: React.FC<ChartProps> = ({
   v,

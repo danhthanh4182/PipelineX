@@ -326,3 +326,10 @@ Lệnh của Thanh (22/11/2026): "Hỗ trợ làm video bằng tiếng Việt/ t
 - `renderer/nvidia_synth.py` (mới): tổng hợp Magpie-TTS qua Riva gRPC (function ai-magpie-tts-multilingual, giọng lấy từ cấu hình, WAV 44,1 kHz) bằng renderer/.venv-nvidia; khóa lấy từ NVIDIA_API_KEY trong môi trường — không qua tham số dòng lệnh, không in ra log.
 - Sửa lỗi speak_piper: truyền PYTHONUTF8=1 cho tiến trình con Piper. Piper đọc text từ stdin; thiếu biến này, tiến trình con giải mã stdin bằng codepage locale của Windows, làm hỏng dấu tiếng Việt, tổng hợp ra 0 khung hình và chết ở wave.Error "# channels not specified" khi đóng file. Lỗi do kiểm chứng Phần C phát hiện: chuỗi chỉ-Piper và đường rơi vieneu → piper đều hỏng trước khi sửa, đạt sau khi sửa.
 - Kiểm chứng thật trên máy (22/11/2026): chuỗi cấu hình [relay] → engine=relay; [vieneu, piper] với python VieNeu trỏ vào file không tồn tại → engine=piper; [nvidia] → engine=nvidia, beat 4,0 giây trong 6,7 giây tổng (endpoint NVIDIA chạy tốt từ máy này bằng khóa của máy; lỗi "Stream removed" chỉ gặp qua đường egress của máy ảo). Cấu hình sản xuất của kênh giữ nvidia enabled=false — chuỗi chuẩn của kênh là VieNeu → relay → Piper theo lệnh của Thanh.
+
+## Font chữ video + brand mark (2026-11-22)
+
+| File | Thay đổi | Lý do |
+|---|---|---|
+| `renderer/src/fonts.ts` (mới), `renderer/src/index.ts`, `renderer/src/NewsVideo.tsx`, `renderer/src/ShortVideo.tsx`, `renderer/src/Thumbnail.tsx`, `renderer/src/components/Chart.tsx`, `renderer/fonts/` (mới) | Đóng gói Be Vietnam Pro (400–900) + Noto Serif (400/600/700/900) trong `renderer/fonts/`, nạp qua FontFace + `staticFile("fonts/...")` trước khi render; SANS/SERIF trỏ vào font mới | Renderer không nạp font nào, Chromium rơi về font hệ thống thiếu glyph tiếng Việt tiền tổ hợp — dấu (Ể, Ệ) render nét mỏng lệch hẳn thân chữ |
+| `renderer/tts.py` | Bước voice chép `renderer/fonts/*.ttf` vào `public/fonts/` của từng video (`copy_fonts()`); chép brand mark giữ nguyên đuôi file (`brand-mark{mark.suffix}` thay vì ép `.svg`) | Mark của kênh Điểm Tin Công Nghệ đã đổi sang PNG (logo mới); các kênh dùng mark SVG không đổi hành vi |

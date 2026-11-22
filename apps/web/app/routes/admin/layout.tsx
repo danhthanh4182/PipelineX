@@ -5,6 +5,7 @@ import { MODULES } from "@aihot/site/modules";
 import { Await, data, NavLink, Outlet, useLocation, useNavigation, type ShouldRevalidateFunction } from "react-router";
 import type { Route } from "./+types/layout";
 import { RingMark } from "@aihot/site/brand/Logo.tsx";
+import logoAvatar from "@aihot/site/brand/logo-avatar.png";
 import { NavigationProgress } from "../../components/shell/Chrome";
 import type { AdminMe, AdminNavCounts } from "@aihot/contracts/admin";
 import { Toaster } from "../../features/admin/toast";
@@ -105,7 +106,7 @@ export default function AdminLayout({ loaderData }: Route.ComponentProps) {
       <NavigationProgress active={navigation.state === "loading"} />
       <aside className="sticky top-0 hidden h-dvh w-[216px] shrink-0 flex-col border-r border-line bg-bg-sunk/50 px-3 py-4 lg:flex">
         <a href="/" className="mb-5 flex items-center gap-2 px-2">
-          <RingMark className="size-6 text-accent" />
+          <img src={logoAvatar} alt="" className="size-6 shrink-0 rounded-[24%]" />
           <span className="text-[15px] font-semibold tracking-tight text-ink">{`${SITE.name} Admin`}</span>
         </a>
         <nav className="scrollbar-thin flex-1 space-y-4 overflow-y-auto">
@@ -133,7 +134,7 @@ export default function AdminLayout({ loaderData }: Route.ComponentProps) {
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur lg:hidden">
           <div className="flex items-center gap-2 px-4 pt-3">
-            <RingMark className="size-5 text-accent" />
+            <img src={logoAvatar} alt="" className="size-5 shrink-0 rounded-[24%]" />
             <span className="text-[14px] font-semibold text-ink">{`${SITE.name} Admin`}</span>
             {me.dev && <span className="rounded-mark bg-amber/15 px-1.5 text-[11px] font-medium text-amber">Dev</span>}
           </div>

@@ -4,6 +4,7 @@
 import { data, Link, NavLink, Outlet, useNavigation } from "react-router";
 import { SITE } from "@aihot/site";
 import { RingMark } from "@aihot/site/brand/Logo.tsx";
+import logoAvatar from "@aihot/site/brand/logo-avatar.png";
 import { MODULES } from "@aihot/site/modules";
 import { NavigationProgress } from "../../components/shell/Chrome";
 import { adminPageAccess, GRAY_HEADERS } from "../../lib/admin.server";
@@ -24,7 +25,7 @@ export default function ModuleAdminLayout({ loaderData }: { loaderData: { name: 
   const navigation = useNavigation();
   const brand = (
     <span className="flex items-center gap-2">
-      <RingMark className="size-6 text-accent" />
+      <img src={logoAvatar} alt="" className="size-6 shrink-0 rounded-[24%]" />
       <span className="text-[15px] font-semibold tracking-tight text-ink">{`${SITE.name} Admin`}</span>
     </span>
   );

@@ -47,7 +47,7 @@ async function commons(query: string): Promise<Cand[]> {
   const body = res && await res.json().catch(() => null) as any;
   if (!res?.ok || !body) { console.log(`  commons ${res?.status ?? "-"}`); return []; }
   const pages = Object.values(body.query?.pages ?? {}) as any[];
-  pages.sort((a, b) => a.index - b.index);
+  pages.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
   const out: Cand[] = [];
   for (const p of pages) {
     const ii = p.imageinfo?.[0]; const m = ii?.extmetadata ?? {};
@@ -271,7 +271,7 @@ for (const beat of script.scenes.flatMap((s: any) => s.beats)) {
   if (name.split(/\s+/).length < 2 || name.split(/\s+/).length > 4) continue;
   if (!portraits.has(name)) {
     const surname = name.split(/\s+/).at(-1)!.toLowerCase();
-    const cands = (await commons(`intitle:"${name}"`)).filter((c) => decodeURIComponent(c.sourceUrl).toLowerCase().includes(surname)).slice(0, 3);
+    const cands = (await commons(`intitle:"${name}"`)).filter((c) => { try { return decodeURIComponent(c.sourceUrl).toLowerCase().includes(surname); } catch { return false; } }).slice(0, 3);
     let saved: Awaited<ReturnType<typeof save>> = null;
     for (const c of cands) {
       if (await fits(c, name, "photo", script.title, beat.narration, PORTRAIT) !== "yes") continue;

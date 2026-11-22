@@ -230,13 +230,13 @@ export function editKit(id: number, edit: KitEdit) {
   const changes: Record<string, { before: unknown; after: unknown }> = {};
   const set = (key: string, before: unknown, after: unknown, apply: () => void) => { if (after !== undefined) { changes[key] = { before, after }; apply(); } };
   set("longTitle", kit.long.title, edit.longTitle?.slice(0, LIMITS.title), () => (kit.long.title = edit.longTitle!.slice(0, LIMITS.title)));
-  set("longDescription", "(previous description)", edit.longDescription && "(new description)", () => (kit.long.description = edit.longDescription!.slice(0, LIMITS.description)));
+  set("longDescription", kit.long.description, edit.longDescription && "(new description)", () => (kit.long.description = edit.longDescription!.slice(0, LIMITS.description)));
   const options = edit.titleOptions?.map((t) => t.trim().slice(0, LIMITS.title)).filter((t, i, a) => t && a.indexOf(t) === i).slice(0, 3);
   set("titleOptions", kit.long.titleOptions ?? [kit.long.title], options, () => (kit.long.titleOptions = options));
   set("longTags", kit.long.tags, edit.longTags, () => (kit.long.tags = edit.longTags!.filter((t, i, a) => a.slice(0, i + 1).join(",").length <= LIMITS.tags)));
   if (kit.short) {
     set("shortTitle", kit.short.title, edit.shortTitle?.slice(0, LIMITS.title), () => (kit.short!.title = edit.shortTitle!.slice(0, LIMITS.title)));
-    set("shortDescription", "(previous description)", edit.shortDescription && "(new description)", () => (kit.short!.description = edit.shortDescription!.slice(0, LIMITS.description)));
+    set("shortDescription", kit.short.description, edit.shortDescription && "(new description)", () => (kit.short!.description = edit.shortDescription!.slice(0, LIMITS.description)));
   }
   kit.editedAt = new Date().toISOString();
   writeFileSync(path.join(workDir(id), "publish.json"), JSON.stringify(kit, null, 2));

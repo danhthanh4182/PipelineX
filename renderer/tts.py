@@ -144,7 +144,7 @@ async def speak_edge(name: str, text: str, voice: str = VOICE):
         except (edge_tts.exceptions.EdgeTTSException, aiohttp.ClientError, TimeoutError):
             if attempt == 4:
                 raise
-            print(f"{name}: no audio, retrying")
+            print(f"{name}: {type(error).__name__}: {str(error)[:120]}, retrying")
             await asyncio.sleep(5 * 2 ** attempt)
 
 
@@ -204,7 +204,7 @@ async def main():
     music_dir = HERE / "music"
     mood_tracks = sorted((music_dir / PRESET["music"]).glob("*.mp3")) if PRESET else []
     music = os.environ.get("VIDEO_MUSIC") or next((str(p) for p in mood_tracks), None) or next((str(p) for p in sorted(music_dir.glob("*.mp3"))), None)
-    if music and Path(music).exists():
+    if music and Path(music).exists() and str(Path(music).resolve()) != str((W / "public" / "music.mp3").resolve()):
         shutil.copy(music, W / "public" / "music.mp3")
     today = datetime.date.today()
     timeline = {"title": script["title"], "thumbnail_text": script.get("thumbnail_text"), "voice": VOICE, "total": round(t, 3), "scenes": scenes, "sources": script["sources"],

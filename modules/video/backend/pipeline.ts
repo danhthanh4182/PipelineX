@@ -121,7 +121,7 @@ export function run(step: Exclude<Step, "story">, dir: string, extraEnv: Record<
     child.stderr.on("data", take);
     // On Windows taskkill also takes the Chrome helpers Remotion started; elsewhere SIGTERM reaches the step.
     const timer = setTimeout(() => {
-      if (process.platform === "win32" && child.pid) spawn("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore" });
+      if (process.platform === "win32" && child.pid) spawn("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore" }).on("error", () => {});
       else child.kill("SIGTERM");
     }, LIMITS[step]);
     child.on("error", (error) => {

@@ -116,8 +116,8 @@ export const videoServer: ServerModule = {
         page: z.coerce.number().int().min(1).optional(),
         pageSize: z.coerce.number().int().min(1).max(200).optional(),
       }).parse(req.query);
-      const { entries, total } = await listLexicon(query);
-      return { csrf: admin.csrf, entries, total, stats: await lexiconStats() };
+      const { rows, total } = await listLexicon(query);
+      return { csrf: admin.csrf, entries: rows, total, stats: await lexiconStats() };
     }));
     app.post("/api/admin/video/lexicon", guarded(async (req) => {
       const input = lexiconInput.parse(req.body);

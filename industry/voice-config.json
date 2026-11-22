@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "chain": [
+    "vieneu",
+    "relay",
+    "piper"
+  ],
+  "sample_sentence": "Chào bạn đến với Điểm Tin Công Nghệ — bản tin công nghệ mỗi ngày.",
+  "engines": {
+    "vieneu": {
+      "kind": "package",
+      "enabled": true,
+      "voice": "Hải Đăng",
+      "preview_voice": "Hải Đăng",
+      "package": "vieneu",
+      "venv": ".venv-vieneu"
+    },
+    "relay": {
+      "kind": "api",
+      "enabled": true,
+      "voice": "HoaiMy",
+      "preview_voice": "HoaiMy",
+      "url_env": "RELAY_URL",
+      "secret_env": "RELAY_SECRET"
+    },
+    "nvidia": {
+      "kind": "api",
+      "enabled": false,
+      "voice": "Magpie-Multilingual.VI-VN.Long",
+      "preview_voice": "Magpie-Multilingual.VI-VN.Long",
+      "model": "ai-magpie-tts-multilingual",
+      "key_env": "NVIDIA_API_KEY"
+    },
+    "piper": {
+      "kind": "package",
+      "enabled": true,
+      "voice": "vi_VN-vais1000-medium",
+      "preview_voice": "vi_VN-vais1000-medium",
+      "venv": ".venv-piper",
+      "model": "models/piper/vi_VN-vais1000-medium.onnx"
+    },
+    "azure": {
+      "kind": "api",
+      "enabled": true,
+      "voice": "vi-VN-HoaiMyNeural",
+      "preview_voice": "vi-VN-HoaiMyNeural",
+      "key_env": "AZURE_SPEECH_KEY",
+      "region_env": "AZURE_SPEECH_REGION"
+    },
+    "edge": {
+      "kind": "api",
+      "enabled": true,
+      "voice": "vi-VN-HoaiMyNeural",
+      "preview_voice": "vi-VN-HoaiMyNeural"
+    }
+  }
+}

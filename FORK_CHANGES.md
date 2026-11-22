@@ -312,3 +312,11 @@ Thanh duyệt 22/11/2026 ("Cả 2"): cho phép cầu nối Studio gọi MCP biê
 - `scripts/import-lexicon.ts`: nạp file xuất từ điển của Space Studio — trên kênh này: 578 dòng, giữ nguyên enabled/asr_status/category_scope của file (đúng 1 mục enabled: "callback"); chạy lại bỏ qua mục đã có.
 - Trang admin "Lexicon" (`modules/video/web/lexicon.tsx`, khóa i18n lexicon.* cho vi + en): bảng tìm kiếm được, sửa tại chỗ term/reading/category_scope, công tắc áp dụng, nhãn trạng thái ASR, nút nhập lại từ file xuất.
 - Lệnh của Thanh ngày 22/11/2026: thêm từ điển phát âm để AI đọc đúng các từ phiên âm, tổ chức tham khảo Space Studio Xuất Bản Video Tin Tức.
+
+## 2026-11-22 — Cấu hình engine giọng đọc cho kênh (Phần B: trang Voice + voice-config.json)
+
+- `modules/video/backend/voice-config.ts`: catalog engine (vieneu, relay, nvidia, piper, azure, edge — loại package/api, vai trò, ghi chú, danh sách giọng) + đọc/ghi `industry/voice-config.json`. File cấu hình chỉ giữ TÊN biến môi trường cho khóa (key_env/secret_env), không bao giờ giữ giá trị khóa; hàm lưu kiểm chứng: engine lạ bị từ chối, chuỗi rỗng bị từ chối, engine trong chuỗi mà đang tắt bị từ chối, trường lạ (dạng khóa bí mật) bị từ chối.
+- Route trong `modules/video/server.ts`: GET/PUT /api/admin/video/voice-config; lần đọc đầu tự sinh file mặc định. Trang admin "Voice" (`modules/video/web/voice.tsx`, khóa i18n voice.* cho vi + en): thẻ từng engine (bật/tắt, chọn giọng đọc + giọng nghe thử) và trình sửa chuỗi dự phòng (lên/xuống/bỏ/thêm).
+- Mặc định của kênh lấy đúng chuẩn giọng Space Studio (chủ kênh chốt 21–22/11/2026): chuỗi vieneu → relay → piper; vieneu 25 giọng preset, mặc định + nghe thử "Hải Đăng"; relay HoaiMy; piper vi_VN-vais1000-medium; câu mẫu chuẩn của Studio. Engine nvidia (Magpie-TTS qua Riva gRPC, giọng Magpie-Multilingual.VI-VN.Long) có sẵn trong catalog nhưng enabled=false — chỉ bật sau khi endpoint NVIDIA qua kiểm chứng thật.
+- `industry/voice-config.json` và `industry/lexicon.json` là ARTIFACT HỢP ĐỒNG giữa PipelineX và Space Studio (cầu nối M1 sẽ kế thừa): schema được ghi trong báo cáo VOICE-LEXICON-BUILD-RESULT.md.
+- Lệnh của Thanh ngày 22/11/2026: cấu hình engine giọng từ custom host (package cài tại máy hoặc gọi model qua API như NVIDIA), mặc định kế thừa chuẩn giọng của Space Studio, chuỗi giữ nguyên VieNeu → relay → Piper.

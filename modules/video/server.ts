@@ -19,6 +19,7 @@ import { STYLE_KEYS, STYLES } from "./backend/styles.ts";
 import { makeVideo, shortFile, thumbnailFile, videoFile, videoFiles } from "./backend/pipeline.ts";
 import { autoPick, candidatesWithVideos, createVideo, getVideo, listVideos, requeueVideo, reviewVideo, setStyle, STEPS, VideoConflict, type Step } from "./backend/videos.ts";
 import { createLexiconEntry, deleteLexiconEntry, importLexiconFromExportFile, LexiconConflict, lexiconStats, listLexicon, setLexiconEnabled, updateLexiconEntry } from "./backend/lexicon.ts";
+import { ENGINE_CATALOG, ensureVoiceConfig, saveVoiceConfig, VoiceConfigConflict, type VoiceConfig } from "./backend/voice-config.ts";
 
 export const AUTO_ENABLED = () => process.env.VIDEO_AUTO_ENABLED === "true";
 
@@ -50,7 +51,7 @@ function guarded(fn: Handler) {
     try {
       return await fn(req, reply, admin);
     } catch (error) {
-      if (error instanceof VideoConflict || error instanceof StyleConflict || error instanceof YouTubeError || error instanceof LexiconConflict) return reply.code(409).send({ error: "conflict", detail: error.message });
+      if (error instanceof VideoConflict || error instanceof StyleConflict || error instanceof YouTubeError || error instanceof LexiconConflict || error instanceof VoiceConfigConflict) return reply.code(409).send({ error: "conflict", detail: error.message });
       if (error instanceof z.ZodError) return reply.code(400).send({ error: "invalid_request", detail: error.issues.map((i) => i.message).join("; ") });
       req.log.error({ err: error }, "video admin error");
       return reply.code(500).send({ error: "internal_error", detail: String((error as Error).message).slice(0, 300) });
@@ -138,6 +139,26 @@ export const videoServer: ServerModule = {
     }));
     app.post("/api/admin/video/lexicon/import", guarded(async () => {
       return { result: await importLexiconFromExportFile() };
+    }));
+
+    // Voice configuration: engine cards + the fallback chain, stored in industry/voice-config.json.
+    // The first read creates the file with the channel's current defaults (the Studio voice standard).
+    app.get("/api/admin/video/voice-config", guarded(async (_req, _reply, admin) => {
+      const { config } = ensureVoiceConfig();
+      return { csrf: admin.csrf, config, catalog: ENGINE_CATALOG, exists: true };
+    }));
+    app.put("/api/admin/video/voice-config", guarded(async (req) => {
+      const input = z.object({
+        chain: z.array(z.string().min(1).max(40)).min(1).max(8),
+        engines: z.record(z.string(), z.object({
+          kind: z.enum(["package", "api"]),
+          enabled: z.boolean(),
+          voice: z.string().min(1).max(120),
+          preview_voice: z.string().max(120).optional(),
+        }).passthrough()),
+        sample_sentence: z.string().max(500).optional(),
+      }).parse(req.body) as VoiceConfig;
+      return { config: saveVoiceConfig(input) };
     }));
 
     app.get("/api/admin/video/overview", guarded(async (_req, _reply, admin) => {

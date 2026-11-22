@@ -51,5 +51,25 @@
     "empty": "Chưa có mục nào khớp.",
     "page": "Trang",
     "note": "Ghi chú"
+  },
+  "voice": {
+    "title": "Giọng đọc",
+    "subtitle": "Engine giọng đọc của kênh: engine cài bằng package tại máy hoặc gọi model qua API; chuỗi dự phòng quyết định thứ tự thử khi một engine lỗi",
+    "chain": "Chuỗi dự phòng",
+    "chainHint": "Bước giọng nói thử từng engine theo thứ tự này cho mỗi beat; engine hỏng sẽ rơi xuống engine kế tiếp. Engine trong chuỗi bắt buộc đang bật.",
+    "addEngine": "Thêm engine đang bật vào chuỗi",
+    "addToChain": "Thêm vào chuỗi",
+    "save": "Lưu cấu hình giọng",
+    "saved": "Đã lưu cấu hình giọng đọc",
+    "enabled": "Đang bật",
+    "disabled": "Đang tắt",
+    "voice": "Giọng đọc",
+    "previewVoice": "Giọng nghe thử",
+    "kindPackage": "Package tại máy",
+    "kindApi": "Gọi model qua API",
+    "up": "Lên",
+    "down": "Xuống",
+    "removeFromChain": "Bỏ khỏi chuỗi",
+    "sample": "Câu mẫu chuẩn"
   }
 }

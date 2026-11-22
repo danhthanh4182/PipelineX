@@ -7,5 +7,6 @@ export const videoModule = defineModule({
   pages: [
     { path: "videos", file: "web/videos.tsx", admin: true, nav: "Videos", shell: "engine", group: "Production" },
     { path: "lexicon", file: "web/lexicon.tsx", admin: true, nav: "Lexicon", shell: "engine", group: "Production" },
+    { path: "voice", file: "web/voice.tsx", admin: true, nav: "Voice", shell: "engine", group: "Production" },
   ],
 });

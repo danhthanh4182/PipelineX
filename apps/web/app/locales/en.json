@@ -51,5 +51,25 @@
     "empty": "No matching entries.",
     "page": "Page",
     "note": "Note"
+  },
+  "voice": {
+    "title": "Voice",
+    "subtitle": "The channel's voice engines: packages installed on this machine or models called over API; the fallback chain is the order tried when an engine fails",
+    "chain": "Fallback chain",
+    "chainHint": "The voice step tries the engines in this order for every beat; a failed engine falls through to the next. An engine in the chain must be enabled.",
+    "addEngine": "Add an enabled engine to the chain",
+    "addToChain": "Add to chain",
+    "save": "Save voice configuration",
+    "saved": "Voice configuration saved",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "voice": "Voice",
+    "previewVoice": "Preview voice",
+    "kindPackage": "Local package",
+    "kindApi": "Model call (API)",
+    "up": "Up",
+    "down": "Down",
+    "removeFromChain": "Remove from chain",
+    "sample": "Standard sample sentence"
   }
 }

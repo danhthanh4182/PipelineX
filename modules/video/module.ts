@@ -4,5 +4,8 @@ import { defineModule } from "@aihot/contracts/modules";
 export const videoModule = defineModule({
   name: "video",
   // In the engine's back office, at the top of its sidebar: the page used every day.
-  pages: [{ path: "videos", file: "web/videos.tsx", admin: true, nav: "Videos", shell: "engine", group: "Production" }],
+  pages: [
+    { path: "videos", file: "web/videos.tsx", admin: true, nav: "Videos", shell: "engine", group: "Production" },
+    { path: "lexicon", file: "web/lexicon.tsx", admin: true, nav: "Lexicon", shell: "engine", group: "Production" },
+  ],
 });

@@ -304,3 +304,11 @@ Thanh duyệt 22/11/2026 ("Cả 2"): cho phép cầu nối Studio gọi MCP biê
 ## 2026-11-22 — Whitelist env cho renderer: RELAY_SECRET, RELAY_URL, VIDEO_VIENEU_VOICE
 
 - `modules/video/backend/pipeline.ts` (RENDERER_ENV): bổ sung "RELAY_SECRET", "RELAY_URL", "VIDEO_VIENEU_VOICE". Trước đây bước voice không nhận được RELAY_SECRET dù engine relay đã có trong tts.py từ Phase 1 — biến bị bộ lọc env của pipeline chặn. Nay chân relay trong chuỗi giọng (VieNeu → relay → Piper) và tùy chọn giọng VieNeu mới tới được tts.py. Thanh duyệt qua lệnh cấu hình RELAY_SECRET ngày 22/11/2026.
+
+## 2026-11-22 — Từ điển phát âm cho kênh (Phần A: bảng + API + trang quản trị)
+
+- `modules/video/migrations/2003_pronunciation_lexicon.sql`: bảng pronunciation_lexicon (term unique, reading, scope, category_scope, enabled, locked, asr_status, note).
+- `modules/video/backend/lexicon.ts` + các route trong `modules/video/server.ts` (/api/admin/video/lexicon): liệt kê/tìm kiếm/phân trang, thêm/sửa/xóa, bật/tắt hàng loạt, nhập lại từ file xuất của Studio; mọi thay đổi tái tạo industry/lexicon.json (chỉ các mục enabled) cho renderer.
+- `scripts/import-lexicon.ts`: nạp file xuất từ điển của Space Studio — trên kênh này: 578 dòng, giữ nguyên enabled/asr_status/category_scope của file (đúng 1 mục enabled: "callback"); chạy lại bỏ qua mục đã có.
+- Trang admin "Lexicon" (`modules/video/web/lexicon.tsx`, khóa i18n lexicon.* cho vi + en): bảng tìm kiếm được, sửa tại chỗ term/reading/category_scope, công tắc áp dụng, nhãn trạng thái ASR, nút nhập lại từ file xuất.
+- Lệnh của Thanh ngày 22/11/2026: thêm từ điển phát âm để AI đọc đúng các từ phiên âm, tổ chức tham khảo Space Studio Xuất Bản Video Tin Tức.

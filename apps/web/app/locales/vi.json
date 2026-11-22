@@ -14,5 +14,42 @@
     "noCandidates": "Chưa có ứng viên: cần 3 nguồn trở lên và độ nóng.",
     "youTubeConnected": "Đã kết nối kênh YouTube",
     "couldNotCopy": "Không thể sao chép"
+  },
+  "lexicon": {
+    "title": "Từ điển phát âm",
+    "subtitle": "Cách đọc chỉ áp dụng cho bản đọc ở bước giọng nói; chữ hiển thị, tiêu đề và phụ đề giữ nguyên thuật ngữ đúng",
+    "search": "Tìm thuật ngữ hoặc cách đọc…",
+    "searchButton": "Tìm",
+    "add": "Thêm",
+    "addTitle": "Thêm mục mới",
+    "term": "Thuật ngữ",
+    "reading": "Cách đọc",
+    "category": "Nhóm nội dung",
+    "cat": {
+      "all": "Tất cả",
+      "tech": "Công nghệ",
+      "finance": "Tài chính"
+    },
+    "asrStatus": "Kiểm chứng ASR",
+    "enabled": "Áp dụng",
+    "enabledCount": "đang áp dụng",
+    "total": "mục",
+    "on": "Đang bật",
+    "off": "Đang tắt",
+    "edit": "Sửa",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "confirmDelete": "Xóa mục này khỏi từ điển?",
+    "import": "Nhập lại từ file xuất",
+    "importDone": "Đã nhập lại từ file xuất của Studio",
+    "saved": "Đã lưu mục từ điển",
+    "added": "Đã thêm mục từ điển",
+    "deleted": "Đã xóa mục từ điển",
+    "enabledToast": "Đã bật áp dụng mục này",
+    "disabledToast": "Đã tắt áp dụng mục này",
+    "empty": "Chưa có mục nào khớp.",
+    "page": "Trang",
+    "note": "Ghi chú"
   }
 }

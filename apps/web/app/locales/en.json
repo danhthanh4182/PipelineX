@@ -14,5 +14,42 @@
     "noCandidates": "No candidates yet: a story needs reports from 3 or more sources and heat.",
     "youTubeConnected": "YouTube channel connected",
     "couldNotCopy": "Could not copy"
+  },
+  "lexicon": {
+    "title": "Pronunciation dictionary",
+    "subtitle": "Readings apply to the voice step's reading text only; display text, titles and captions keep the correct term",
+    "search": "Search term or reading…",
+    "searchButton": "Search",
+    "add": "Add",
+    "addTitle": "Add an entry",
+    "term": "Term",
+    "reading": "Reading",
+    "category": "Content group",
+    "cat": {
+      "all": "All",
+      "tech": "Tech",
+      "finance": "Finance"
+    },
+    "asrStatus": "ASR check",
+    "enabled": "Applied",
+    "enabledCount": "applied",
+    "total": "entries",
+    "on": "On",
+    "off": "Off",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirmDelete": "Delete this dictionary entry?",
+    "import": "Re-import from the export file",
+    "importDone": "Re-imported from the Studio export",
+    "saved": "Dictionary entry saved",
+    "added": "Dictionary entry added",
+    "deleted": "Dictionary entry deleted",
+    "enabledToast": "Entry is now applied",
+    "disabledToast": "Entry is no longer applied",
+    "empty": "No matching entries.",
+    "page": "Page",
+    "note": "Note"
   }
 }

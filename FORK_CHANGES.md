@@ -296,3 +296,7 @@ Thanh duyệt 22/11/2026 ("Cả 2"): cho phép cầu nối Studio gọi MCP biê
 - `site/brand/Logo.tsx`: render `<img>` khi có `logoUrl`, còn lại dùng SVG mặc định của tác giả.
 - `apps/web/app/root.tsx`: truyền `logoUrl` qua root loader để hydration đúng.
 - `Sidebar.tsx`: panel trái rộng 240px khi có logo custom (max 280px), mặc định 180px.
+
+## Cổng số report tối thiểu khi dựng video theo kênh (2026-11-22)
+
+- `modules/video/backend/pipeline.ts`: ngưỡng "story cần ít nhất 2 report đủ chữ" trong `writeStory` chuyển thành biến môi trường `VIDEO_MIN_REPORTS` (mặc định 2, giữ nguyên hành vi upstream cho kênh nhiều nguồn). Lý do: kênh technews (Điểm Tin Công Nghệ) có đúng 1 nguồn là bản tin đã biên tập — bản tin chính là lớp chọn lọc/kiểm chứng — nên mỗi story chỉ có 1 report; video_jobs #1 fail ở step story vì cổng này. Kênh technews đặt `VIDEO_MIN_REPORTS=1` trong .env của kênh. Phê duyệt: Thanh qua Muse (hướng production-ready cho kênh 1 nguồn, 22/11/2026).

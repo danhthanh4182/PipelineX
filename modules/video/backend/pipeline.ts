@@ -13,6 +13,9 @@ import { channelProfile } from "./channel-profile.ts";
 import { sql } from "@aihot/backend/db";
 
 export const ROOT = fileURLToPath(new URL("../../../", import.meta.url));
+
+/** Minimum reports with enough text a story needs before a video can be made. Upstream default 2 (multi-source corroboration); single-source channels whose feed is already curated (e.g. technews) set VIDEO_MIN_REPORTS=1. */
+export const MIN_REPORTS = Number(process.env.VIDEO_MIN_REPORTS || 2);
 export const RENDERER = process.env.VIDEO_RENDERER_DIR || path.join(ROOT, "renderer");
 export const WORK_ROOT = process.env.VIDEO_WORK_DIR || path.join(ROOT, ".data", "videos");
 
@@ -146,7 +149,7 @@ const lastLines = (text: string) => text.trim().split("\n").filter((l) => !/^\s+
 async function writeStory(storyId: number, dir: string): Promise<Record<string, unknown>> {
   const rows = await storyMaterial(storyId);
   const usable = rows.filter((r) => r.body.length > 200 || (r.summary?.length ?? 0) > 80);
-  if (usable.length < 2) throw new Error(`story: only ${usable.length} report(s) with enough text; a video needs at least 2`);
+  if (usable.length < MIN_REPORTS) throw new Error(`story: only ${usable.length} report(s) with enough text; a video needs at least ${MIN_REPORTS}`);
   writeFileSync(path.join(dir, "story.json"), JSON.stringify(usable.map((r) => ({
     title: r.title, source: r.source, url: r.url, published_at: r.published_at?.toISOString() ?? "",
     headline: r.headline ?? r.title, summary: r.summary ?? "", body: r.body,

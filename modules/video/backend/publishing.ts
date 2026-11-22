@@ -31,10 +31,9 @@ export function chapters(scenes: Array<{ headline: string; start: number; durati
   const end = INTRO_SECONDS + total;
   const kept: typeof marks = [];
   for (const m of marks) {
-    const next = marks[marks.indexOf(m) + 1]?.at ?? end;
-    if (kept.length && next - m.at < 10) continue; // too short: folded into the previous chapter
-    kept.push(m);
+    if (kept.length === 0 || m.at - kept[kept.length - 1]!.at >= 10) kept.push(m);
   }
+  while (kept.length >= 2 && end - kept[kept.length - 1]!.at < 10) kept.pop();
   return kept.length >= 3 ? kept.map((m) => `${clock(m.at)} ${m.name}`) : [];
 }
 
@@ -129,7 +128,7 @@ export function draftKit(id: number): PublishKit | null {
   const sources = cleanSources(script.sources ?? []);
   const narration = (script.scenes ?? []).flatMap((s) => s.beats.map((b) => b.narration)).join(" ");
   const illustrated = (script.scenes ?? []).some((s) => s.beats.some((b) => (b as { visual?: { type?: string } }).visual?.type === "illustration"));
-  const { tags, hashtags, subjects } = tagsFor(script.title, `${script.description ?? ""} ${narration}`, style, Number(timeline.date?.slice(0, 4)) || undefined);
+  const { tags, hashtags, subjects } = tagsFor(script.title, `${script.description ?? ""} ${narration}`, style, Number((timeline.date ?? "").match(/(\d{4})\s*$/)?.[1]) || undefined);
   const chapterLines = chapters(timeline.scenes, timeline.total);
   const description = [
     withTicker(script.description ?? "", subjects[0]),

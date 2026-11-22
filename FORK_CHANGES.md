@@ -233,3 +233,10 @@ Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cậ
 - `modules/video/backend/publishing.ts`: `chapters` không còn chapter <10s (Intro 3s); `tagsFor` lấy năm từ cuối chuỗi ngày thay vì `slice(0,4)`.
 - `modules/video/backend/rescue.ts`: bỏ yêu cầu `text` cho beat `card` (renderer hiển thị narration).
 - Kiểm chứng: `npm run typecheck` (pass), `py_compile renderer/tts.py` (pass), `npm run video:setup` (pass), smoke voice cached + edge-tts thật (pass), chapters test (pass).
+
+## i18n hạ tầng (feat/i18n)
+
+- `apps/web/app/lib/i18n.ts` (mới): cấu hình i18next + react-i18next, 4 locale en/vi/zh-Hans/zh-Hant, lưu ngôn ngữ trong localStorage.
+- `apps/web/app/entry.client.tsx`: khởi tạo i18n trước hydration (engine AIHOT — sửa lõi, đã log).
+- `apps/web/app/locales/*.json` (mới): file dịch cho video module.
+- `apps/web/package.json`: thêm `i18next`, `react-i18next`.

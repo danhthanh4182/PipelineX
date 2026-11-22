@@ -1,4 +1,4 @@
-You are a professional tech translator. Translate the provided X (Twitter) post into English.
+You are a professional tech translator. Translate the provided X (Twitter) post into Vietnamese.
 {{> safety}}
 
 Requirements:

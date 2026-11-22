@@ -1,4 +1,4 @@
-// Site identity, branding, and reader-facing copy (Market Decoded, the PipelineX finance pack: copied over site/site.ts in a finance channel).
+// Site identity, branding, and reader-facing copy (Điểm Tin Công Nghệ, the PipelineX technews pack: copied over site/site.ts in a technews channel).
 // Read by both web and backend; changes take effect upon rebuild (e.g. docker compose up --build).
 // The public domain is set via the environment variable SITE_URL.
 
@@ -8,7 +8,7 @@ import type { Founder } from "@aihot/contracts/site-config";
  * Publication schedule (Beijing/UTC+8 time, HH:mm): Daily report covers the preceding 24h.
  * Weekly report generates every Monday; Monthly report generates on the 1st of each month.
  */
-export const EDITION_TIMES = { daily: "08:00", weekly: "10:00", monthly: "10:30" };
+export const EDITION_TIMES = { daily: "07:30", weekly: "10:00", monthly: "10:30" };
 
 export const EDITION_WHEN = {
   daily: `Daily at ${EDITION_TIMES.daily}`,
@@ -18,15 +18,13 @@ export const EDITION_WHEN = {
 
 export const SITE = {
   /** Site name: used in navigation, page titles, OG cards, RSS, MCP, and admin. */
-  name: "Market Decoded",
-  /** Optional logo URL (env SITE_LOGO_URL). Defaults to the author's mark when unset. */
-  logoUrl: process.env.SITE_LOGO_URL || null,
+  name: "Điểm Tin Công Nghệ",
   /** Industry keyword: interpolated into phrases like "AI Briefing", "AI Updates". */
-  subject: "Markets",
+  subject: "Công nghệ",
   /** Homepage full title (browser tab, search engines). */
-  homeTitle: "Market Decoded — Market News, Decoded · Daily Briefings & Curated Feed",
+  homeTitle: "Điểm Tin Công Nghệ — Tin công nghệ, kiểm chứng mỗi ngày · Bản tin & Luồng tin chọn lọc",
   /** Topics directory page (/topics) title. */
-  topicsTitle: "Finance Topics: Institutions, Companies, Markets & Story Types",
+  topicsTitle: "Chủ đề công nghệ: Hãng, Lĩnh vực & Loại tin",
   /** Feedback form input placeholder. */
   feedbackExample: "e.g. When searching for a keyword, I encountered... I was expecting...",
   /** Subheading under the feedback page title. */
@@ -34,31 +32,31 @@ export const SITE = {
   /** Feedback email input hint. */
   feedbackEmailHint: "Leave your email so we can follow up with you",
   /** One-line site summary used for SEO, share cards, RSS, and llms.txt. */
-  description: `Curating noteworthy market, company and economy news from public sources, clustering coverage into events, and publishing a daily briefing ${EDITION_WHEN.daily}.`,
+  description: `Chọn lọc tin công nghệ, AI và ưu đãi đáng chú ý từ nguồn công khai, gom các bài cùng sự kiện và xuất bản bản tin mỗi ngày ${EDITION_WHEN.daily}.`,
   /** Detailed description in llms.txt (optional). */
   llmsIntro: null as string | null,
   /** Tagline for social share cards and posters. */
-  tagline: "The Money News That Matters",
+  tagline: "Tin công nghệ đáng chú ý, kiểm chứng mỗi ngày",
   /** SEO keywords for homepage structured data. */
-  keywords: ["Finance News", "Stock Market News", "Economy News", "Fed News"] as string[],
+  keywords: ["Tin Công Nghệ", "Trí Tuệ Nhân Tạo", "AI News", "Ưu Đãi Công Nghệ"] as string[],
   /** Search engine site verification codes (optional). */
   siteVerification: {} as Record<string, string>,
   /** Starting publication year for structured data. */
   since: "2026",
   /** UI language (HTML lang, og:locale). */
-  locale: "en-US",
+  locale: "vi-VN",
   /** Default fallback URL when SITE_URL is unset. */
   defaultUrl: "http://localhost:3000",
   /** Root directory icons list. */
   rootIcons: [] as string[],
   /** MCP tool name prefix (e.g. pipelinex_get_latest). */
-  mcpPrefix: "market_decoded",
+  mcpPrefix: "diem_tin_cong_nghe",
   /** Public interface version. */
   interfaceVersion: "4.0.0",
   /** Contact email address. */
   contactEmail: null as string | null,
   /** Footer note. */
-  footerNote: "Powered by the PipelineX engine. Not investment advice.",
+  footerNote: "Vận hành bằng PipelineX. Tin tài chính chỉ để tham khảo, không phải lời khuyên đầu tư.",
   /** ICP license number (China-specific). */
   icp: null as string | null,
   /** Public security bureau record (China-specific). */
@@ -69,11 +67,11 @@ export const SITE = {
   poweredBy: { name: "AIHOT", url: "https://aihot.news" } as { name: string; url: string } | null,
   /** Organization operator for structured metadata. */
   organization: {
-    name: "Market Decoded",
+    name: "Điểm Tin Công Nghệ",
     founder: null as Founder | null,
   },
   /** User-Agent identification header used during scraping. */
-  crawlerName: "MarketDecodedBot/1.0",
+  crawlerName: "DiemTinCongNgheBot/1.0",
 } as const;
 
 /** Policy and terms pages. */
@@ -114,13 +112,13 @@ interface ContactCard {
 export const ABOUT = {
   kicker: `About ${SITE.name}`,
   description: `About ${SITE.name}: ${SITE.description}`,
-  headline: ["Markets move every day.", "Only a few stories truly matter."] as [string, string],
+  headline: ["Công nghệ thay đổi mỗi ngày.", "Chỉ vài tin thật sự đáng xem."] as [string, string],
   lead: `${SITE.name} monitors {sources} sources for you: ingesting, clustering, scoring, and curating, publishing a daily briefing ${EDITION_WHEN.daily}. Free, no login required.`,
   sourcesFallback: "dozens of",
   steps: {
-    collect: "Monitoring central banks, regulators, financial media and analysts; active sources polled as often as every 15 minutes.",
+    collect: "Theo dõi các hãng công nghệ, phòng nghiên cứu, blog chính thức và truyền thông công nghệ; nguồn đang hoạt động được quét tối đa mỗi 15 phút.",
     store: "All ingested articles are deduplicated and clustered into events to compute trend momentum.",
-    select: `Models evaluate industry relevance and concrete facts, drafting English headlines, summaries, and ${ITEM_COPY.reasonLabel}.`,
+    select: `Models evaluate industry relevance and concrete facts, drafting Vietnamese headlines, summaries, and ${ITEM_COPY.reasonLabel}.`,
     publish: `Publishing daily briefings ${EDITION_WHEN.daily}, weekly reviews ${EDITION_WHEN.weekly}, and monthly recaps ${EDITION_WHEN.monthly}.`,
   },
   maker: null as null | {
@@ -141,7 +139,7 @@ export const ADMIN = {
 };
 
 export const AGENT = {
-  search: { scope: "Search across companies, institutions, markets, or topics in the past 7 days", ask: "What did the Fed decide this week?" },
+  search: { scope: "Search across companies, institutions, markets, or topics in the past 7 days", ask: "Tuần này có mô hình AI nào mới ra mắt?" },
 };
 
 export const REPORTS = {
@@ -152,9 +150,9 @@ export const REPORTS = {
     weekly: "Weekly Comprehensive Industry Review",
     monthly: "Monthly Industry Roundup",
   },
-  entry: { measure: "items", noun: "Stories" },
+  entry: { measure: "items", noun: "Tin" },
   metricUnits: { sourcesCount: " sources", firstPartyEvents: " direct releases", selectedCount: " curated items", reportsCovered: " daily editions" },
-  shareUnit: "Stories",
+  shareUnit: "Tin",
   quiet: { title: "Quiet day, no major events", paragraph: "No major updates occurred between {start} and {end}." },
 };
 

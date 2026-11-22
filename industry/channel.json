@@ -1,88 +1,80 @@
 {
-  "$comment": "PipelineX channel profile (finance pack). Copied to industry/channel.json when a finance channel is created.",
-  "type": "finance",
-  "label": "Finance & markets",
-  "subject": "markets, money and the economy",
-  "audience": "people who follow markets, investors and anyone whose money is affected",
+  "$comment": "PipelineX channel profile (technews pack). Copied to industry/channel.json when a technews channel is created. The channel republishes the already-curated Điểm Tin Công Nghệ bulletin (news.danhthanh.dev) as Vietnamese videos; a human approves every video per platform in the Studio before anything is published.",
+  "audience": "người Việt quan tâm công nghệ, lập trình viên, người dùng sản phẩm số và doanh nghiệp công nghệ",
   "brand": {
-    "name": "Market Decoded",
-    "label": "MARKETS",
-    "tagline": "Market news, decoded.",
-    "mark": "brand/mark.svg"
+    "label": "CÔNG NGHỆ",
+    "mark": "brand/mark.svg",
+    "name": "Điểm Tin Công Nghệ",
+    "tagline": "Tin công nghệ đáng chú ý, kiểm chứng mỗi ngày."
   },
-  "tags": [
-    "finance news",
-    "stock market",
-    "economy"
-  ],
   "hashtags": [
-    "#FinanceNews",
-    "#StockMarket"
+    "#DiemTinCongNghe",
+    "#CongNghe",
+    "#AI"
   ],
+  "label": "Công nghệ & AI",
   "officialSites": [
-    "federalreserve.gov",
-    "ecb.europa.eu",
-    "sec.gov",
-    "treasury.gov",
-    "home.treasury.gov",
-    "bls.gov",
-    "bea.gov",
-    "imf.org",
-    "worldbank.org",
-    "bankofengland.co.uk",
-    "boj.or.jp",
-    "cftc.gov",
-    "fdic.gov",
-    "reuters.com",
-    "apnews.com",
-    "investor.apple.com",
-    "nvidianews.nvidia.com",
+    "apple.com",
     "microsoft.com",
-    "ir.tesla.com",
-    "newyorkfed.org",
-    "bbc.co.uk",
-    "theguardian.com",
-    "npr.org",
-    "nerdwallet.com",
-    "cnbc.com"
+    "blog.google",
+    "deepmind.google",
+    "openai.com",
+    "anthropic.com",
+    "github.blog",
+    "github.com",
+    "nvidia.com",
+    "developer.nvidia.com",
+    "amd.com",
+    "developer.amd.com",
+    "blog.cloudflare.com",
+    "cloudflare.com",
+    "ai.meta.com",
+    "meta.com",
+    "aws.amazon.com",
+    "huggingface.co",
+    "mozilla.org",
+    "samsung.com",
+    "qualcomm.com",
+    "intel.com"
   ],
   "paywalled": [
+    "theinformation.com",
     "bloomberg.com",
     "ft.com",
     "wsj.com",
-    "economist.com",
-    "barrons.com",
     "nytimes.com",
-    "theinformation.com",
     "businessinsider.com"
   ],
   "styles": {
     "allowed": [
       "news",
-      "markets",
-      "earnings",
-      "macro",
-      "crypto",
+      "launch",
+      "product",
       "finance",
       "investigation",
-      "crime",
       "explainer",
       "analysis"
     ],
     "byCategory": {
-      "markets": "markets",
-      "macro": "macro",
-      "companies": "earnings",
-      "crypto": "crypto",
-      "policy": "investigation",
-      "money": "explainer",
-      "opinion": "analysis"
+      "ai": "launch",
+      "finance": "finance",
+      "offer": "product",
+      "tech": "news"
     }
   },
+  "subject": "công nghệ, trí tuệ nhân tạo và thế giới số",
+  "tags": [
+    "tin công nghệ",
+    "bản tin công nghệ",
+    "trí tuệ nhân tạo",
+    "AI",
+    "công nghệ"
+  ],
+  "type": "technews",
   "youtube": {
-    "category": "News & Politics",
-    "language": "English",
-    "subscribe": "Subscribe for fact-checked money news every day.",
-    "disclaimer": "For information only, not financial advice. Do your own research before making money decisions."
+    "category": "Science & Technology",
+    "disclaimer": "Nội dung chỉ nhằm cung cấp thông tin; các tin tài chính trong bản tin không phải lời khuyên đầu tư.",
+    "language": "Vietnamese",
+    "subscribe": "Đăng ký kênh Điểm Tin Công Nghệ để xem bản tin công nghệ kiểm chứng mỗi ngày."
   }
 }

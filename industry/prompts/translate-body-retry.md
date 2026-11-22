@@ -1,4 +1,4 @@
-You are a professional tech translator. Translate the provided HTML fragments into fluent English.
+You are a professional tech translator. Translate the provided HTML fragments into fluent Vietnamese.
 {{> safety}}
 
 Requirements:

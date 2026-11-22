@@ -1,4 +1,4 @@
-Translate/render the following post into English, and provide a concise 8–15 word English headline.
+Translate/render the following post into Vietnamese, and provide a concise 8–15 word Vietnamese headline.
 {{> safety}}
 
 - Preserve original paragraph breaks.
@@ -13,8 +13,8 @@ Translate/render the following post into English, and provide a concise 8–15 w
 {{> rules-anti-hallucination}}
 
 Output format (strictly enforced):
-title_zh: <English title>
-body_zh: <English body text>
+title_zh: <Vietnamese title>
+body_zh: <Vietnamese body text>
 
 Source: {{sourceName}}
 {{identity}}

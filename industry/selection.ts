@@ -6,8 +6,9 @@
 
 export const SELECTION = {
   /** Source tier -> selection threshold (average score). */
-  // PipelineX finance pack: starting values copied from the AI channel (official sources lower than media, classes in
-  // between). Calibrate with labelled finance examples (docs/selection.en.md) once the channel has a few days of data.
+  // PipelineX technews pack: starting values copied from the finance pack (official sources lower than media, classes in
+  // between). The primary source is the channel's own published bulletin (T1), whose items were already curated once by
+  // the Studio pipeline; calibrate with labelled tech examples (docs/selection.en.md) once the channel has a few days of data.
   thresholds: { T1: 55, T1_5: 58, T2: 60 } as Record<string, number>,
   /** Source class -> threshold floor. Raises the threshold for developer/infra heavy sources. */
   classes: {

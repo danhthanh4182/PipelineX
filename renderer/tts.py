@@ -117,7 +117,8 @@ def load_lexicon() -> list:
     if _LEXICON_CACHE["mtime"] != mtime:
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
-            entries = [e for e in data.get("entries", []) if e.get("term") and e.get("reading")]
+            raw_entries = data.get("entries", []) if isinstance(data, dict) else data
+            entries = [e for e in raw_entries if isinstance(e, dict) and e.get("term") and e.get("reading")]
         except Exception:
             entries = []
         entries.sort(key=lambda e: len(str(e["term"])), reverse=True)
@@ -148,6 +149,61 @@ def apply_lexicon(text: str):
     return pattern.sub(repl, text), hits
 
 
+# industry/voice-config.json (written from the admin Voice page) is the channel's voice contract:
+# the fallback chain + each engine's voice and enabled flag. When the file exists and VIDEO_TTS does
+# not force a single engine, its chain rules. The env still wins where it always did: VIDEO_TTS=edge /
+# relay keeps the legacy single-engine modes, VIDEO_TTS=nvidia forces the NVIDIA leg alone, and
+# VIDEO_VIENEU_VOICE / VIDEO_PIPER_MODEL keep priority over the file. Without the file, behavior is
+# exactly the legacy behavior.
+NVIDIA_API_KEY = os.environ.get("NVIDIA_API_KEY", "")
+NVIDIA_PYTHON = os.environ.get("VIDEO_NVIDIA_PYTHON") or str(HERE / ".venv-nvidia" / "Scripts" / "python.exe")
+NVIDIA_VOICE = "Magpie-Multilingual.VI-VN.Long"
+VOICE_CONFIG = None
+try:
+    _vc_data = json.loads((INDUSTRY / "voice-config.json").read_text(encoding="utf-8"))
+    if isinstance(_vc_data, dict) and isinstance(_vc_data.get("engines"), dict):
+        VOICE_CONFIG = _vc_data
+except Exception:
+    VOICE_CONFIG = None
+
+
+def _cfg_engine(name: str) -> dict:
+    engines = (VOICE_CONFIG or {}).get("engines") or {}
+    entry = engines.get(name)
+    return entry if isinstance(entry, dict) else {}
+
+
+def _cfg_voice(name: str):
+    value = _cfg_engine(name).get("voice")
+    return value if isinstance(value, str) and value else None
+
+
+if VOICE_CONFIG:
+    if not os.environ.get("VIDEO_VIENEU_VOICE") and _cfg_voice("vieneu"):
+        VIENEU_VOICE = _cfg_voice("vieneu")
+    if _cfg_voice("nvidia"):
+        NVIDIA_VOICE = _cfg_voice("nvidia")
+    _piper_cfg_voice = _cfg_voice("piper")
+    if _piper_cfg_voice and not os.environ.get("VIDEO_PIPER_MODEL"):
+        _piper_model = HERE / "models" / "piper" / f"{_piper_cfg_voice}.onnx"
+        if _piper_model.exists():
+            PIPER_MODEL = str(_piper_model)
+    if len(sys.argv) <= 1:  # no explicit voice argument: the config's API voices win for this language
+        for _api_engine in ("edge", "azure"):
+            _api_voice = _cfg_voice(_api_engine)
+            if _api_voice and ((SCRIPT_LANGUAGE == "Vietnamese" and _api_voice.startswith("vi-")) or (SCRIPT_LANGUAGE != "Vietnamese" and not _api_voice.startswith("vi-"))):
+                VOICE = _api_voice
+                break
+
+_FORCED_TTS = os.environ.get("VIDEO_TTS", "")
+CONFIG_CHAIN: list = []
+if VOICE_CONFIG and _FORCED_TTS in ("", "vieneu"):
+    for _engine_name in VOICE_CONFIG.get("chain") or []:
+        if _engine_name in ("vieneu", "relay", "nvidia", "piper", "azure", "edge") and _cfg_engine(_engine_name).get("enabled", True):
+            CONFIG_CHAIN.append(_engine_name)
+USE_CONFIG_CHAIN = bool(CONFIG_CHAIN)
+
+
 def duration(path: Path) -> float:
     try:
         out = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(path)],
@@ -157,10 +213,10 @@ def duration(path: Path) -> float:
     return float(out.strip())
 
 
-ENGINES: dict = {"azure": 0, "edge": 0, "relay": 0, "vieneu": 0, "piper": 0, "cached": 0}
+ENGINES: dict = {"azure": 0, "edge": 0, "relay": 0, "vieneu": 0, "piper": 0, "nvidia": 0, "cached": 0}
 
 
-PREFERRED = "vieneu" if USE_VIENEU_CHAIN else "relay" if USE_RELAY else "azure" if USE_AZURE else "edge"
+PREFERRED = CONFIG_CHAIN[0] if USE_CONFIG_CHAIN else "nvidia" if _FORCED_TTS == "nvidia" else "vieneu" if USE_VIENEU_CHAIN else "relay" if USE_RELAY else "azure" if USE_AZURE else "edge"
 
 
 def resolve_beat_voice(b: dict) -> str:
@@ -331,15 +387,80 @@ def speak_piper(name: str, text: str, voice: str = VOICE):
     path = OUT / f"{name}.mp3"
     wav = OUT / f"{name}.piper.wav"
     try:
+        # PYTHONUTF8: piper reads the text from stdin; without it the child decodes stdin with the
+        # Windows locale codepage, mangles the Vietnamese diacritics and synthesizes nothing
+        # (wave.Error "# channels not specified" on close — found by the Part C chain tests).
         _run_checked([PIPER_PYTHON, "-m", "piper", "--model", PIPER_MODEL, "--output_file", str(wav)],
-                     input=text, timeout=300)
+                     input=text, timeout=300, env={**os.environ, "PYTHONUTF8": "1"})
         _wav_to_mp3(wav, path)
     finally:
         wav.unlink(missing_ok=True)
     return path, []
 
 
+def speak_nvidia(name: str, text: str, voice: str = VOICE):
+    """One beat via NVIDIA Magpie-TTS (Riva gRPC) in the .venv-nvidia subprocess. The API key rides
+    in the environment (NVIDIA_API_KEY) — never an argument, never printed. No word timings: the
+    beat's words list is empty and subtitles fall back to the ASR pass, like vieneu/piper."""
+    path = OUT / f"{name}.mp3"
+    wav = OUT / f"{name}.nvidia.wav"
+    try:
+        result = subprocess.run(
+            [NVIDIA_PYTHON, str(HERE / "nvidia_synth.py"), text, NVIDIA_VOICE, str(wav)],
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300,
+        )
+        if result.returncode != 0:
+            tail = (result.stderr or result.stdout or "").strip().splitlines()
+            raise RuntimeError(f"nvidia_synth rc={result.returncode}: {tail[-1][:200] if tail else 'no output'}")
+        _wav_to_mp3(wav, path)
+    finally:
+        wav.unlink(missing_ok=True)
+    return path, []
+
+
+async def _speak_config_leg(leg: str, name: str, text: str, voice: str):
+    """One leg of the voice-config chain. Raises when the leg cannot speak the beat."""
+    if leg == "vieneu":
+        last = "not tried"
+        for attempt in range(2):
+            try:
+                return await asyncio.to_thread(speak_vieneu, name, text, voice)
+            except Exception as error:
+                last = str(error)[:160]
+                if attempt < 1:
+                    await asyncio.sleep(3)
+        raise RuntimeError(last)
+    if leg == "relay":
+        if not RELAY_SECRET:
+            raise RuntimeError("RELAY_SECRET not set")
+        return await asyncio.to_thread(speak_relay, name, text, voice)
+    if leg == "nvidia":
+        if not NVIDIA_API_KEY:
+            raise RuntimeError("NVIDIA_API_KEY not set")
+        return await asyncio.to_thread(speak_nvidia, name, text, voice)
+    if leg == "piper":
+        return await asyncio.to_thread(speak_piper, name, text, voice)
+    if leg == "azure":
+        if not USE_AZURE:
+            raise RuntimeError("Azure Speech is not configured")
+        return await asyncio.to_thread(speak_azure, name, text, voice)
+    return await speak_edge(name, text, voice)
+
+
 async def speak(name: str, text: str, voice: str = VOICE):
+    if USE_CONFIG_CHAIN or _FORCED_TTS == "nvidia":
+        # The channel's configured chain (industry/voice-config.json), or the forced NVIDIA leg.
+        legs = CONFIG_CHAIN if USE_CONFIG_CHAIN else ["nvidia"]
+        errors = []
+        for leg in legs:
+            try:
+                path, words = await _speak_config_leg(leg, name, text, voice)
+                ENGINES[leg] += 1
+                return path, words, leg
+            except Exception as error:
+                errors.append(f"{leg}: {str(error)[:140]}")
+                print(f"{name}: {leg} leg failed ({str(error)[:140]}), trying the next leg of the voice chain")
+        raise RuntimeError(f"{name}: every leg of the voice chain failed ({'; '.join(errors)})")
     if USE_VIENEU_CHAIN:
         # The technews chain: VieNeu -> relay (HoaiMy, only with RELAY_SECRET) -> Piper. No Azure/edge
         # fallback in this mode: a beat no leg can speak fails the video, loudly, instead of quietly
@@ -479,7 +600,7 @@ async def main():
     (W / TIMELINE).write_text(json.dumps(timeline, indent=2), encoding="utf-8")
     print(f"total {t:.1f}s")
     chars = sum(len(b["narration"]) for s in script["scenes"] for b in s["beats"])
-    used = [k for k in ("azure", "edge", "relay", "vieneu", "piper") if ENGINES[k]]
+    used = [k for k in ("azure", "edge", "relay", "vieneu", "piper", "nvidia") if ENGINES[k]]
     engine = used[0] if len(used) == 1 else "mixed" if used else "cached"
     print("RESULT " + json.dumps({"duration": round(t, 1), "engine": engine,
                                   "beats": ENGINES, "characters": chars}))

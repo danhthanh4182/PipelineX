@@ -27,7 +27,7 @@ img{max-width:100%;display:block}
 a{color:var(--brand-gold)}
 .wrap{max-width:var(--content-max);margin:0 auto;padding:0 24px}
 header.hero{background:linear-gradient(160deg,var(--brand-navy) 0%,var(--brand-navy-dark) 78%);border-bottom:3px solid var(--brand-gold-deep);padding:40px 0 32px}
-header.hero .lockup{width:min(560px,86vw);height:auto}
+header.hero .lockup{width:min(560px,86vw);height:auto;aspect-ratio:3252/480}
 .kicker{color:var(--brand-gold);font-weight:700;letter-spacing:.14em;font-size:12px;text-transform:uppercase}
 .hero-meta{color:var(--brand-cream);margin-top:16px;font-size:13px}
 .hero-meta b{color:#fff}
@@ -67,7 +67,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
 .radiusdemo{background:var(--surface);border:1px solid var(--line);padding:18px;text-align:center;color:var(--brand-cream);font-size:12px}
 .radiusdemo .box{width:96px;height:64px;background:var(--frame-backdrop);border:2px solid var(--brand-gold-deep);margin:0 auto 10px}
 .brandstage{background:var(--brand-navy);border:1px solid var(--line);border-radius:var(--r-card);padding:28px;text-align:center}
-.brandstage img.lockup2{width:min(480px,80vw);margin:0 auto}
+.brandstage img.lockup2{width:min(480px,80vw);margin:0 auto;aspect-ratio:6504/960;height:auto}
 .bugrow{display:flex;gap:28px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
 .bug{width:120px;height:120px;border-radius:20%;border:3px solid var(--brand-gold-deep);object-fit:cover}
 .bug.small{width:56px;height:56px;border-width:2px}
@@ -189,7 +189,10 @@ footer{border-top:1px solid var(--line);margin-top:48px;padding:24px 0 40px;colo
 .skiplink{position:absolute;left:12px;top:-48px;z-index:99;background:var(--brand-gold);color:#131313;font-weight:700;padding:9px 16px;border-radius:var(--r-sm);transition:top var(--m-fast) var(--ease-out)}
 .skiplink:focus{top:12px}
 button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.wave{display:inline-flex;align-items:flex-end;gap:2px;height:18px}
+.wave{display:inline-flex;align-items:flex-end;justify-content:space-between;height:18px;width:22px;flex:none;visibility:hidden}
+.wave.playing{visibility:visible}
+.engcard.dragging{opacity:.45}
+.engcard.dragover{outline:2px dashed var(--brand-gold);outline-offset:-2px}
 .wave i{width:3px;height:5px;background:var(--brand-gold);border-radius:2px;opacity:.35}
 .wave.playing i{opacity:1;animation:eq .7s ease-in-out infinite alternate}
 .wave.playing i:nth-child(2n){animation-delay:.12s}
@@ -320,7 +323,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
 <section id="component"><div class="wrap">
   <h2 class="sec">5 · Component &amp; module mẫu</h2>
-  <p class="sec-sub">Hai module mẫu dưới đây dựng sống bằng đúng token của hệ và tương tác được thật — tìm kiếm, lọc, chọn hàng loạt, bật/tắt, khóa, sửa, xóa, đổi thứ tự — thay cho ảnh chụp panel. Module Từ điển đọc kế thừa trực tiếp module thật đang chạy tại PipelineX <b style="color:#fff">/admin/lexicon</b>: cùng bố cục, đủ bộ nút và bề mặt admin của nó (nền #0D193F, thẻ #131F4F, ô nhập chìm #0B1435, chip tuyến nền vàng mờ). Module Giọng đọc bên dưới kế thừa trang thật <b style="color:#fff">/admin/voice</b>: thẻ Chuỗi dự phòng + lưới thẻ engine. Dữ liệu trong module là dữ liệu mẫu để trình diễn component.</p>
+  <p class="sec-sub">Hai module mẫu dưới đây dựng sống bằng đúng token của hệ và tương tác được thật — tìm kiếm, lọc, chọn hàng loạt, bật/tắt, khóa, sửa, xóa, đổi thứ tự — thay cho ảnh chụp panel. Module Từ điển đọc kế thừa trực tiếp module thật đang chạy tại PipelineX <b style="color:#fff">/admin/lexicon</b>: cùng bố cục, đủ bộ nút và bề mặt admin của nó (nền #0D193F, thẻ #131F4F, ô nhập chìm #0B1435, chip tuyến nền vàng mờ). Module Giọng đọc bên dưới kế thừa trang thật <b style="color:#fff">/admin/voice</b>: một danh sách thẻ ưu tiên hợp nhất cho cả 6 engine, mỗi thẻ có hàng Nghe thử riêng. Dữ liệu trong module là dữ liệu mẫu để trình diễn component.</p>
 
   <div class="paneldemo pxmod">
     <div class="p-head">
@@ -373,20 +376,16 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   <div class="paneldemo pxmod">
     <div class="p-head">
       <h4>Giọng đọc</h4>
-      <button class="btn btn-gold" id="voiceSave">Lưu cấu hình giọng</button>
+      <span style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost" id="voiceRestore">Khôi phục thứ tự mặc định</button>
+        <button class="btn btn-gold" id="voiceSave">Lưu cấu hình giọng</button>
+      </span>
     </div>
-    <p class="meta">Engine giọng đọc của kênh: engine cài bằng package tại máy hoặc gọi model qua API; chuỗi dự phòng quyết định thứ tự thử khi một engine lỗi. Thay đổi chỉ có hiệu lực sau khi bấm Lưu cấu hình giọng.</p>
     <div class="subcard">
-      <h4 style="margin-bottom:6px">Chuỗi dự phòng</h4>
-      <p class="meta">Bước giọng nói thử từng engine theo thứ tự này cho mỗi beat; engine hỏng sẽ rơi xuống engine kế tiếp. Kéo tay nắm ⠿ để đổi thứ tự (hoặc dùng nút ↑/↓). Engine trong chuỗi bắt buộc đang bật — tắt một engine là engine đó tự rời khỏi chuỗi nhưng giữ nguyên cấu hình giọng.</p>
-      <ol id="chainList" style="list-style:none;margin:12px 0;display:flex;flex-direction:column;gap:8px"></ol>
-      <div class="filters" style="margin:0;align-items:flex-end">
-        <div class="fitem grow"><label>Thêm engine đang bật vào chuỗi</label><select class="inp" id="addEngineSel" aria-label="Thêm engine đang bật vào chuỗi"></select></div>
-        <button class="btn btn-ghost" id="addEngineBtn" disabled>Thêm vào chuỗi</button>
-      </div>
-      <p class="meta" style="margin-top:12px">Câu mẫu chuẩn: <i>“Chào bạn đến với Điểm Tin Công Nghệ — bản tin công nghệ mỗi ngày.”</i></p>
+      <p class="meta">Bước giọng nói thử từng engine theo thứ tự ưu tiên cho mỗi beat; engine hỏng sẽ rơi xuống engine kế tiếp trong chuỗi dự phòng. Engine trong chuỗi bắt buộc đang bật — tắt một engine là engine đó tự rời khỏi chuỗi nhưng giữ nguyên cấu hình giọng; bật engine không tự thêm vào chuỗi. Thay đổi chỉ có hiệu lực sau khi bấm Lưu cấu hình giọng.</p>
+      <p class="meta" style="margin-top:8px">Câu mẫu chuẩn: <i>“Chào bạn đến với Điểm Tin Công Nghệ — bản tin công nghệ mỗi ngày.”</i></p>
     </div>
-    <div class="engrid" id="engGrid"></div>
+    <div id="voiceList" style="display:flex;flex-direction:column;gap:12px;margin-top:12px"></div>
     <div style="display:flex;gap:22px;flex-wrap:wrap;align-items:center;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)">
       <span class="meta" style="font-weight:700">Trạng thái công tắc:</span>
       <span class="vswrap"><label class="switch"><input type="checkbox" checked><span class="tr"></span></label><span class="vstate">Bật</span></span>
@@ -701,91 +700,128 @@ document.getElementById("lexExportCsv").addEventListener("click",function(){
 });
 renderLex();
 
-/* ===== Module mẫu: Giọng đọc (kế thừa PipelineX /admin/voice) ===== */
+/* ===== Module mẫu: Giọng đọc v3.2 (kế thừa PipelineX /admin/voice — danh sách thẻ ưu tiên hợp nhất) ===== */
 var ENGINES=[
- {id:"vieneu",name:"VieNeu-TTS v3 Turbo",kind:"pkg",role:"Chính",note:"Engine tự host tại máy của kênh, tổng hợp tiếng Việt chất lượng cao.",on:true,voices:[["mai-anh","Mai Anh","Giọng nữ miền Bắc, ấm và rõ chữ — giọng mặc định của kênh."],["hai-dang","Hải Đăng","Giọng nam miền Bắc, trầm, đọc tin chắc nhịp."],["ngoc-anh","Ngọc Anh","Giọng nữ miền Nam, nhẹ và tự nhiên."]],voice:"mai-anh",preview:"mai-anh"},
- {id:"relay",name:"Relay TTS — tts.danhthanh.dev",kind:"api",role:"Tuyến Relay riêng",note:"Tuyến relay riêng của kênh (không lẫn với engine tự host hay API ngoài).",on:true,voices:[["hoaimy","HoaiMy","Giọng nữ miền Nam, giọng relay chính."],["namminh","NamMinh","Giọng nam miền Nam, giọng relay dự phòng."]],voice:"hoaimy",preview:"hoaimy"},
- {id:"nvidia",name:"NVIDIA Magpie-TTS",kind:"api",role:"Dự phòng",note:"Model Magpie gọi qua API NVIDIA; đang giữ ngoài chuỗi chạy cho tới khi endpoint ổn định.",on:false,voices:[["vi-vn-long","VI-VN.Long","Giọng Magpie đa ngữ, cấu hình tiếng Việt."]],voice:"vi-vn-long",preview:"vi-vn-long"},
- {id:"piper",name:"Piper vais1000-medium",kind:"pkg",role:"Dự phòng",note:"Engine nhẹ chạy tại máy, một giọng cố định, dùng khi cần tổng hợp nhanh.",on:true,voices:[["vais1000","vais1000-medium","Giọng Piper tiếng Việt, tốc độ nhanh, chất lượng vừa."]],voice:"vais1000",preview:"vais1000"},
- {id:"azure",name:"Azure Speech",kind:"api",role:"Dự phòng",note:"Dịch vụ giọng của Microsoft gọi qua API.",on:false,voices:[["azure-hoaimy","vi-VN-HoaiMyNeural","Giọng nữ Azure tiếng Việt."],["azure-namminh","vi-VN-NamMinhNeural","Giọng nam Azure tiếng Việt."]],voice:"azure-hoaimy",preview:"azure-hoaimy"},
- {id:"edge",name:"Microsoft Edge TTS",kind:"api",role:"Dự phòng",note:"Giọng Edge gọi qua API, cùng bộ giọng Azure tiếng Việt.",on:false,voices:[["edge-hoaimy","vi-VN-HoaiMyNeural","Giọng nữ Edge tiếng Việt."],["edge-namminh","vi-VN-NamMinhNeural","Giọng nam Edge tiếng Việt."]],voice:"edge-hoaimy",preview:"edge-hoaimy"}
+ {id:"vieneu",name:"VieNeu-TTS v3 Turbo",kind:"pkg",note:"Engine tự host tại máy của kênh, tổng hợp tiếng Việt chất lượng cao.",on:true,demo:true,voices:[["mai-anh","Mai Anh","Giọng nữ miền Bắc, ấm và rõ chữ — giọng mặc định của kênh."],["hai-dang","Hải Đăng","Giọng nam miền Bắc, trầm, đọc tin chắc nhịp."],["ngoc-anh","Ngọc Anh","Giọng nữ miền Nam, nhẹ và tự nhiên."]],voice:"mai-anh",preview:"mai-anh"},
+ {id:"relay",name:"Relay TTS — tts.danhthanh.dev",kind:"api",note:"Tuyến relay riêng của kênh (không lẫn với engine tự host hay API ngoài).",on:true,demo:true,voices:[["hoaimy","HoaiMy","Giọng nữ miền Nam, giọng relay chính."],["namminh","NamMinh","Giọng nam miền Nam, giọng relay dự phòng."]],voice:"hoaimy",preview:"hoaimy"},
+ {id:"nvidia",name:"NVIDIA Magpie-TTS",kind:"api",note:"Model Magpie gọi qua API NVIDIA; đang giữ ngoài chuỗi chạy cho tới khi endpoint ổn định.",on:false,demo:true,voices:[["vi-vn-long","VI-VN.Long","Giọng Magpie đa ngữ, cấu hình tiếng Việt."]],voice:"vi-vn-long",preview:"vi-vn-long"},
+ {id:"piper",name:"Piper vais1000-medium",kind:"pkg",note:"Engine nhẹ chạy tại máy, một giọng cố định, dùng khi cần tổng hợp nhanh.",on:true,demo:true,voices:[["vais1000","vais1000-medium","Giọng Piper tiếng Việt, tốc độ nhanh, chất lượng vừa."]],voice:"vais1000",preview:"vais1000"},
+ {id:"azure",name:"Azure Speech",kind:"api",note:"Dịch vụ giọng của Microsoft gọi qua API.",on:false,demo:false,voices:[["azure-hoaimy","vi-VN-HoaiMyNeural","Giọng nữ Azure tiếng Việt."],["azure-namminh","vi-VN-NamMinhNeural","Giọng nam Azure tiếng Việt."]],voice:"azure-hoaimy",preview:"azure-hoaimy"},
+ {id:"edge",name:"Microsoft Edge TTS",kind:"api",note:"Giọng Edge gọi qua API, cùng bộ giọng Azure tiếng Việt.",on:false,demo:false,voices:[["edge-hoaimy","vi-VN-HoaiMyNeural","Giọng nữ Edge tiếng Việt."],["edge-namminh","vi-VN-NamMinhNeural","Giọng nam Edge tiếng Việt."]],voice:"edge-hoaimy",preview:"edge-hoaimy"}
 ];
 var voiceChain=["vieneu","relay","piper"];
 var voiceDragIdx=null;
-var WAVE_BARS="<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>";
+var playingId=null,playTimer=null;
+var WAVE_BARS="<i></i><i></i><i></i><i></i><i></i>";
 function engById(id){return ENGINES.filter(function(e){return e.id===id;})[0];}
+function voiceOrder(){
+  var inChain=voiceChain.map(engById).filter(Boolean);
+  var onRest=ENGINES.filter(function(e){return e.on&&voiceChain.indexOf(e.id)<0;});
+  var offRest=ENGINES.filter(function(e){return !e.on;});
+  return inChain.concat(onRest,offRest);
+}
+function stopPlay(){
+  if(playTimer){clearTimeout(playTimer);playTimer=null;}
+  if(!playingId)return;
+  var card=document.querySelector('.engcard[data-eid="'+playingId+'"]');
+  if(card){
+    var w=card.querySelector('[data-a="wave"]');if(w)w.classList.remove("playing");
+    var b=card.querySelector('[data-a="play"]');if(b){b.innerHTML="▶ Nghe thử";b.setAttribute("aria-pressed","false");}
+    var st=card.querySelector('[data-a="playstate"]');var e0=engById(playingId);
+    if(st&&e0){var pv=e0.voices.filter(function(x){return x[0]===e0.preview;})[0];st.textContent="Câu mẫu · giọng "+(pv?pv[1]:e0.preview);}
+  }
+  playingId=null;
+}
 function renderVoice(){
-  var ol=document.getElementById("chainList");ol.innerHTML="";
-  voiceChain.forEach(function(id,i){
-    var e=engById(id);
-    var li=document.createElement("li");li.className="chainrow";li.draggable=true;
-    li.innerHTML='<span class="draghandle" tabindex="0" role="button" aria-label="Đổi thứ tự '+e.name+': kéo thả, hoặc nhấn phím mũi tên lên xuống" title="Kéo để đổi thứ tự">⠿</span><span class="numbadge" aria-hidden="true">'+(i+1)+'</span><span style="flex:1;font-weight:600">'+e.name+(id==="relay"?' <span class="minichip">Tuyến Relay riêng</span>':"")+'</span>'
-      +'<button class="btn btn-ghost sm" data-a="up" aria-label="Đưa '+e.name+' lên" '+(i===0?"disabled":"")+'>↑</button>'
-      +'<button class="btn btn-ghost sm" data-a="down" aria-label="Đưa '+e.name+' xuống" '+(i===voiceChain.length-1?"disabled":"")+'>↓</button>'
-      +'<button class="btn btn-ghost sm" data-a="rm" aria-label="Bỏ '+e.name+' khỏi chuỗi">Bỏ khỏi chuỗi</button>';
-    li.querySelector(".draghandle").addEventListener("keydown",function(ev){
-      if(ev.key!=="ArrowUp"&&ev.key!=="ArrowDown")return;
-      ev.preventDefault();
-      var j=ev.key==="ArrowUp"?i-1:i+1;
-      if(j<0||j>=voiceChain.length)return;
-      var m=voiceChain.splice(i,1)[0];voiceChain.splice(j,0,m);renderVoice();
-      var rows=document.getElementById("chainList").children;
-      if(rows[j])rows[j].querySelector(".draghandle").focus();
-      showToast("Đã chuyển "+e.name+" tới vị trí "+(j+1)+" trong chuỗi");
-    });
-    li.querySelector('[data-a="up"]').addEventListener("click",function(){var t=voiceChain[i-1];voiceChain[i-1]=voiceChain[i];voiceChain[i]=t;renderVoice();});
-    li.querySelector('[data-a="down"]').addEventListener("click",function(){var t=voiceChain[i+1];voiceChain[i+1]=voiceChain[i];voiceChain[i]=t;renderVoice();});
-    li.querySelector('[data-a="rm"]').addEventListener("click",function(){voiceChain.splice(i,1);renderVoice();showToast("Đã bỏ "+e.name+" khỏi chuỗi (engine vẫn bật)");});
-    li.addEventListener("dragstart",function(ev){voiceDragIdx=i;li.classList.add("dragging");ev.dataTransfer.effectAllowed="move";try{ev.dataTransfer.setData("text/plain",String(i));}catch(_){}});
-    li.addEventListener("dragend",function(){voiceDragIdx=null;renderVoice();});
-    li.addEventListener("dragover",function(ev){ev.preventDefault();ev.dataTransfer.dropEffect="move";li.classList.add("dragover");});
-    li.addEventListener("dragleave",function(){li.classList.remove("dragover");});
-    li.addEventListener("drop",function(ev){ev.preventDefault();if(voiceDragIdx!==null&&voiceDragIdx!==i){var m=voiceChain.splice(voiceDragIdx,1)[0];voiceChain.splice(i,0,m);voiceDragIdx=null;renderVoice();showToast("Đã đổi thứ tự chuỗi dự phòng");}});
-    ol.appendChild(li);
-  });
-  var sel=document.getElementById("addEngineSel");var cur=sel.value;sel.innerHTML='<option value="">—</option>';
-  ENGINES.filter(function(e){return e.on&&voiceChain.indexOf(e.id)<0;}).forEach(function(e){var o=document.createElement("option");o.value=e.id;o.textContent=e.name;sel.appendChild(o);});
-  sel.value=cur;document.getElementById("addEngineBtn").disabled=!sel.value;
-  var grid=document.getElementById("engGrid");grid.innerHTML="";
-  ENGINES.forEach(function(e){
-    var card=document.createElement("div");card.className="engcard";
+  stopPlay();
+  var list=document.getElementById("voiceList");list.innerHTML="";
+  voiceOrder().forEach(function(e){
+    var ci=voiceChain.indexOf(e.id);
+    var inChain=ci>=0;
+    var card=document.createElement("div");card.className="engcard";card.dataset.eid=e.id;
+    if(inChain)card.draggable=true;
     var kind=e.kind==="pkg"?'<span class="badge b-info" style="font-size:11px;padding:2px 10px">Package tại máy</span>':'<span class="badge b-waiting" style="font-size:11px;padding:2px 10px">Gọi model qua API</span>';
-    card.innerHTML='<div class="enghead"><span class="engname">'+e.name+'</span>'+kind+'<span class="minichip">'+e.role+'</span>'
-      +'<span style="flex:1"></span><span class="vswrap"><label class="switch"><input type="checkbox" data-a="toggle" aria-label="Bật hoặc tắt '+e.name+'" '+(e.on?"checked":"")+'><span class="tr"></span></label><span class="vstate">'+(e.on?"Đang bật":"Đang tắt")+'</span></span></div>'
+    var role=inChain?'<span class="badge b-active">Ưu tiên '+(ci+1)+'</span>':(e.on?'<span class="badge b-waiting">Chưa vào chuỗi</span>':'<span class="badge b-neutral">Đang tắt</span>');
+    var handle=inChain
+      ?'<span class="draghandle" tabindex="0" role="button" aria-label="Đổi thứ tự '+e.name+': kéo thả, hoặc nhấn phím mũi tên lên xuống" title="Kéo để đổi thứ tự">⠿</span>'
+      :'<span class="draghandle" style="opacity:.3" aria-hidden="true">⠿</span>';
+    card.innerHTML='<div class="enghead">'+handle+'<span class="engname">'+e.name+'</span>'+kind+role+(e.id==="relay"?'<span class="minichip">Tuyến Relay riêng</span>':"")
+      +'<span style="flex:1"></span>'
+      +'<button class="btn btn-ghost sm" data-a="up" aria-label="Đưa '+e.name+' lên" '+((!inChain||ci===0)?"disabled":"")+'>↑</button>'
+      +'<button class="btn btn-ghost sm" data-a="down" aria-label="Đưa '+e.name+' xuống" '+((!inChain||ci===voiceChain.length-1)?"disabled":"")+'>↓</button>'
+      +'<span class="vswrap"><label class="switch"><input type="checkbox" data-a="toggle" aria-label="Bật hoặc tắt '+e.name+'" '+(e.on?"checked":"")+'><span class="tr"></span></label><span class="vstate">'+(e.on?"Đang bật":"Đang tắt")+'</span></span></div>'
       +'<p class="meta" style="margin:8px 0 10px">'+e.note+'</p>'
       +'<div class="filters" style="margin:0">'
       +'<div class="fitem grow"><label>Giọng đọc</label><select class="inp" data-a="voice" aria-label="Giọng đọc của '+e.name+'"></select></div>'
       +'<div class="fitem grow"><label>Giọng nghe thử</label><select class="inp" data-a="preview" aria-label="Giọng nghe thử của '+e.name+'"></select></div>'
       +'</div>'
-      +'<div style="display:flex;align-items:center;gap:10px;margin-top:10px;min-height:32px"><button class="btn sm btn-ghost" data-a="play" style="white-space:nowrap;flex:none" aria-label="Nghe thử giọng của '+e.name+'">▶ Nghe thử</button><span class="wave" data-a="wave" style="flex:none" aria-hidden="true">'+WAVE_BARS+'</span><span class="meta" data-a="playstate" role="status" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span></div>'
-      +'<p class="meta" data-a="desc" style="margin-top:8px"></p>';
+      +'<div style="display:flex;flex-wrap:nowrap;align-items:center;gap:10px;margin-top:10px;min-height:48px">'
+      +(e.demo
+        ?'<button class="btn sm btn-ghost" data-a="play" style="white-space:nowrap;flex:none;width:160px" aria-pressed="false" aria-label="Nghe thử giọng của '+e.name+'">▶ Nghe thử</button>'
+        :'<button class="btn sm btn-ghost" data-a="play" style="white-space:nowrap;flex:none;width:160px" disabled title="Engine chưa có bản phát mẫu">▶ Nghe thử</button>')
+      +'<span class="wave" data-a="wave" aria-hidden="true">'+WAVE_BARS+'</span>'
+      +'<span class="meta" data-a="playstate" role="status" style="flex:1;min-width:0;height:35px;display:flex;align-items:center;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span></div>'
+      +'<p class="meta" data-a="desc" style="margin-top:2px"></p>'
+      +(inChain
+        ?'<div style="margin-top:8px"><button class="btn btn-ghost sm" data-a="chain" aria-label="Bỏ '+e.name+' khỏi chuỗi">Bỏ khỏi chuỗi</button></div>'
+        :(e.on?'<div style="margin-top:8px"><button class="btn btn-ghost sm" data-a="chain" aria-label="Thêm '+e.name+' vào chuỗi">Thêm vào chuỗi</button></div>':""));
     var vs=card.querySelector('[data-a="voice"]'),ps=card.querySelector('[data-a="preview"]');
     e.voices.forEach(function(v){var o1=document.createElement("option");o1.value=v[0];o1.textContent=v[1];vs.appendChild(o1);var o2=document.createElement("option");o2.value=v[0];o2.textContent=v[1];ps.appendChild(o2);});
     vs.value=e.voice;ps.value=e.preview;
+    var st=card.querySelector('[data-a="playstate"]');
+    function pvName(){var v=e.voices.filter(function(x){return x[0]===ps.value;})[0];return v?v[1]:ps.value;}
+    function idleStatus(){st.textContent=e.demo?("Câu mẫu · giọng "+pvName()):"Chưa có bản phát mẫu cho engine này";}
     function desc(){var v=e.voices.filter(function(x){return x[0]===vs.value;})[0];card.querySelector('[data-a="desc"]').textContent=v?v[2]:"";}
-    desc();
+    desc();idleStatus();
     vs.addEventListener("change",function(){e.voice=vs.value;desc();});
-    ps.addEventListener("change",function(){e.preview=ps.value;});
-    var playBtn=card.querySelector('[data-a="play"]'),waveEl=card.querySelector('[data-a="wave"]'),playState=card.querySelector('[data-a="playstate"]');
-    playBtn.addEventListener("click",function(){
-      var vname=ps.options[ps.selectedIndex]?ps.options[ps.selectedIndex].textContent:ps.value;
-      waveEl.classList.add("playing");playState.textContent="Đang phát mẫu: "+vname;playState.title="Đang phát mẫu: "+vname+" (âm thanh thật phát ở PipelineX)";
-      showToast("Nghe thử "+e.name+" — giọng "+vname);
-      setTimeout(function(){waveEl.classList.remove("playing");playState.textContent="";},2200);
+    ps.addEventListener("change",function(){e.preview=ps.value;if(playingId===e.id)stopPlay();idleStatus();});
+    var playBtn=card.querySelector('[data-a="play"]'),waveEl=card.querySelector('[data-a="wave"]');
+    if(e.demo)playBtn.addEventListener("click",function(){
+      if(playingId===e.id){stopPlay();idleStatus();return;}
+      stopPlay();playingId=e.id;
+      waveEl.classList.add("playing");playBtn.innerHTML="Đang phát — dừng";playBtn.setAttribute("aria-pressed","true");
+      st.textContent="Đang phát · giọng "+pvName()+"…";
+      showToast("Nghe thử "+e.name+" — giọng "+pvName()+" (mô phỏng trong module mẫu; bản triển khai phát mẫu thật của engine)");
+      playTimer=setTimeout(function(){if(playingId===e.id){stopPlay();idleStatus();}},2600);
     });
     var tgsw=card.querySelector('[data-a="toggle"]');
     tgsw.addEventListener("change",function(){
       e.on=tgsw.checked;
       if(!e.on){var ix=voiceChain.indexOf(e.id);if(ix>=0)voiceChain.splice(ix,1);}
-      renderVoice();showToast(e.name+(e.on?" đã bật":" đã tắt — tự rời khỏi chuỗi nếu đang ở trong chuỗi"));
+      renderVoice();showToast(e.name+(e.on?" đã bật (chưa tự vào chuỗi)":" đã tắt — tự rời khỏi chuỗi nếu đang ở trong chuỗi"));
     });
-    grid.appendChild(card);
+    if(inChain){
+      card.querySelector('[data-a="up"]').addEventListener("click",function(){var t=voiceChain[ci-1];voiceChain[ci-1]=voiceChain[ci];voiceChain[ci]=t;renderVoice();});
+      card.querySelector('[data-a="down"]').addEventListener("click",function(){var t=voiceChain[ci+1];voiceChain[ci+1]=voiceChain[ci];voiceChain[ci]=t;renderVoice();});
+      var hd=card.querySelector(".draghandle");
+      hd.addEventListener("keydown",function(ev){
+        if(ev.key!=="ArrowUp"&&ev.key!=="ArrowDown")return;
+        ev.preventDefault();
+        var j=ev.key==="ArrowUp"?ci-1:ci+1;
+        if(j<0||j>=voiceChain.length)return;
+        var m=voiceChain.splice(ci,1)[0];voiceChain.splice(j,0,m);renderVoice();
+        var nc=document.querySelector('.engcard[data-eid="'+e.id+'"] .draghandle');if(nc)nc.focus();
+        showToast("Đã chuyển "+e.name+" tới ưu tiên "+(j+1));
+      });
+      card.addEventListener("dragstart",function(ev){voiceDragIdx=ci;card.classList.add("dragging");ev.dataTransfer.effectAllowed="move";try{ev.dataTransfer.setData("text/plain",String(ci));}catch(_){}});
+      card.addEventListener("dragend",function(){voiceDragIdx=null;renderVoice();});
+      card.addEventListener("dragover",function(ev){ev.preventDefault();ev.dataTransfer.dropEffect="move";card.classList.add("dragover");});
+      card.addEventListener("dragleave",function(){card.classList.remove("dragover");});
+      card.addEventListener("drop",function(ev){ev.preventDefault();if(voiceDragIdx!==null&&voiceDragIdx!==ci){var m=voiceChain.splice(voiceDragIdx,1)[0];voiceChain.splice(ci,0,m);voiceDragIdx=null;renderVoice();showToast("Đã đổi thứ tự chuỗi dự phòng");}});
+    }
+    var chainBtn=card.querySelector('[data-a="chain"]');
+    if(chainBtn)chainBtn.addEventListener("click",function(){
+      if(inChain){voiceChain.splice(ci,1);renderVoice();showToast("Đã bỏ "+e.name+" khỏi chuỗi (engine vẫn bật)");}
+      else{voiceChain.push(e.id);renderVoice();showToast("Đã thêm "+e.name+" vào cuối chuỗi");}
+    });
+    list.appendChild(card);
   });
 }
-document.getElementById("addEngineSel").addEventListener("change",function(ev){document.getElementById("addEngineBtn").disabled=!ev.target.value;});
-document.getElementById("addEngineBtn").addEventListener("click",function(){
-  var id=document.getElementById("addEngineSel").value;if(!id)return;
-  voiceChain.push(id);renderVoice();showToast("Đã thêm "+engById(id).name+" vào cuối chuỗi");
+document.getElementById("voiceRestore").addEventListener("click",function(){
+  var def=["vieneu","relay","piper"];
+  voiceChain=def.filter(function(id){return engById(id).on;});
+  ENGINES.forEach(function(e){if(e.on&&voiceChain.indexOf(e.id)<0&&def.indexOf(e.id)>=0)voiceChain.push(e.id);});
+  renderVoice();showToast("Đã khôi phục thứ tự mặc định của chuỗi: VieNeu → Relay → Piper");
 });
 document.getElementById("voiceSave").addEventListener("click",function(){showToast("Đã lưu cấu hình giọng đọc (module mẫu — lưu thật ở PipelineX /admin/voice)");});
 renderVoice();

@@ -15,6 +15,13 @@ export function Mark({ className = "" }: { className?: string }) {
 }
 
 export function Wordmark({ size = 24, className = "", title = SITE.name }: { size?: number; className?: string; title?: string }) {
+  if (SITE.logoDisplay === "compact") {
+    return (
+      <span className={inline-flex items-center leading-none ${className}} style={{ fontSize: Math.round(size * 0.92) }} aria-label={title} role="img">
+        <Mark className="inline-block size-[1.15em] shrink-0" />
+      </span>
+    );
+  }
   // "Điểm Tin Công Nghệ": the first words in ink, the rest in the accent colour.
   const [first, ...rest] = SITE.name.split(" ");
   return (

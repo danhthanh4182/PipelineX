@@ -19,6 +19,8 @@ export const EDITION_WHEN = {
 export const SITE = {
   /** Site name: used in navigation, page titles, OG cards, RSS, MCP, and admin. */
   name: "Điểm Tin Công Nghệ",
+  /** How the header logo renders: "full" = mark + site name; "compact" = mark only. */
+  logoDisplay: "compact" as "compact" | "full",
   /** Industry keyword: interpolated into phrases like "AI Briefing", "AI Updates". */
   subject: "Công nghệ",
   /** Homepage full title (browser tab, search engines). */

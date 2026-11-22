@@ -306,3 +306,7 @@ Lệnh của Thanh (22/11/2026): "Hỗ trợ làm video bằng tiếng Việt/ t
 - `renderer/short.ts`: bản Short theo `long.language` (rơi về `LANGUAGE` của kênh), ghi `language` vào script-short.json; lời kêu gọi xem bản đầy đủ viết theo ngôn ngữ của Short.
 - `renderer/tts.py`: giọng mặc định theo `script.language` — Vietnamese: HoaiMy (chính) / NamMinh (trích dẫn, xung đột) qua Azure/edge như cũ; English giữ nguyên bộ giọng en-US hiện tại. Script không có trường language (mọi script viết trước thay đổi này) được hiểu là English. SSML của Azure dùng xml:lang theo giọng. Tham số giọng tường minh và VIDEO_ALT_VOICE_* vẫn thắng.
 - Kiểm chứng (22/11/2026): chạy script.ts độc lập trên dossier của story Cloudflare (kênh technews) → script tiếng Việt: tiêu đề "Cloudflare chặn phpAfterShell cho tất cả khách hàng", 31 beats, 1.305 từ, 0 beat thiếu fact, language="Vietnamese". Chạy tts.py với script-final.json tiếng Việt → MP3 giọng vi-VN-HoaiMyNeural (edge-tts, có word timings). Kênh English không đổi hành vi (prompt sinh ra giống hệt trước với LANGUAGE=English).
+
+## 2026-11-22 — Whitelist env cho renderer: RELAY_SECRET, RELAY_URL, VIDEO_VIENEU_VOICE
+
+- `modules/video/backend/pipeline.ts` (RENDERER_ENV): bổ sung "RELAY_SECRET", "RELAY_URL", "VIDEO_VIENEU_VOICE". Trước đây bước voice không nhận được RELAY_SECRET dù engine relay đã có trong tts.py từ Phase 1 — biến bị bộ lọc env của pipeline chặn. Nay chân relay trong chuỗi giọng (VieNeu → relay → Piper) và tùy chọn giọng VieNeu mới tới được tts.py. Thanh duyệt qua lệnh cấu hình RELAY_SECRET ngày 22/11/2026.

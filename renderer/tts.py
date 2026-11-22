@@ -94,6 +94,59 @@ VOICE = sys.argv[1] if len(sys.argv) > 1 else _lang_voices[0]
 ALT_VOICE_QUOTE = os.environ.get("VIDEO_ALT_VOICE_QUOTE", _lang_voices[1])
 ALT_VOICE_CONFLICT = os.environ.get("VIDEO_ALT_VOICE_CONFLICT", _lang_voices[2])
 
+# The pronunciation dictionary (industry/lexicon.json, materialized by the video admin API from the
+# pronunciation_lexicon table: enabled entries only). Applied to the READING text of each beat —
+# never to the display text, the title or the captions — and only for Vietnamese scripts, because
+# the readings are Vietnamese. Longest match first, case-insensitive, on word boundaries; an entry
+# applies when its category_scope is "all" or matches the channel's content category. A missing or
+# unreadable file simply means no dictionary for this run.
+_LEXICON_CACHE: dict = {"mtime": None, "entries": []}
+
+
+def _content_category() -> str:
+    t = str(CHANNEL.get("type") or "")
+    return "finance" if "finance" in t else "tech" if t else "all"
+
+
+def load_lexicon() -> list:
+    path = INDUSTRY / "lexicon.json"
+    try:
+        mtime = path.stat().st_mtime
+    except OSError:
+        return []
+    if _LEXICON_CACHE["mtime"] != mtime:
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            entries = [e for e in data.get("entries", []) if e.get("term") and e.get("reading")]
+        except Exception:
+            entries = []
+        entries.sort(key=lambda e: len(str(e["term"])), reverse=True)
+        _LEXICON_CACHE.update(mtime=mtime, entries=entries)
+    return _LEXICON_CACHE["entries"]
+
+
+def apply_lexicon(text: str):
+    """(spoken text, replacements): the dictionary applied to one beat's reading text."""
+    if SCRIPT_LANGUAGE != "Vietnamese":
+        return text, 0
+    category = _content_category()
+    entries = [e for e in load_lexicon() if str(e.get("category_scope", "all")) in ("all", category)]
+    if not entries:
+        return text, 0
+    by_lower = {str(e["term"]).lower(): str(e["reading"]) for e in entries}
+    pattern = re.compile(
+        r"(?<![A-Za-z0-9])(" + "|".join(re.escape(str(e["term"])) for e in entries) + r")(?![A-Za-z0-9])",
+        re.IGNORECASE,
+    )
+    hits = 0
+
+    def repl(m):
+        nonlocal hits
+        hits += 1
+        return by_lower[m.group(1).lower()]
+
+    return pattern.sub(repl, text), hits
+
 
 def duration(path: Path) -> float:
     try:
@@ -393,18 +446,19 @@ async def main():
         for bi, b in enumerate(s["beats"]):
             beat_name = f"{PREFIX}s{si:02d}b{bi:02d}"
             beat_voice = resolve_beat_voice(b)
-            cached = get_cached(beat_name, b["narration"], beat_voice)
+            spoken, lexicon_hits = apply_lexicon(b["narration"])
+            cached = get_cached(beat_name, spoken, beat_voice)
             if cached:
                 path, words, d = cached
                 ENGINES["cached"] += 1
                 if d is None:
                     d = duration(path)
             else:
-                path, words, engine = await speak(beat_name, b["narration"], beat_voice)
+                path, words, engine = await speak(beat_name, spoken, beat_voice)
                 d = duration(path)
-                put_cache(beat_name, b["narration"], engine, words, d, beat_voice)
+                put_cache(beat_name, spoken, engine, words, d, beat_voice)
             gap = SCENE_GAP if bi == len(s["beats"]) - 1 else BEAT_GAP
-            beats.append({**b, "voice": beat_voice, "audio": f"audio/{path.name}", "start": round(t - scene_start, 3), "duration": round(d + gap, 3), "words": words})
+            beats.append({**b, "voice": beat_voice, "audio": f"audio/{path.name}", "start": round(t - scene_start, 3), "duration": round(d + gap, 3), "words": words, "lexicon_applied": lexicon_hits})
             t += d + gap
         scenes.append({k: s[k] for k in ("kind", "kicker", "headline")} | {"start": round(scene_start, 3), "duration": round(t - scene_start, 3), "beats": beats})
         print(f"scene {si}: {t - scene_start:5.1f}s, {len(beats)} beats")

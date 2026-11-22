@@ -20,7 +20,7 @@ export const SITE = {
   /** Site name: used in navigation, page titles, OG cards, RSS, MCP, and admin. */
   name: "Điểm Tin Công Nghệ",
   /** How the header logo renders: "full" = mark + site name; "compact" = mark only. */
-  logoDisplay: "full" as "compact" | "full",
+  logoDisplay: "full" as "compact" | "full",`r`n  /** Sidebar column width in px (null = automatic: 240 with a logo, 180 without). */`r`n  sidebarWidth: null as number | null,
   /** Industry keyword: interpolated into phrases like "AI Briefing", "AI Updates". */
   subject: "Công nghệ",
   /** Homepage full title (browser tab, search engines). */

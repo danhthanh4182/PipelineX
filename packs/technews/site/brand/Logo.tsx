@@ -1,6 +1,7 @@
 // The word mark (Điểm Tin Công Nghệ: mark + name) and ring mark of the site: Use Wordmark to draw the site name on the page (size is the height, the unit is pixels), RingMark is a small mark, and it is a loading animation when turned around.
 // Use the site name for typing here; if you have your own logo, replace Wordmark with your SVG (keep the same parameters).
 import { SITE } from "../site.ts";
+import logoAvatar from "./logo-avatar.png";
 
 /** The channel's mark (brand/mark.svg): two gold signal bars and a dot on a navy disc. */
 export function Mark({ className = "" }: { className?: string }) {
@@ -18,7 +19,7 @@ export function Wordmark({ size = 24, className = "", title = SITE.name }: { siz
   if (SITE.logoDisplay === "compact") {
     return (
       <span className={`inline-flex items-center leading-none ${className}`} style={{ fontSize: Math.round(size * 0.92) }} aria-label={title} role="img">
-        <Mark className="inline-block size-[1.15em] shrink-0" />
+        <img src={logoAvatar} alt="" className="inline-block size-[1.6em] shrink-0 rounded-[24%]" />
       </span>
     );
   }

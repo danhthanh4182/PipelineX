@@ -34,7 +34,7 @@ function SideLink({ item, dot, active }: { item: NavItem; dot: boolean; active: 
       <span className={`flex w-[22px] shrink-0 justify-center ${active ? "text-accent" : ""}`}>
         <Icon size={17} />
       </span>
-      <span className="min-w-0 truncate">{item.label}</span>
+      <span className="whitespace-nowrap">{item.label}</span>
       {dot && item.changelog && <span className="ml-auto size-1.5 shrink-0 rounded-full bg-hot" aria-label="New updates" />}
     </IntentLink>
   );
@@ -91,7 +91,7 @@ export function Sidebar({ changelogVersion }: { changelogVersion: string | null 
   return (
     <>
       <Rail dot={dot} />
-      <aside ref={columnRef} className={`scrollbar-thin sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-line bg-sidebar px-3 pb-[max(14px,env(safe-area-inset-bottom))] pt-6 wide:flex short:overflow-y-auto ${columnOverscroll}`} style={{ width: SITE.logoUrl ? 240 : 180, maxWidth: 280 }}>
+      <aside ref={columnRef} className={`scrollbar-thin sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-line bg-sidebar px-3 pb-[max(14px,env(safe-area-inset-bottom))] pt-6 wide:flex short:overflow-y-auto ${columnOverscroll}`} style={{ width: SITE.sidebarWidth ?? (SITE.logoUrl ? 240 : 180), maxWidth: 320 }}>
         <Link to="/" className="mb-4 flex h-[50px] shrink-0 items-center px-1 text-ink" aria-label={`${SITE.name} Home`}>
           <Wordmark size={26} />
         </Link>

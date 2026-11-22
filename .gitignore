@@ -24,3 +24,7 @@ renderer/data/
 renderer/public/
 renderer/work/
 renderer/__pycache__/
+renderer/.venv-vieneu/
+renderer/.venv-piper/
+renderer/.venv-nvidia/
+renderer/models/

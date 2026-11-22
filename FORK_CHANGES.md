@@ -310,3 +310,8 @@ Lệnh của Thanh (22/11/2026): "Hỗ trợ làm video bằng tiếng Việt/ t
 ## 2026-11-22 — Whitelist env cho renderer: RELAY_SECRET, RELAY_URL, VIDEO_VIENEU_VOICE
 
 - `modules/video/backend/pipeline.ts` (RENDERER_ENV): bổ sung "RELAY_SECRET", "RELAY_URL", "VIDEO_VIENEU_VOICE". Trước đây bước voice không nhận được RELAY_SECRET dù engine relay đã có trong tts.py từ Phase 1 — biến bị bộ lọc env của pipeline chặn. Nay chân relay trong chuỗi giọng (VieNeu → relay → Piper) và tùy chọn giọng VieNeu mới tới được tts.py. Thanh duyệt qua lệnh cấu hình RELAY_SECRET ngày 22/11/2026.
+
+## 2026-11-22 — Engine vieneu + chuỗi giọng VieNeu → relay → Piper trong tts.py
+
+- `renderer/tts.py`: thêm engine vieneu (VieNeu-TTS v3 Turbo, venv .venv-vieneu + `renderer/vieneu_synth.py`) và piper (venv .venv-piper, model models/piper). Khi VIDEO_TTS=vieneu, speak() thử theo beat: vieneu (giọng VIDEO_VIENEU_VOICE, mặc định Hải Đăng) → relay (chỉ khi có RELAY_SECRET) → piper; cả ba hỏng thì lỗi hẳn, không rơi azure/edge. Ngoài chế độ này hành vi cũ nguyên vẹn. relay_synthesize gắn User-Agent trình duyệt (Cloudflare chặn UA mặc định của Python bằng 403 — đo thật 22/11). vieneu_synth đặt HF_HUB_DISABLE_SYMLINKS=1 (cache HF trên Windows dùng symlink khiến ONNX Runtime từ chối file external data của codec MOSS).
+- Số đo trên máy Thanh: vieneu ~15,5s/câu cache ấm; smoke 3 beat 50,2s (ước lượng 31 beat ~9–11 phút, dưới giới hạn bước voice 30 phút); test rơi chân (vieneu không khả dụng) → piper gánh 3/3. Lệnh của Thanh 17:38 + 17:42 22/11/2026.

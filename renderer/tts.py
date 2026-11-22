@@ -13,6 +13,13 @@ such a beat and the SRT caption track gets no cues from it (see FORK_CHANGES.md)
 relay counts as unavailable and beats fall back to Azure/edge-tts as usual. The relay speaks at a fixed +0%
 rate (the VIDEO_TTS rate does not apply) and only knows vi-VN-HoaiMyNeural and vi-VN-NamMinhNeural.
 
+VIDEO_TTS=vieneu selects the technews channel's three-leg voice chain (the Studio's self-host order):
+VieNeu-TTS v3 Turbo first (self-hosted on CPU: renderer/.venv-vieneu running vieneu_synth.py, preset
+voice VIDEO_VIENEU_VOICE, default "Hải Đăng"), then this relay (HoaiMy; only when RELAY_SECRET is set),
+then Piper vi_VN-vais1000-medium (self-hosted: renderer/.venv-piper, model in renderer/models/piper).
+All three legs return plain audio with NO word timings, like the relay. A beat no leg can speak fails
+the video: in this mode Azure and edge-tts are never used.
+
 Usage: VIDEO_WORKDIR=<dir> [VIDEO_VARIANT=short] python tts.py [voice]
   (reads <dir>/script-final.json or script-short.json, writes <dir>/public/audio and <dir>/timeline.json or timeline-short.json)
 """
@@ -43,6 +50,15 @@ RELAY_URL = os.environ.get("RELAY_URL", "https://tts.danhthanh.dev").rstrip("/")
 USE_RELAY = os.environ.get("VIDEO_TTS", "") == "relay" and bool(RELAY_SECRET)
 if os.environ.get("VIDEO_TTS", "") == "relay" and not RELAY_SECRET:
     print("VIDEO_TTS=relay but RELAY_SECRET is not set: the relay is unavailable, falling back to Azure/edge-tts")
+
+# VIDEO_TTS=vieneu: the three-leg chain (see the module docstring). The two self-host legs run in their
+# own venvs next to this file; both python paths can be overridden (the chain's fall-through is tested
+# by pointing VIDEO_VIENEU_PYTHON at a missing file).
+USE_VIENEU_CHAIN = os.environ.get("VIDEO_TTS", "") == "vieneu"
+VIENEU_PYTHON = os.environ.get("VIDEO_VIENEU_PYTHON") or str(HERE / ".venv-vieneu" / "Scripts" / "python.exe")
+VIENEU_VOICE = os.environ.get("VIDEO_VIENEU_VOICE", "Hải Đăng")
+PIPER_PYTHON = os.environ.get("VIDEO_PIPER_PYTHON") or str(HERE / ".venv-piper" / "Scripts" / "python.exe")
+PIPER_MODEL = os.environ.get("VIDEO_PIPER_MODEL") or str(HERE / "models" / "piper" / "vi_VN-vais1000-medium.onnx")
 
 # The default voices follow the script's language; they are chosen below, once the script is located.
 W = Path(os.environ.get("VIDEO_WORKDIR", "work"))
@@ -88,10 +104,10 @@ def duration(path: Path) -> float:
     return float(out.strip())
 
 
-ENGINES: dict = {"azure": 0, "edge": 0, "relay": 0, "cached": 0}
+ENGINES: dict = {"azure": 0, "edge": 0, "relay": 0, "vieneu": 0, "piper": 0, "cached": 0}
 
 
-PREFERRED = "relay" if USE_RELAY else "azure" if USE_AZURE else "edge"
+PREFERRED = "vieneu" if USE_VIENEU_CHAIN else "relay" if USE_RELAY else "azure" if USE_AZURE else "edge"
 
 
 def resolve_beat_voice(b: dict) -> str:
@@ -196,7 +212,10 @@ def relay_synthesize(text: str, voice: str) -> bytes:
     for attempt in range(4):
         req = urllib.request.Request(f"{RELAY_URL}/synthesize", data=body, method="POST",
                                      headers={"Authorization": f"Bearer {RELAY_SECRET}",
-                                              "Content-Type": "application/json"})
+                                              "Content-Type": "application/json",
+                                              # Cloudflare blocks urllib's default UA with a 403;
+                                              # a browser UA passes (measured from THANH-PC).
+                                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36"})
         try:
             with urllib.request.urlopen(req, timeout=60) as res:
                 data = res.read()
@@ -222,7 +241,83 @@ def speak_relay(name: str, text: str, voice: str = VOICE):
     return path, []
 
 
+def _run_checked(cmd: list, **kw) -> None:
+    """subprocess.run(check=True) whose failure keeps the child's stderr tail: a bare CalledProcessError
+    would hide why a self-host leg died (missing venv, missing model, bad preset voice)."""
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, text=True, encoding="utf-8", errors="replace", **kw)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"{Path(cmd[0]).name}: {(e.stderr or '').strip()[-200:]}") from e
+
+
+def _wav_to_mp3(wav: Path, path: Path) -> None:
+    """The self-host legs write WAV; the beat contract is MP3, converted with the ffmpeg on PATH."""
+    _run_checked(["ffmpeg", "-y", "-v", "error", "-i", str(wav), "-codec:a", "libmp3lame", "-q:a", "2", str(path)])
+
+
+def speak_vieneu(name: str, text: str, voice: str = VOICE):
+    """Chain leg 1: VieNeu-TTS v3 Turbo in its own venv (renderer/.venv-vieneu + vieneu_synth.py).
+    The preset voice is VIDEO_VIENEU_VOICE, not the beat's Azure-style voice name. No word timings —
+    the same empty word list as the relay."""
+    path = OUT / f"{name}.mp3"
+    wav = OUT / f"{name}.vieneu.wav"
+    try:
+        # HF_HUB_DISABLE_SYMLINKS: the Windows HF cache's symlinks make ONNX Runtime reject the
+        # MOSS codec's external .data file; vieneu_synth.py sets it too, before importing vieneu.
+        _run_checked([VIENEU_PYTHON, str(HERE / "vieneu_synth.py"), text, VIENEU_VOICE, str(wav)],
+                     timeout=900, env={**os.environ, "HF_HUB_DISABLE_SYMLINKS": "1"})
+        _wav_to_mp3(wav, path)
+    finally:
+        wav.unlink(missing_ok=True)
+    return path, []
+
+
+def speak_piper(name: str, text: str, voice: str = VOICE):
+    """Chain leg 3: Piper vi_VN-vais1000-medium in its own venv (renderer/.venv-piper, model in
+    renderer/models/piper). One fixed voice; no word timings, like the other legs."""
+    path = OUT / f"{name}.mp3"
+    wav = OUT / f"{name}.piper.wav"
+    try:
+        _run_checked([PIPER_PYTHON, "-m", "piper", "--model", PIPER_MODEL, "--output_file", str(wav)],
+                     input=text, timeout=300)
+        _wav_to_mp3(wav, path)
+    finally:
+        wav.unlink(missing_ok=True)
+    return path, []
+
+
 async def speak(name: str, text: str, voice: str = VOICE):
+    if USE_VIENEU_CHAIN:
+        # The technews chain: VieNeu -> relay (HoaiMy, only with RELAY_SECRET) -> Piper. No Azure/edge
+        # fallback in this mode: a beat no leg can speak fails the video, loudly, instead of quietly
+        # changing to a different kind of voice.
+        vieneu_error = "not tried"
+        for attempt in range(2):
+            try:
+                path, words = await asyncio.to_thread(speak_vieneu, name, text, voice)
+                ENGINES["vieneu"] += 1
+                return path, words, "vieneu"
+            except Exception as error:
+                vieneu_error = str(error)[:160]
+                print(f"{name}: vieneu failed ({vieneu_error}), {'retrying' if attempt < 1 else 'falling to the relay leg'}")
+                if attempt < 1:
+                    await asyncio.sleep(3)
+        relay_error = "RELAY_SECRET not set"
+        if RELAY_SECRET:
+            try:
+                path, words = await asyncio.to_thread(speak_relay, name, text, voice)
+                ENGINES["relay"] += 1
+                return path, words, "relay"
+            except Exception as error:
+                relay_error = str(error)[:160]
+                print(f"{name}: relay leg failed ({relay_error}), falling to the Piper leg")
+        try:
+            path, words = await asyncio.to_thread(speak_piper, name, text, voice)
+            ENGINES["piper"] += 1
+            return path, words, "piper"
+        except Exception as error:
+            raise RuntimeError(f"{name}: every leg of the vieneu chain failed "
+                               f"(vieneu: {vieneu_error}; relay: {relay_error}; piper: {str(error)[:160]})")
     if USE_RELAY:
         for attempt in range(3):
             try:
@@ -330,7 +425,7 @@ async def main():
     (W / TIMELINE).write_text(json.dumps(timeline, indent=2), encoding="utf-8")
     print(f"total {t:.1f}s")
     chars = sum(len(b["narration"]) for s in script["scenes"] for b in s["beats"])
-    used = [k for k in ("azure", "edge", "relay") if ENGINES[k]]
+    used = [k for k in ("azure", "edge", "relay", "vieneu", "piper") if ENGINES[k]]
     engine = used[0] if len(used) == 1 else "mixed" if used else "cached"
     print("RESULT " + json.dumps({"duration": round(t, 1), "engine": engine,
                                   "beats": ENGINES, "characters": chars}))

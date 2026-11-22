@@ -296,3 +296,13 @@ Thanh duyệt 22/11/2026 ("Cả 2"): cho phép cầu nối Studio gọi MCP biê
 - `site/brand/Logo.tsx`: render `<img>` khi có `logoUrl`, còn lại dùng SVG mặc định của tác giả.
 - `apps/web/app/root.tsx`: truyền `logoUrl` qua root loader để hydration đúng.
 - `Sidebar.tsx`: panel trái rộng 240px khi có logo custom (max 280px), mặc định 180px.
+
+## 2026-11-22 — Ngôn ngữ kênh cho kịch bản và giọng đọc (renderer)
+
+Lệnh của Thanh (22/11/2026): "Hỗ trợ làm video bằng tiếng Việt/ tiếng Anh".
+
+- `renderer/lib.ts`: thêm `LANGUAGE` = `youtube.language` của hồ sơ kênh (industry/channel.json), mặc định "English".
+- `renderer/script.ts`: prompt viết + biên tập theo `LANGUAGE` (mọi chữ trên hình cũng theo; riêng truy vấn tìm ảnh photo/b-roll giữ tiếng Anh vì kho stock lập chỉ mục tiếng Anh); ghi `language` vào script.json. `assets.ts` ghi nguyên object nên trường này tự sang script-final.json.
+- `renderer/short.ts`: bản Short theo `long.language` (rơi về `LANGUAGE` của kênh), ghi `language` vào script-short.json; lời kêu gọi xem bản đầy đủ viết theo ngôn ngữ của Short.
+- `renderer/tts.py`: giọng mặc định theo `script.language` — Vietnamese: HoaiMy (chính) / NamMinh (trích dẫn, xung đột) qua Azure/edge như cũ; English giữ nguyên bộ giọng en-US hiện tại. Script không có trường language (mọi script viết trước thay đổi này) được hiểu là English. SSML của Azure dùng xml:lang theo giọng. Tham số giọng tường minh và VIDEO_ALT_VOICE_* vẫn thắng.
+- Kiểm chứng (22/11/2026): chạy script.ts độc lập trên dossier của story Cloudflare (kênh technews) → script tiếng Việt: tiêu đề "Cloudflare chặn phpAfterShell cho tất cả khách hàng", 31 beats, 1.305 từ, 0 beat thiếu fact, language="Vietnamese". Chạy tts.py với script-final.json tiếng Việt → MP3 giọng vi-VN-HoaiMyNeural (edge-tts, có word timings). Kênh English không đổi hành vi (prompt sinh ra giống hệt trước với LANGUAGE=English).

@@ -3,9 +3,10 @@
 // it uses; without one (or VIDEO_DOSSIER=off) from the reports' first VIDEO_MATERIAL_CHARS characters, as before.
 // Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env script.ts   (reads <dir>/story.json [+ dossier.json], writes <dir>/script.json)
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { CHANNEL, chatJson, materialOf, numbersIn, outlet, readArticles, readPreset, W, words } from "./lib.ts";
+import { CHANNEL, LANGUAGE, chatJson, materialOf, numbersIn, outlet, readArticles, readPreset, W, words } from "./lib.ts";
 
 const preset = readPreset();
+const langArticle = /^[aeiou]/i.test(LANGUAGE) ? "an" : "a";
 
 const articles = readArticles();
 const useDossier = process.env.VIDEO_DOSSIER !== "off" && existsSync(`${W}/dossier.json`);
@@ -46,12 +47,12 @@ const facts = dossier
 - When sources disagree (different figures at different times), say so or use the latest attributed figure. Never mix them silently.
 - Allegations stay allegations. Neutral and precise.`;
 
-const system = `You are the head writer of an English-language YouTube news channel about ${CHANNEL.subject} (${CHANNEL.brand.name}).
+const system = `You are the head writer of ${langArticle} ${LANGUAGE}-language YouTube news channel about ${CHANNEL.subject} (${CHANNEL.brand.name}).
 Write a narrated news explainer video${dossier ? " from the research dossier" : " from the source material"} only.
 
 ${facts}
 
-Style: spoken English, short sentences, plain words, no markdown, no emojis. Each beat must add something new: never restate an earlier beat in softer words.
+Style: spoken ${LANGUAGE}, short sentences, plain words, no markdown, no emojis. Write everything in ${LANGUAGE} — narration, title, thumbnail text, description, kickers, headlines and all on-screen text — except photo and broll search queries, which stay in English (stock libraries index in English). Each beat must add something new: never restate an earlier beat in softer words.
 
 Structure: scenes = ${preset ? preset.script.structure : "hook (15-20 s: the single most surprising fact and the question the video answers), 4-6 story scenes (what happened, background, reactions, what is disputed, what comes next), outro"}.${preset ? `
 Tone: ${preset.script.tone}.${preset.script.rules.length ? `\nRules for this kind of story:\n${preset.script.rules.map((r) => `- ${r}`).join("\n")}` : ""}
@@ -110,7 +111,7 @@ Edit for:
 - Numbers with scale: every big number gets a comparison or context the material gives (versus last quarter, last year, expectations, a familiar quantity). Never a figure that is not in the material or the DATA SERIES.
 - Flow: each beat leads to the next; one idea per beat; short spoken sentences; no repeated points.
 - Length: ${minWords}-${maxWords} words of narration in all (now ${draftWords}). Expand with substance from the material (background, reactions, what comes next, open questions), never with filler.
-- Keep: the JSON schema, every "facts" id on the beats that use them${dossier ? " (only ids from the dossier)" : ""}, the visual types and their rules, at least 60% "photo"/"broll" beats, attributions ("according to…"), allegations as allegations.
+- Keep: the JSON schema, the draft's ${LANGUAGE} language, every "facts" id on the beats that use them${dossier ? " (only ids from the dossier)" : ""}, the visual types and their rules, at least 60% "photo"/"broll" beats, attributions ("according to…"), allegations as allegations.
 
 Return ONLY the full edited script as JSON in the same schema.`;
   const out = await chatJson(editor + styleText, `${material}\n\nDRAFT SCRIPT:\n${JSON.stringify(json)}`, {
@@ -195,6 +196,7 @@ for (const scene of json.scenes) {
 }
 json.sources = articles.map((a, i) => ({ n: i + 1, name: outlet(a), url: a.url, title: a.title }));
 json.mode = dossier ? "dossier" : "material";
+json.language = LANGUAGE;
 writeFileSync(`${W}/script.json`, JSON.stringify(json, null, 2));
 const beats = json.scenes.flatMap((s: any) => s.beats);
 const wordCount = beats.reduce((n: number, b: any) => n + b.narration.split(/\s+/).length, 0);

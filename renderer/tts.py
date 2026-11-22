@@ -44,9 +44,7 @@ USE_RELAY = os.environ.get("VIDEO_TTS", "") == "relay" and bool(RELAY_SECRET)
 if os.environ.get("VIDEO_TTS", "") == "relay" and not RELAY_SECRET:
     print("VIDEO_TTS=relay but RELAY_SECRET is not set: the relay is unavailable, falling back to Azure/edge-tts")
 
-VOICE = sys.argv[1] if len(sys.argv) > 1 else "en-US-AndrewMultilingualNeural"
-ALT_VOICE_QUOTE = os.environ.get("VIDEO_ALT_VOICE_QUOTE", "en-US-GuyNeural")
-ALT_VOICE_CONFLICT = os.environ.get("VIDEO_ALT_VOICE_CONFLICT", "en-US-AvaMultilingualNeural")
+# The default voices follow the script's language; they are chosen below, once the script is located.
 W = Path(os.environ.get("VIDEO_WORKDIR", "work"))
 VARIANT = os.environ.get("VIDEO_VARIANT", "")
 IN = "script-short.json" if VARIANT == "short" else "script-final.json"
@@ -62,6 +60,23 @@ PRESET = json.loads((W / "style-preset.json").read_text(encoding="utf-8")) if (W
 INDUSTRY = Path(os.environ.get("VIDEO_INDUSTRY_DIR") or HERE.parent / "industry")
 CHANNEL = json.loads((INDUSTRY / "channel.json").read_text(encoding="utf-8"))
 RATE = (PRESET["voice"]["shortRate"] if SHORT else PRESET["voice"]["rate"]) if PRESET else ("+10%" if SHORT else "+4%")
+
+# The script's own language picks the default voices: script.ts writes it (from the channel profile) into the
+# script; a script without one predates that and is English, like every script written before. An explicit
+# voice argument, or the VIDEO_ALT_VOICE_* settings, still wins over the language defaults.
+SCRIPT_LANGUAGE = "English"
+try:
+    SCRIPT_LANGUAGE = json.loads((W / IN).read_text(encoding="utf-8")).get("language") or "English"
+except Exception:
+    pass
+LANGUAGE_VOICES = {
+    "English": ("en-US-AndrewMultilingualNeural", "en-US-GuyNeural", "en-US-AvaMultilingualNeural"),
+    "Vietnamese": ("vi-VN-HoaiMyNeural", "vi-VN-NamMinhNeural", "vi-VN-NamMinhNeural"),
+}
+_lang_voices = LANGUAGE_VOICES.get(SCRIPT_LANGUAGE, LANGUAGE_VOICES["English"])
+VOICE = sys.argv[1] if len(sys.argv) > 1 else _lang_voices[0]
+ALT_VOICE_QUOTE = os.environ.get("VIDEO_ALT_VOICE_QUOTE", _lang_voices[1])
+ALT_VOICE_CONFLICT = os.environ.get("VIDEO_ALT_VOICE_CONFLICT", _lang_voices[2])
 
 
 def duration(path: Path) -> float:
@@ -125,7 +140,7 @@ def speak_azure(name: str, text: str, voice: str = VOICE):
             start = evt.audio_offset / 1e7
             words.append({"text": evt.text, "start": round(start, 3), "end": round(start + evt.duration.total_seconds(), 3)})
     synth.synthesis_word_boundary.connect(boundary)
-    ssml = (f'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US"><voice name="{voice}">'
+    ssml = (f'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="{voice[:5]}"><voice name="{voice}">'
             f'<prosody rate="{RATE}">{escape(text)}</prosody></voice></speak>')
     result = synth.speak_ssml_async(ssml).get()
     if result.reason != sdk.ResultReason.SynthesizingAudioCompleted:

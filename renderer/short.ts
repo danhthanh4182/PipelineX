@@ -4,12 +4,15 @@
 // Usage: VIDEO_WORKDIR=<dir> node --env-file=<app>/.env short.ts   (reads script-final.json [+ dossier.json], writes script-short.json)
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { CHANNEL, chatJson, numbersIn, readArticles, readPreset, W, words } from "./lib.ts";
+import { CHANNEL, LANGUAGE, chatJson, numbersIn, readArticles, readPreset, W, words } from "./lib.ts";
 
 const preset = readPreset();
 
 const articles = readArticles();
 const long = JSON.parse(readFileSync(`${W}/script-final.json`, "utf8"));
+// The Short speaks the long script's language (written by script.ts from the channel profile).
+const LANG = typeof long.language === "string" && long.language ? long.language : LANGUAGE;
+const langArticle = /^[aeiou]/i.test(LANG) ? "an" : "a";
 const dossier = existsSync(`${W}/dossier.json`) ? JSON.parse(readFileSync(`${W}/dossier.json`, "utf8")) : null;
 
 // The long video's beats that have a checked picture or a ready text visual, numbered for the writer.
@@ -31,13 +34,13 @@ const material = dossier
     (dossier.conflicts?.length ? `REPORTS DIFFER ON:\n${dossier.conflicts.map((c: any) => `- ${c.topic}`).join("\n")}\n` : "")
   : `LONG VIDEO NARRATION:\n${beats.map((b) => b.narration).join(" ")}`;
 
-const system = `You write YouTube Shorts for an English news channel about ${CHANNEL.subject} (${CHANNEL.brand.name}). Turn the research into ONE vertical Short of 110-150 spoken words (45-60 seconds).
+const system = `You write YouTube Shorts for ${langArticle} ${LANG} news channel about ${CHANNEL.subject} (${CHANNEL.brand.name}). Turn the research into ONE vertical Short of 110-150 spoken words (45-60 seconds).
 
 Rules:
 - Facts only from the material; attribute claims ("according to The Verge"); allegations stay allegations; where reports differ, say so.
 - Beat 1 is the hook: ${preset ? preset.short.hook : "the single most surprising fact in under 12 words"}. No greeting, no channel name.${preset ? `\n- Tone: ${preset.script.tone}.${preset.script.rules.map((r) => `\n- ${r}`).join("")}` : ""}
-- 6-9 beats, each 1-2 short sentences (3-7 seconds). Plain spoken English, no emojis, no hashtags in narration.
-- Last beat: one concrete takeaway attributed to a named source from the material (e.g. "Bloomberg reports...", "According to The Verge...") or a specific question from the facts, then a direct call to watch the full breakdown: "Watch the full breakdown linked below." or "Tap below for the full deep dive." Never make ungrounded generalizations, editorial judgments, or broad predictions about the future without direct source attribution.
+- 6-9 beats, each 1-2 short sentences (3-7 seconds). Plain spoken ${LANG}, no emojis, no hashtags in narration.
+- Last beat: one concrete takeaway attributed to a named source from the material (e.g. "Bloomberg reports...", "According to The Verge...") or a specific question from the facts, then a direct call to watch the full breakdown: "Watch the full breakdown linked below." or "Tap below for the full deep dive." (Write the call to action in ${LANG}; the quoted forms are the English versions.) Never make ungrounded generalizations, editorial judgments, or broad predictions about the future without direct source attribution.
 - Every beat shows ONE visual:
   {"type":"reuse","beat":n} one of the PICTURES below (use each at most once), or
   {"type":"stat","value":"...","label":"..."} a number stated in the material, or
@@ -76,7 +79,7 @@ const out = (json.beats as any[]).map((b) => {
 });
 
 const short = {
-  title: json.title, description: long.description, sources: long.sources, thumbnail_text: null,
+  title: json.title, language: LANG, description: long.description, sources: long.sources, thumbnail_text: null,
   mainTitle: long.title,
   mainVideo: { title: long.title, description: long.description },
   scenes: [{ kind: "short", kicker: long.scenes[0]?.kicker ?? CHANNEL.brand.label, headline: json.title, beats: out }],

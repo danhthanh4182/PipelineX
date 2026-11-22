@@ -7,6 +7,10 @@ export const W = process.env.VIDEO_WORKDIR ?? "work";
 /** The channel the video is for (industry/channel.json of the checkout that runs the pipeline). */
 export const CHANNEL = channelProfile();
 
+/** The channel's language (industry/channel.json youtube.language, a display name like "Vietnamese"): the
+ * renderer writes and voices in it. A channel without one is English, as every channel was before. */
+export const LANGUAGE = CHANNEL.youtube?.language ?? "English";
+
 export type Article = { title: string; source: string; url: string; published_at: string; headline: string; summary: string; body: string; background?: boolean };
 
 /** The story's reports, then the background pages step "background" found (if any), numbered together. */

@@ -12,8 +12,8 @@ type Visual = Record<string, any> & { type: string };
 type Beat = { narration: string; visual: Visual; audio: string; start: number; duration: number; words: Word[] };
 
 const C = { bg: "#0b0f17", ink: "#ffffff", dim: "#aab3c5", accent: "#36d399", hot: "#ff3b3b", yellow: "#ffd23f", paper: "#f7f5ef", dark: "#111317" };
-const SANS = "Inter, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif";
-const SERIF = "'New York', Georgia, 'Times New Roman', serif";
+const SANS = "'Be Vietnam Pro', Inter, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif";
+const SERIF = "'Noto Serif', Georgia, 'Times New Roman', serif";
 
 const Backdrop = () => {
   const f = useCurrentFrame();

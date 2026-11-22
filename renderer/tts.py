@@ -266,11 +266,24 @@ def brand() -> dict:
     b = dict(CHANNEL["brand"])
     mark = INDUSTRY / b["mark"] if b.get("mark") else None
     if mark and mark.exists():
-        shutil.copy(mark, W / "public" / "brand-mark.svg")
-        b["mark"] = "brand-mark.svg"
+        dest = W / "public" / f"brand-mark{mark.suffix}"
+        shutil.copy(mark, dest)
+        b["mark"] = dest.name
     else:
         b.pop("mark", None)
     return b
+
+
+def copy_fonts() -> None:
+    """The renderer's bundled Vietnamese fonts (renderer/fonts/*.ttf) are copied into the
+    video's public folder so the compositions can register them via staticFile("fonts/...")."""
+    src = Path(__file__).parent / "fonts"
+    if not src.is_dir():
+        return
+    dst = W / "public" / "fonts"
+    dst.mkdir(parents=True, exist_ok=True)
+    for f in src.glob("*.ttf"):
+        shutil.copy(f, dst / f.name)
 
 
 async def main():
@@ -304,6 +317,7 @@ async def main():
     music = os.environ.get("VIDEO_MUSIC") or next((str(p) for p in mood_tracks), None) or next((str(p) for p in sorted(music_dir.glob("*.mp3"))), None)
     if music and Path(music).exists() and str(Path(music).resolve()) != str((W / "public" / "music.mp3").resolve()):
         shutil.copy(music, W / "public" / "music.mp3")
+    copy_fonts()
     today = datetime.date.today()
     timeline = {"title": script["title"], "thumbnail_text": script.get("thumbnail_text"), "voice": VOICE, "total": round(t, 3), "scenes": scenes, "sources": script["sources"],
                 "mainTitle": script.get("mainTitle"),

@@ -4,7 +4,7 @@ import { AbsoluteFill, Img, staticFile } from "remotion";
 import { applyPalette, BrandMark, DEFAULT_BRAND, type Timeline } from "./NewsVideo";
 
 const C = { bg: "#0b0f17", ink: "#ffffff", accent: "#36d399", hot: "#ff3b3b", yellow: "#ffd23f" };
-const SANS = "Inter, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif";
+const SANS = "'Be Vietnam Pro', Inter, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif";
 
 type Visual = { type: string; query?: string; asset?: { file: string; kind?: string } };
 

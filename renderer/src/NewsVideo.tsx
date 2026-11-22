@@ -35,8 +35,8 @@ export const INTRO = 3;
 export const OUTRO = 7;
 
 const C = { bg: "#0b0f17", panel: "#141b2b", paper: "#f7f5ef", ink: "#f4f6fb", dark: "#111317", dim: "#8b95a8", accent: "#36d399", hot: "#ff5c5c", line: "#1f2838" };
-const SANS = "Inter, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif";
-const SERIF = "'New York', Georgia, 'Times New Roman', serif";
+const SANS = "'Be Vietnam Pro', Inter, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif";
+const SERIF = "'Noto Serif', Georgia, 'Times New Roman', serif";
 const BRAND: Record<string, string> = { "The Verge": "#5200ff", TechCrunch: "#0a9e01", "MIT Technology Review": "#e3122c" };
 
 const useSpring = (delay = 0) => {

@@ -242,3 +242,27 @@ Giai đoạn 1 tích hợp PipelineX × Studio (kế hoạch: `~/workspace/video
 - `modules/video/backend/youtube.ts`: bỏ `lang = "en"` hard-code và phụ đề hard-code "en/English". Thêm `channelLanguage()` đọc `youtube.language` (tên hiển thị) từ channel profile, map sang mã YouTube (`English → en`, `Vietnamese → vi`, lạ thì về `en`); `defaultLanguage`/`defaultAudioLanguage` và metadata track phụ đề đều dùng giá trị này.
 
 - Lưu ý vận hành (chỉ ghi nhận, chưa sửa): editor MCP mặc định BẬT publish (`VIDEO_MCP_PUBLISH_ENABLED` chỉ tắt khi đặt đúng `false`, `.env.example` đang để `true`) — khi tạo kênh technews phải đặt `false` tường minh trong `.env` của kênh, cùng `VIDEO_AUTO_PUBLISH` tắt, theo quy tắc duyệt của Studio.
+
+## Định dạng kể chuyện hình phẳng (StoryVideo) cho pack technews (2026-11-22)
+
+Format "kể chuyện hình phẳng" kiểu Khéo Ăn Nói cho Điểm Tin Công Nghệ: nhân vật phẳng theo vai + bong bóng thoại, thẻ chương, thẻ hai lựa chọn, pill ✓/✗ xếp chồng, phụ đề karaoke tô từ khóa, nền tối + một màu nhấn mỗi chương. Thanh duyệt 02:35 22/11/2026; video mẫu đầu tiên là BT-313 (Fugaku). Chưa commit.
+
+- `renderer/src/story/` (mới, chỉ thêm — không sửa lõi ngoài renderer):
+  - `theme.ts`: token dùng chung của format — nền navy `#13204F`, nhấn gold `#F49F40`, màu cố định theo vai (admin `#4CC2FF`, attacker `#FF5C5C`, user `#FFD23F`, org `#B18CFF`); một họ spring cho mọi entrance và nhịp stagger ~90ms (màu = vai/nghĩa, không gán lại trong một video).
+  - `characters.tsx`: nhân vật SVG vẽ bằng code — 4 vai (Quản trị viên / Kẻ tấn công / Người dùng / Tổ chức), mỗi vai một silhouette + đạo cụ vai (headset + huy hiệu khiên, mũ trùm + kính đen, điện thoại, cà vạt + huy hiệu tòa nhà), 5 biểu cảm (neutral/happy/worried/alert/think). Nhân vật chỉ là VAI, không chân dung người thật.
+  - `props.tsx`: 22 đạo cụ SVG vẽ bằng code (server, key, shield, chart, phone, warning, lock, unlock, cloud, mail, clock, database, laptop, bug, eye, check, cross, globe, file, gear, wifioff, users) — tự vẽ nên sạch giấy phép theo cấu trúc.
+  - `scenes.tsx`: 4 component trên mô hình Scene/Beat sẵn có — `StageScene` (nhân vật + bong bóng thoại + đạo cụ), `PillList` (pill ✓/✗ xuất hiện dần theo nhịp stagger), `ChoiceCard` (thẻ hai lựa chọn, đáp án hiện tại `revealAt`), `ChapterCard` (thẻ chương "—TIN NÓNG—" + count-up con số hook); kèm `StoryBackdrop` (nền navy + glow màu chương + đường sàn).
+  - `captions.tsx`: phụ đề karaoke theo mốc từ thật (trang 5 từ, ngắt tại khoảng dừng >0,3s; từ đang đọc phồng + tô gold, con số tô màu nhấn chương). Chữ phụ đề luôn từ kịch bản gốc; mốc từ lấy từ word-boundary của engine hoặc tầng ASR (faster-whisper) căn theo câu kịch bản khi engine không có mốc từ (giọng relay).
+  - `StoryVideo.tsx`: composition 1080×1920 dùng lại Timeline/Scene/Beat + brand của NewsVideo; thẻ kết luôn hiện dòng nguồn (tên nguồn + URL bài web) và CTA về bài web; thanh tiến trình + bug thương hiệu ở mép trên, vùng phụ đề chừa safe-zone nền tảng.
+- `renderer/src/Root.tsx`: đăng ký composition `StoryVideo` (1080×1920, thời lượng = total + STORY_TAIL 3,2s cho thẻ kết).
+- `packs/technews/story-preset.json` (mới): preset cấu trúc 7 chặng (hook có con số → dòng thời gian sự kiện → sân khấu cơ chế → pill "Cơ chế" → thẻ lựa chọn → pill "Việc cần làm" → câu kết + nguồn + CTA) kèm rào biên tập cứng: nhân vật chỉ là vai; bong bóng thoại là diễn giải cơ chế, không bịa phát ngôn cho người/tổ chức thật (tổ chức thật chỉ là nhãn); mọi con số phải có trong bài đã phát hành; cảnh kết luôn có dòng nguồn.
+- Chuẩn nghề đã áp dụng: 4 pack skill iart-ai cài trong `.agents/skills/` (explainer-video — cấu trúc giải thích một chuỗi sự kiện; caption-animation — karaoke theo mốc từ, trang ít từ, từ khóa tô nhấn; kinetic-typography — count-up/nhấn con số ở thẻ chương; motion-design — một họ easing/spring + nhịp stagger nhất quán) và skill `remotion-templates` của repo template (nguyên tắc: một điểm nhấn thị giác mỗi khung, chữ ≤7 từ mỗi trang phụ đề, safe-zone 10%). Họ template trong catalog của repo `remotion-templates` đã tra theo vai trò (caption karaoke, sting thẻ chương, chuyển cảnh, dataviz số liệu) — chỉ adapt CƠ CHẾ/recipe, không sao chép code, không thêm dependency runtime vào PipelineX; nhân vật/đạo cụ tự vẽ nên không vướng giấy phép.
+
+## 2026-11-22 — Editor MCP: nguồn trực tiếp được đặt tên (cầu nối Studio)
+
+Thanh duyệt 22/11/2026 ("Cả 2"): cho phép cầu nối Studio gọi MCP biên tập trực tiếp từ máy ảo qua Tailscale, thay vì chỉ qua client chạy trong container.
+
+- `modules/video/backend/editor-mcp.ts` (chỉ nới có điều kiện, mặc định không đổi):
+  - Thêm `extraSources()` / `extraHosts()` đọc `EDITOR_MCP_ALLOWED_SOURCES` (danh sách IP nguồn, đúng như tiến trình nhìn thấy — sau cổng publish của Docker Desktop là địa chỉ gateway của mạng container) và `MCP_ALLOWED_HOSTS`.
+  - `admitted()`: nguồn thuộc danh sách được đặt tên được xét tiếp thay vì bị loại ngay; vẫn bắt buộc token ≥24 ký tự so khớp hằng-thời-gian, vẫn cấm mọi header proxy/origin, và phải gọi đúng cổng API bằng một Host thuộc MCP_ALLOWED_HOSTS. Không đặt biến thì hành vi y hệt upstream (chỉ loopback).
+  - Lý do cần: Docker Desktop publish cổng làm mất địa chỉ gốc của khách (container chỉ thấy gateway 172.19.0.1 — đã đo thực nghiệm 22/11/2026); lớp phòng thủ còn lại là token + việc ghim cổng 3001 trên máy chủ chỉ vào localhost và địa chỉ Tailscale (docker-compose.override.yml phía máy Thanh, không thuộc repo).

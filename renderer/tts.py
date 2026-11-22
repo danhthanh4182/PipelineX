@@ -5,33 +5,28 @@ Voice: Azure AI Speech when AZURE_SPEECH_KEY and AZURE_SPEECH_REGION are set (li
 Both speak the same neural voice, so a beat Azure fails on can fall back to edge-tts without a change of voice.
 VIDEO_TTS=edge forces edge-tts.
 
-VIDEO_TTS=relay forces the channel owner's TTS relay instead (a Cloudflare Worker in front of the same Edge
-read-aloud service, Vietnamese voices only): it takes RELAY_SECRET from the environment — never hard-code it,
-never log it — and returns plain MP3 with NO word timings, so a relay beat's timeline entry carries an empty
-word list, exactly like an edge-tts beat whose boundary events never arrived: the burned-in captions skip
-such a beat and the SRT caption track gets no cues from it (see FORK_CHANGES.md). With RELAY_SECRET unset the
-relay counts as unavailable and beats fall back to Azure/edge-tts as usual. The relay speaks at a fixed +0%
-rate (the VIDEO_TTS rate does not apply) and only knows vi-VN-HoaiMyNeural and vi-VN-NamMinhNeural.
-
 Usage: VIDEO_WORKDIR=<dir> [VIDEO_VARIANT=short] python tts.py [voice]
   (reads <dir>/script-final.json or script-short.json, writes <dir>/public/audio and <dir>/timeline.json or timeline-short.json)
 """
-import asyncio, datetime, json, os, re, shutil, subprocess, sys, time, urllib.error, urllib.request
+import asyncio, datetime, json, os, shutil, subprocess, sys
 from pathlib import Path
 
-import edge_tts
+try:
+    import edge_tts
+    import aiohttp
+except ImportError:
+    raise SystemExit("edge-tts is not installed: run `npm run video:setup` in the project root")
+
+# The pipeline reads this program's output as UTF-8; a Windows console otherwise uses a legacy code page.
+for stream in (sys.stdout, sys.stderr):
+    if hasattr(stream, "reconfigure"):
+        stream.reconfigure(encoding="utf-8", errors="replace")
+
+HERE = Path(__file__).resolve().parent
 
 AZURE_KEY = os.environ.get("AZURE_SPEECH_KEY", "")
 AZURE_REGION = os.environ.get("AZURE_SPEECH_REGION", "")
 USE_AZURE = bool(AZURE_KEY and AZURE_REGION) and os.environ.get("VIDEO_TTS", "") != "edge"
-
-# The owner's TTS relay (Cloudflare Worker): the secret comes from the environment only — it is never
-# hard-coded, never written to a file and never printed (error messages below carry status codes only).
-RELAY_SECRET = os.environ.get("RELAY_SECRET", "")
-RELAY_URL = os.environ.get("RELAY_URL", "https://tts.danhthanh.dev").rstrip("/")
-USE_RELAY = os.environ.get("VIDEO_TTS", "") == "relay" and bool(RELAY_SECRET)
-if os.environ.get("VIDEO_TTS", "") == "relay" and not RELAY_SECRET:
-    print("VIDEO_TTS=relay but RELAY_SECRET is not set: the relay is unavailable, falling back to Azure/edge-tts")
 
 VOICE = sys.argv[1] if len(sys.argv) > 1 else "en-US-AndrewMultilingualNeural"
 ALT_VOICE_QUOTE = os.environ.get("VIDEO_ALT_VOICE_QUOTE", "en-US-GuyNeural")
@@ -46,23 +41,26 @@ SHORT = VARIANT == "short"
 BEAT_GAP = 0.1 if SHORT else 0.25   # pause between beats inside a scene (a Short keeps moving)
 SCENE_GAP = 0.3 if SHORT else 0.7   # pause between scenes
 # The video's style (style-preset.json, written by the pipeline) sets the pace and the music's mood.
-PRESET = json.loads((W / "style-preset.json").read_text()) if (W / "style-preset.json").exists() else None
+PRESET = json.loads((W / "style-preset.json").read_text(encoding="utf-8")) if (W / "style-preset.json").exists() else None
 # The channel's brand for the title cards (industry/channel.json of the checkout that runs the pipeline).
-INDUSTRY = Path(os.environ.get("VIDEO_INDUSTRY_DIR", "../industry"))
-CHANNEL = json.loads((INDUSTRY / "channel.json").read_text())
+INDUSTRY = Path(os.environ.get("VIDEO_INDUSTRY_DIR") or HERE.parent / "industry")
+CHANNEL = json.loads((INDUSTRY / "channel.json").read_text(encoding="utf-8"))
 RATE = (PRESET["voice"]["shortRate"] if SHORT else PRESET["voice"]["rate"]) if PRESET else ("+10%" if SHORT else "+4%")
 
 
 def duration(path: Path) -> float:
-    out = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(path)],
-                         capture_output=True, text=True, check=True).stdout
+    try:
+        out = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(path)],
+                             capture_output=True, text=True, encoding="utf-8", errors="replace", check=True).stdout
+    except FileNotFoundError:
+        raise SystemExit("ffprobe not found on PATH: install FFmpeg (it includes ffprobe), then open a new terminal")
     return float(out.strip())
 
 
-ENGINES: dict = {"azure": 0, "edge": 0, "relay": 0, "cached": 0}
+ENGINES: dict = {"azure": 0, "edge": 0, "cached": 0}
 
 
-PREFERRED = "relay" if USE_RELAY else "azure" if USE_AZURE else "edge"
+PREFERRED = "azure" if USE_AZURE else "edge"
 
 
 def resolve_beat_voice(b: dict) -> str:
@@ -84,7 +82,7 @@ def get_cached(name: str, text: str, voice: str = VOICE):
     if not (path.exists() and path.stat().st_size > 0 and meta_path.exists()):
         return None
     try:
-        meta = json.loads(meta_path.read_text())
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
     except ValueError:
         return None
     if (meta.get("engine"), meta.get("voice"), meta.get("rate"), meta.get("text")) != (PREFERRED, voice, RATE, text):
@@ -93,7 +91,7 @@ def get_cached(name: str, text: str, voice: str = VOICE):
 
 
 def put_cache(name: str, text: str, engine: str, words: list, d: float, voice: str = VOICE):
-    (OUT / f"{name}.meta.json").write_text(json.dumps({"engine": engine, "voice": voice, "rate": RATE, "text": text, "words": words, "duration": d}))
+    (OUT / f"{name}.meta.json").write_text(json.dumps({"engine": engine, "voice": voice, "rate": RATE, "text": text, "words": words, "duration": d}), encoding="utf-8")
 
 
 def speak_azure(name: str, text: str, voice: str = VOICE):
@@ -121,89 +119,7 @@ def speak_azure(name: str, text: str, voice: str = VOICE):
     return path, words
 
 
-RELAY_VOICES = {"HoaiMy": "vi-VN-HoaiMyNeural", "NamMinh": "vi-VN-NamMinhNeural"}
-
-
-def relay_voice(voice: str) -> str:
-    """The relay only serves the two Vietnamese Azure voices; any other requested voice (the English
-    defaults, a quote/conflict alternate) maps to NamMinh when its name says so, else to HoaiMy."""
-    for short, full in RELAY_VOICES.items():
-        if short in voice:
-            return full
-    return RELAY_VOICES["HoaiMy"]
-
-
-def relay_chunks(text: str, limit: int = 470) -> list:
-    """Split a beat into ~300–470 character pieces at sentence boundaries (the relay's operational sweet
-    spot: one short request per piece, retried on its own). A single over-long sentence is cut at spaces."""
-    pieces = [p.strip() for p in re.split(r"(?<=[.!?…])\s+", text.strip()) if p.strip()]
-    chunks, cur = [], ""
-    for piece in pieces:
-        while len(piece) > limit:
-            cut = piece.rfind(" ", 0, limit)
-            if cut < 1:
-                cut = limit
-            head, piece = piece[:cut].strip(), piece[cut:].strip()
-            if cur:
-                chunks.append(cur)
-                cur = ""
-            if head:
-                chunks.append(head)
-        if cur and len(cur) + 1 + len(piece) > limit:
-            chunks.append(cur)
-            cur = piece
-        else:
-            cur = f"{cur} {piece}" if cur else piece
-    if cur:
-        chunks.append(cur)
-    return chunks
-
-
-def relay_synthesize(text: str, voice: str) -> bytes:
-    """One relay request: POST {text, voice} as JSON with the Bearer secret; the answer is raw MP3.
-    The relay answers transient 502s, so retry with growing pauses (5, 10, 15 s) before giving up."""
-    body = json.dumps({"text": text, "voice": voice}).encode()
-    last = "no answer"
-    for attempt in range(4):
-        req = urllib.request.Request(f"{RELAY_URL}/synthesize", data=body, method="POST",
-                                     headers={"Authorization": f"Bearer {RELAY_SECRET}",
-                                              "Content-Type": "application/json"})
-        try:
-            with urllib.request.urlopen(req, timeout=60) as res:
-                data = res.read()
-            if data:
-                return data
-            last = "empty audio"
-        except urllib.error.HTTPError as e:
-            last = f"HTTP {e.code}"
-        except Exception as e:  # network error: same retry treatment, and never the request (it holds the secret)
-            last = type(e).__name__
-        if attempt < 3:
-            time.sleep(5 * (attempt + 1))
-    raise RuntimeError(f"relay synthesis failed ({last})")
-
-
-def speak_relay(name: str, text: str, voice: str = VOICE):
-    """The owner's relay: same MP3-per-beat contract as the other engines, but the word list is empty —
-    the relay returns no word timings (see the module docstring for what that means for captions)."""
-    path = OUT / f"{name}.mp3"
-    azure_voice = relay_voice(voice)
-    audio = b"".join(relay_synthesize(chunk, azure_voice) for chunk in relay_chunks(text))
-    path.write_bytes(audio)
-    return path, []
-
-
 async def speak(name: str, text: str, voice: str = VOICE):
-    if USE_RELAY:
-        for attempt in range(3):
-            try:
-                path, words = await asyncio.to_thread(speak_relay, name, text, voice)
-                ENGINES["relay"] += 1
-                return path, words, "relay"
-            except Exception as error:  # a dead relay must not kill the video: retry, then the usual chain
-                print(f"{name}: relay failed ({str(error)[:160]}), {'retrying' if attempt < 2 else 'using Azure/edge-tts for this beat'}")
-                if attempt < 2:
-                    await asyncio.sleep(3 * (attempt + 1))
     if USE_AZURE:
         for attempt in range(3):
             try:
@@ -225,10 +141,10 @@ async def speak_edge(name: str, text: str, voice: str = VOICE):
     for attempt in range(5):
         try:
             return await speak_once(name, text, voice)
-        except edge_tts.exceptions.NoAudioReceived:
+        except (edge_tts.exceptions.EdgeTTSException, aiohttp.ClientError, TimeoutError):
             if attempt == 4:
                 raise
-            print(f"{name}: no audio, retrying")
+            print(f"{name}: {type(error).__name__}: {str(error)[:120]}, retrying")
             await asyncio.sleep(5 * 2 ** attempt)
 
 
@@ -260,7 +176,7 @@ def brand() -> dict:
 
 
 async def main():
-    script = json.loads((W / IN).read_text())
+    script = json.loads((W / IN).read_text(encoding="utf-8"))
     t = 0.0
     scenes = []
     for si, s in enumerate(script["scenes"]):
@@ -285,22 +201,26 @@ async def main():
         scenes.append({k: s[k] for k in ("kind", "kicker", "headline")} | {"start": round(scene_start, 3), "duration": round(t - scene_start, 3), "beats": beats})
         print(f"scene {si}: {t - scene_start:5.1f}s, {len(beats)} beats")
     # Optional music bed: VIDEO_MUSIC, else the first track in renderer/music/ (e.g. from the YouTube Audio Library).
-    mood_tracks = sorted((Path("music") / PRESET["music"]).glob("*.mp3")) if PRESET else []
-    music = os.environ.get("VIDEO_MUSIC") or next((str(p) for p in mood_tracks), None) or next((str(p) for p in sorted(Path("music").glob("*.mp3"))), None)
-    if music and Path(music).exists():
+    music_dir = HERE / "music"
+    mood_tracks = sorted((music_dir / PRESET["music"]).glob("*.mp3")) if PRESET else []
+    music = os.environ.get("VIDEO_MUSIC") or next((str(p) for p in mood_tracks), None) or next((str(p) for p in sorted(music_dir.glob("*.mp3"))), None)
+    if music and Path(music).exists() and str(Path(music).resolve()) != str((W / "public" / "music.mp3").resolve()):
         shutil.copy(music, W / "public" / "music.mp3")
+    today = datetime.date.today()
     timeline = {"title": script["title"], "thumbnail_text": script.get("thumbnail_text"), "voice": VOICE, "total": round(t, 3), "scenes": scenes, "sources": script["sources"],
                 "mainTitle": script.get("mainTitle"),
                 "mainVideo": script.get("mainVideo"),
                 "music": "music.mp3" if music and Path(music).exists() else None,
-                "date": datetime.date.today().strftime("%b %-d, %Y"),
+                "date": f"{today:%b} {today.day}, {today.year}",
                 "style": PRESET["key"] if PRESET else "news", "palette": PRESET["visual"] if PRESET else None,
                 "brand": brand()}
-    (W / TIMELINE).write_text(json.dumps(timeline, indent=2))
+    (W / TIMELINE).write_text(json.dumps(timeline, indent=2), encoding="utf-8")
     print(f"total {t:.1f}s")
     chars = sum(len(b["narration"]) for s in script["scenes"] for b in s["beats"])
-    used = [k for k in ("azure", "edge", "relay") if ENGINES[k]]
-    engine = used[0] if len(used) == 1 else "mixed" if used else "cached"
+    engine = ("azure" if ENGINES["azure"] and not ENGINES["edge"]
+              else "edge" if ENGINES["edge"] and not ENGINES["azure"]
+              else "mixed" if (ENGINES["azure"] or ENGINES["edge"])
+              else "cached")
     print("RESULT " + json.dumps({"duration": round(t, 1), "engine": engine,
                                   "beats": ENGINES, "characters": chars}))
 

@@ -218,27 +218,18 @@ Repo: nhánh `pipelinex`, remote AIHOT đổi tên thành `upstream` (lấy cậ
   - Trả về cờ `autoPublish` trong `/api/admin/video/overview`.
   - Hiển thị trạng thái "Auto publish: on" trên thanh tiêu đề trang Videos.
 
-## Pack technews (Điểm Tin Công Nghệ) + engine TTS "relay" (2026-11-22)
+## Chạy được trên Windows, macOS và Linux (22/11)
 
-Giai đoạn 1 tích hợp PipelineX × Studio (kế hoạch: `~/workspace/video-studio/INTEGRATION-PLAN-2026-11-22.md`). Chưa commit, chưa tạo kênh chạy thật; pack mới chỉ nằm ở `packs/technews/`.
+- `modules/video/backend/pipeline.ts`: Python của bước voice chọn theo nền tảng — `VIDEO_PYTHON` → `renderer/.venv/Scripts/python.exe` (Windows) hoặc `.venv/bin/python` (macOS/Linux) → `python`/`python3`. Lỗi ENOENT ghi rõ phải chạy `npm run video:setup` / `npm install`. Remotion chạy bằng `node node_modules/@remotion/cli/remotion-cli.js` thay cho `.bin/remotion` (trên Windows shim là `.cmd`, `spawn` không chạy được). `spawn` truyền thêm biến hệ thống Windows (`SystemRoot`, `TEMP`, `TMP`, `USERPROFILE`, `APPDATA`, `LOCALAPPDATA`, `ComSpec`, `PATHEXT`…) vì nó thay toàn bộ môi trường con; timeout dùng `taskkill /T` để dọn tiến trình Chrome con của Remotion.
+- `scripts/video-setup.ts` + `npm run video:setup`: tạo `renderer/.venv`, cài `requirements.txt`, kiểm tra import `edge_tts` và Azure SDK; cảnh báo khi thiếu `ffprobe` hoặc `renderer/node_modules`. Chạy được trên cả ba hệ điều hành, chạy lại an toàn.
+- `renderer/tts.py`: đọc/ghi JSON bằng UTF-8 (Windows mặc định cp1252, kịch bản có dấu ngoặc cong/em dash sẽ lỗi), ngày dạng `Nov 22, 2026` thay cho `%-d` (Windows ném `ValueError: Invalid format string`), in UTF-8, tìm `music/` và `industry/` theo thư mục script, báo rõ khi thiếu `ffprobe`.
+- `.env.example`: `VIDEO_PYTHON`. README: Bước 3 có lệnh chung và lệnh riêng cho Windows.
 
-- `packs/technews/` (mới, theo đúng cấu trúc `packs/finance/`):
-  - `channel.json`: type `technews`; brand Điểm Tin Công Nghệ (label "CÔNG NGHỆ", tagline tiếng Việt); `youtube.language = "Vietnamese"`, category "Science & Technology"; `officialSites` là trang chính thức của các hãng công nghệ lớn (Apple, Microsoft, blog.google, DeepMind, OpenAI, Anthropic, GitHub, Nvidia, AMD, Cloudflare, Meta, AWS, Hugging Face, Mozilla, Samsung, Qualcomm, Intel).
-  - `sources.json`: nguồn chính duy nhất là feed bài đã xuất bản của kênh — `json_list` đọc `https://news.danhthanh.dev/bot-data.json` (`itemsPath: editions.0.items`, `urlTemplate: https://news.danhthanh.dev/bai/{slug}`, `externalIdPath: code`). Giới hạn đã biết của collector: `itemsPath` chỉ trỏ được một mảng, feed lồng bài theo edition nên mỗi lượt chỉ đọc edition mới nhất; bài không có ngày riêng trong feed nên `publishedAt` để trống.
-  - `taxonomy.ts`: 4 category đúng khóa của bản tin trong bot-data.json (`tech`, `ai`, `finance`, `offer`); 8 item types (`model_release`, `product_launch`, `security_incident`, `platform_update`, `deal_offer`, `research`, `business_move`, `opinion_analysis`); từ vựng tag và thực thể (Anthropic, OpenAI, Google, Microsoft, Nvidia, Apple, Meta, GitHub, Cloudflare, AMD, Alibaba, Samsung) tiếng Việt.
-  - `selection.ts`: giữ nguyên cơ chế ngưỡng của finance (T1 55 / T1_5 58 / T2 60, understandFloor 50, browseFloor 40); hiệu chuẩn lại bằng ví dụ tech có nhãn sau.
-  - `wording.ts`, `prompts/*.md` (đủ 31 file như finance): tiếng Việt, phỏng theo khung finance — đầu ra biên tập (tiêu đề/tóm tắt/trường `titleZh`/`summaryZh` theo hợp đồng engine) bằng tiếng Việt; `translate-*.md` dịch vào tiếng Việt; `selection-score.md` giữ 5 trục và bảng trọng số cộng 10 theo từng loại tin công nghệ.
-  - `brand/brand.json` + `brand/mark.svg`: màu chuẩn kênh navy `#13204F` / gold `#F49F40` (brand của renderer không có slot màu; màu nằm ở brand kit này, asset YouTube sinh sau bằng `scripts/brand.ts` trên máy chủ kênh). `site/` (site.ts, brand/Logo.tsx, manifest) phỏng theo finance với định danh tiếng Việt, locale `vi-VN`.
+## Quét bug module video & renderer (22/11)
 
-- `renderer/tts.py` — engine TTS mới `relay`:
-  - `VIDEO_TTS=relay` ép dùng relay: POST JSON `{text, voice}` tới `https://tts.danhthanh.dev/synthesize` (đổi bằng env `RELAY_URL`), xác thực `Authorization: Bearer <RELAY_SECRET>` — đúng hợp đồng của Worker (bản mô tả ban đầu nói header `X-Relay-Secret`, code Worker là chuẩn). Secret chỉ đọc từ biến môi trường `RELAY_SECRET`: không hard-code, không ghi file, không in log (thông báo lỗi chỉ chứa mã trạng thái).
-  - Thiếu `RELAY_SECRET` thì relay coi như không khả dụng và rơi về chuỗi Azure → edge-tts như nhánh azure-fail; relay lỗi giữa chừng cũng thử lại 3 lần rồi rơi về như vậy. `PREFERRED` nhận giá trị `relay` để cache theo đúng engine.
-  - Giọng: relay chỉ có hai giọng Azure tiếng Việt — map mọi giọng yêu cầu sang `vi-VN-NamMinhNeural` khi tên chứa "NamMinh", còn lại `vi-VN-HoaiMyNeural`. Tốc độ đọc cố định +0% tại Worker, rate của preset không áp dụng cho relay.
-  - Văn bản dài chia đoạn ~300–470 ký tự theo ranh giới câu (câu quá dài cắt tại khoảng trắng); mỗi đoạn thử lại tối đa 4 lần, giãn cách 5/10/15 giây (relay hay trả 502 chớp nhoáng); các đoạn MP3 nối byte trực tiếp như cách Worker tự nối.
-  - **Hệ quả phụ đề (điểm hở đã biết):** relay trả MP3 thuần, KHÔNG có mốc từ (word-boundary). Beat chạy relay có `words: []` — xử lý giống hệt beat edge-tts mất boundary: phụ đề cháy trong khung hình bỏ qua beat đó (`Captions` trả null khi không có words) và `captionsSrt` không sinh cue nào từ beat đó, tức video dựng bằng relay hiện không có phụ đề cháy lẫn track SRT cho các beat relay. Muốn có phụ đề cho relay phải thêm tầng canh thời gian theo câu sau (ngoài phạm vi đợt này).
-
-- `renderer/src/NewsVideo.tsx`: `DEFAULT_BRAND` không còn hard-code "PipelineX / AI NEWS" — đọc `brand` từ `../../industry/channel.json` của checkout đang chạy (cùng profile mà `brand()` trong tts.py nạp; brand trong timeline vẫn thắng khi render thật). Chỉ lấy name/label/tagline: mark của profile là đường dẫn trong thư mục industry, bước voice mới chép vào public của video khi render thật, nên preview trần giữ dấu chấm thay mark.
-
-- `modules/video/backend/youtube.ts`: bỏ `lang = "en"` hard-code và phụ đề hard-code "en/English". Thêm `channelLanguage()` đọc `youtube.language` (tên hiển thị) từ channel profile, map sang mã YouTube (`English → en`, `Vietnamese → vi`, lạ thì về `en`); `defaultLanguage`/`defaultAudioLanguage` và metadata track phụ đề đều dùng giá trị này.
-
-- Lưu ý vận hành (chỉ ghi nhận, chưa sửa): editor MCP mặc định BẬT publish (`VIDEO_MCP_PUBLISH_ENABLED` chỉ tắt khi đặt đúng `false`, `.env.example` đang để `true`) — khi tạo kênh technews phải đặt `false` tường minh trong `.env` của kênh, cùng `VIDEO_AUTO_PUBLISH` tắt, theo quy tắc duyệt của Studio.
+- `renderer/tts.py`: `speak_edge` bắt cả `EdgeTTSException`/`aiohttp.ClientError`/`TimeoutError` (không chỉ `NoAudioReceived`); retry 5/10/20/40s mới có tác dụng khi bị throttle 429.
+- `renderer/assets.ts`: Pixabay video dùng `medium` thay cho `tiny` (1920×1080 thay vì 640×360); guard beat thiếu `query` → `card` thay vì crash; `unchecked ??=` sửa thành chỉ gán khi nguồn là stock và chưa có stock lỗi; `get()` log an toàn; `preset?.pictureRules` optional-chaining đúng chỗ.
+- `modules/video/backend/pipeline.ts`: parse `RESULT` qua buffer `pending` (không mất kết quả khi output bị cắt chunk); truyền `VIDEO_ALT_VOICE_QUOTE`/`VIDEO_ALT_VOICE_CONFLICT` vào renderer; `.env.example` thêm hai biến này.
+- `modules/video/backend/publishing.ts`: `chapters` không còn chapter <10s (Intro 3s); `tagsFor` lấy năm từ cuối chuỗi ngày thay vì `slice(0,4)`.
+- `modules/video/backend/rescue.ts`: bỏ yêu cầu `text` cho beat `card` (renderer hiển thị narration).
+- Kiểm chứng: `npm run typecheck` (pass), `py_compile renderer/tts.py` (pass), `npm run video:setup` (pass), smoke voice cached + edge-tts thật (pass), chapters test (pass).

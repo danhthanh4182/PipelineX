@@ -7,6 +7,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { sql, withCustomPlans, type Db } from "@aihot/backend/db";
+import { FOLD_FROM, FOLD_TO, foldVietnamese } from "./lexicon-io.ts";
 
 const ROOT = fileURLToPath(new URL("../../../", import.meta.url));
 export const LEXICON_FILE = path.join(ROOT, "industry", "lexicon.json");
@@ -51,22 +52,62 @@ export async function regenerateLexiconFile(db: Db = sql): Promise<number> {
   return rows.length;
 }
 
-export async function listLexicon({ q = "", page = 1, pageSize = 50 }: { q?: string; page?: number; pageSize?: number } = {}, db: Db = sql) {
-  const term = q.trim();
+export interface LexiconFilters {
+  q?: string;
+  page?: number;
+  pageSize?: number;
+  scope?: string;
+  category_scope?: string;
+  enabled?: boolean | null;
+  /** "" = any, "none" = never verified (asr_status ''), else an exact asr_status. */
+  asr?: string;
+  locked?: boolean | null;
+}
+
+/** Escape the LIKE wildcards in a folded search string (Postgres LIKE escapes with backslash). */
+const likeEscape = (s: string) => s.replace(/[\\%_]/g, (c) => "\\" + c);
+
+export async function listLexicon(filters: LexiconFilters = {}, db: Db = sql) {
+  const { q = "", page = 1, pageSize = 50, scope = "", category_scope = "", enabled = null, asr = "", locked = null } = filters;
+  // Search ignores Vietnamese diacritics: the query is folded in JS, the columns through
+  // translate(lower(...)) with the same fold table (lexicon-io.ts), so "ay pi ai" finds "ây pi ai".
+  const folded = likeEscape(foldVietnamese(q.trim()));
+  const pattern = "%" + folded + "%";
   const offset = (Math.max(1, page) - 1) * pageSize;
   const fetchPage = async (tx: Db) => {
     const rows = await tx<LexiconRow[]>`
       SELECT * FROM pronunciation_lexicon
-      WHERE ${term} = '' OR term ILIKE ${"%" + term + "%"} OR reading ILIKE ${"%" + term + "%"}
+      WHERE (${folded} = '' OR translate(lower(term), ${FOLD_FROM}, ${FOLD_TO}) LIKE ${pattern} OR translate(lower(reading), ${FOLD_FROM}, ${FOLD_TO}) LIKE ${pattern})
+        AND (${scope} = '' OR scope = ${scope})
+        AND (${category_scope} = '' OR category_scope = ${category_scope})
+        AND (${enabled}::boolean IS NULL OR enabled = ${enabled})
+        AND (${asr} = '' OR (${asr} = 'none' AND asr_status = '') OR asr_status = ${asr})
+        AND (${locked}::boolean IS NULL OR locked = ${locked})
       ORDER BY enabled DESC, term ASC
       LIMIT ${pageSize} OFFSET ${offset}`;
     const [count] = await tx<{ n: number }[]>`
       SELECT count(*)::int AS n FROM pronunciation_lexicon
-      WHERE ${term} = '' OR term ILIKE ${"%" + term + "%"} OR reading ILIKE ${"%" + term + "%"}`;
+      WHERE (${folded} = '' OR translate(lower(term), ${FOLD_FROM}, ${FOLD_TO}) LIKE ${pattern} OR translate(lower(reading), ${FOLD_FROM}, ${FOLD_TO}) LIKE ${pattern})
+        AND (${scope} = '' OR scope = ${scope})
+        AND (${category_scope} = '' OR category_scope = ${category_scope})
+        AND (${enabled}::boolean IS NULL OR enabled = ${enabled})
+        AND (${asr} = '' OR (${asr} = 'none' AND asr_status = '') OR asr_status = ${asr})
+        AND (${locked}::boolean IS NULL OR locked = ${locked})`;
     return { rows, total: count?.n ?? 0 };
   };
   // A search plans per execution (see withCustomPlans); a plain listing takes the fast path.
-  return term ? withCustomPlans((tx) => fetchPage(tx)) : fetchPage(db);
+  return folded ? withCustomPlans((tx) => fetchPage(tx)) : fetchPage(db);
+}
+
+/** Every row, term order: the export builders' input. */
+export async function listLexiconForExport(db: Db = sql): Promise<LexiconRow[]> {
+  return db<LexiconRow[]>`SELECT * FROM pronunciation_lexicon ORDER BY term ASC`;
+}
+
+/** term (lowercased) -> row stub, for import classification and duplicate checks. */
+export async function lexiconTermIndex(db: Db = sql): Promise<Map<string, { id: number; locked: boolean }>> {
+  const rows = await db<{ id: number; term: string; locked: boolean }[]>`SELECT id, term, locked FROM pronunciation_lexicon`;
+  return new Map(rows.map((r) => [r.term.toLowerCase(), { id: r.id, locked: r.locked }]));
 }
 
 export async function lexiconStats(db: Db = sql): Promise<{ total: number; enabled: number }> {
@@ -124,13 +165,99 @@ export async function deleteLexiconEntry(id: number, db: Db = sql): Promise<void
   await regenerateLexiconFile(db);
 }
 
-export async function setLexiconEnabled(ids: number[], enabled: boolean, db: Db = sql): Promise<number> {
-  if (!ids.length) return 0;
+/**
+ * Bulk enable/disable (the Studio rule): locked rows are never touched by a bulk operation and
+ * are reported as skipped; rows switched on without a passed ASR check are counted so the caller
+ * can surface that the owner's confirmation covered unverified entries.
+ */
+export async function setLexiconEnabled(ids: number[], enabled: boolean, db: Db = sql): Promise<{ updated: number; skippedLocked: number; enabledUnverified: number }> {
+  if (!ids.length) return { updated: 0, skippedLocked: 0, enabledUnverified: 0 };
+  const before = await db<{ id: number; locked: boolean; enabled: boolean; asr_status: string }[]>`
+    SELECT id, locked, enabled, asr_status FROM pronunciation_lexicon WHERE id = ANY(${ids})`;
+  const skippedLocked = before.filter((r) => r.locked).length;
+  const enabledUnverified = enabled ? before.filter((r) => !r.locked && !r.enabled && r.asr_status !== "passed").length : 0;
   const rows = await db<{ id: number }[]>`
     UPDATE pronunciation_lexicon SET enabled = ${enabled}, updated_at = now()
-    WHERE id = ANY(${ids}) RETURNING id`;
+    WHERE id = ANY(${ids}) AND NOT locked RETURNING id`;
   await regenerateLexiconFile(db);
-  return rows.length;
+  return { updated: rows.length, skippedLocked, enabledUnverified };
+}
+
+/** Bulk lock/unlock: the one bulk operation that also applies to locked rows (unlocking them). */
+export async function setLexiconLocked(ids: number[], locked: boolean, db: Db = sql): Promise<{ updated: number }> {
+  if (!ids.length) return { updated: 0 };
+  const rows = await db<{ id: number }[]>`
+    UPDATE pronunciation_lexicon SET locked = ${locked}, updated_at = now()
+    WHERE id = ANY(${ids}) AND locked <> ${locked} RETURNING id`;
+  return { updated: rows.length };
+}
+
+/**
+ * Queue rows for the TTS -> ASR verification loop: sets asr_status to "queued" only. Nothing is
+ * enabled by queueing, locked rows are skipped, and rows already queued/running are reported as
+ * busy. No runner consumes the queue in this checkout yet; queued rows simply wait.
+ */
+export async function queueLexiconAsr(ids: number[], db: Db = sql): Promise<{ queued: number; skippedLocked: number; skippedBusy: number }> {
+  if (!ids.length) return { queued: 0, skippedLocked: 0, skippedBusy: 0 };
+  const before = await db<{ id: number; locked: boolean; asr_status: string }[]>`
+    SELECT id, locked, asr_status FROM pronunciation_lexicon WHERE id = ANY(${ids})`;
+  const skippedLocked = before.filter((r) => r.locked).length;
+  const skippedBusy = before.filter((r) => !r.locked && (r.asr_status === "queued" || r.asr_status === "running")).length;
+  const rows = await db<{ id: number }[]>`
+    UPDATE pronunciation_lexicon SET asr_status = 'queued', updated_at = now()
+    WHERE id = ANY(${ids}) AND NOT locked AND asr_status NOT IN ('queued', 'running') RETURNING id`;
+  return { queued: rows.length, skippedLocked, skippedBusy };
+}
+
+/**
+ * The confirmed half of the file-import flow: validated entries go in with the owner's choices —
+ * duplicates skipped or overwritten (locked rows are never overwritten), and one enabled state
+ * for the whole batch when the owner picked one (null keeps each entry's own state).
+ */
+export async function importParsedLexiconEntries(
+  entries: LexiconEntryInput[],
+  opts: { onDuplicate: "skip" | "overwrite"; batchEnabled: boolean | null },
+  db: Db = sql,
+): Promise<{ inserted: number; overwritten: number; skipped: number; skippedLocked: number }> {
+  const existing = new Map(
+    (await db<{ id: number; term: string; locked: boolean; enabled: boolean; asr_status: string }[]>`
+      SELECT id, term, locked, enabled, asr_status FROM pronunciation_lexicon`).map((r) => [r.term.toLowerCase(), r]),
+  );
+  let inserted = 0, overwritten = 0, skipped = 0, skippedLocked = 0;
+  for (const entry of entries) {
+    const term = (entry.term ?? "").trim();
+    if (!term) { skipped++; continue; }
+    const key = term.toLowerCase();
+    const current = existing.get(key);
+    const enabled = opts.batchEnabled ?? entry.enabled ?? current?.enabled ?? false;
+    if (!current) {
+      const [row] = await db<{ id: number }[]>`
+        INSERT INTO pronunciation_lexicon (term, reading, scope, category_scope, enabled, locked, asr_status, note)
+        VALUES (${term}, ${(entry.reading ?? "").trim()}, ${entry.scope ?? "all"}, ${entry.category_scope ?? "all"},
+                ${enabled}, false, ${entry.asr_status ?? ""}, ${entry.note ?? ""})
+        RETURNING id`;
+      existing.set(key, { id: row!.id, term, locked: false, enabled, asr_status: entry.asr_status ?? "" });
+      inserted++;
+    } else if (opts.onDuplicate === "skip") {
+      skipped++;
+    } else if (current.locked) {
+      skippedLocked++;
+    } else {
+      await db`
+        UPDATE pronunciation_lexicon SET
+          reading = ${(entry.reading ?? "").trim()},
+          scope = ${entry.scope ?? "all"},
+          category_scope = ${entry.category_scope ?? "all"},
+          enabled = ${enabled},
+          asr_status = ${entry.asr_status ?? current.asr_status},
+          note = ${entry.note ?? ""},
+          updated_at = now()
+        WHERE id = ${current.id}`;
+      overwritten++;
+    }
+  }
+  await regenerateLexiconFile(db);
+  return { inserted, overwritten, skipped, skippedLocked };
 }
 
 /**

@@ -18,7 +18,8 @@ import { decideRule, StyleConflict, styleGuide } from "./backend/style.ts";
 import { STYLE_KEYS, STYLES } from "./backend/styles.ts";
 import { makeVideo, shortFile, thumbnailFile, videoFile, videoFiles } from "./backend/pipeline.ts";
 import { autoPick, candidatesWithVideos, createVideo, getVideo, listVideos, requeueVideo, reviewVideo, setStyle, STEPS, VideoConflict, type Step } from "./backend/videos.ts";
-import { createLexiconEntry, deleteLexiconEntry, importLexiconFromExportFile, LexiconConflict, lexiconStats, listLexicon, setLexiconEnabled, updateLexiconEntry } from "./backend/lexicon.ts";
+import { createLexiconEntry, deleteLexiconEntry, importLexiconFromExportFile, importParsedLexiconEntries, LexiconConflict, lexiconStats, lexiconTermIndex, listLexicon, listLexiconForExport, queueLexiconAsr, setLexiconEnabled, setLexiconLocked, updateLexiconEntry } from "./backend/lexicon.ts";
+import { classifyLexiconRows, lexiconExportCsv, lexiconExportJson, normalizeLexiconEntry, parseLexiconFile, toEntryInput } from "./backend/lexicon-io.ts";
 import { ENGINE_CATALOG, ensureVoiceConfig, saveVoiceConfig, VoiceConfigConflict, type VoiceConfig } from "./backend/voice-config.ts";
 
 export const AUTO_ENABLED = () => process.env.VIDEO_AUTO_ENABLED === "true";
@@ -114,10 +115,33 @@ export const videoServer: ServerModule = {
       const query = z.object({
         q: z.string().max(200).optional(),
         page: z.coerce.number().int().min(1).optional(),
-        pageSize: z.coerce.number().int().min(1).max(200).optional(),
+        pageSize: z.coerce.number().int().min(1).max(1000).optional(),
+        scope: z.enum(["all", "relay", "selfhost"]).optional(),
+        category_scope: z.enum(["all", "tech", "finance"]).optional(),
+        enabled: z.enum(["true", "false"]).optional(),
+        asr: z.enum(["none", "queued", "running", "passed", "failed"]).optional(),
+        locked: z.enum(["true", "false"]).optional(),
       }).parse(req.query);
-      const { rows, total } = await listLexicon(query);
+      const { rows, total } = await listLexicon({
+        q: query.q,
+        page: query.page,
+        pageSize: query.pageSize,
+        scope: query.scope ?? "",
+        category_scope: query.category_scope ?? "",
+        enabled: query.enabled === undefined ? null : query.enabled === "true",
+        asr: query.asr ?? "",
+        locked: query.locked === undefined ? null : query.locked === "true",
+      });
       return { csrf: admin.csrf, entries: rows, total, stats: await lexiconStats() };
+    }));
+    app.get("/api/admin/video/lexicon/export", guarded(async (req, reply) => {
+      const { format } = z.object({ format: z.enum(["json", "csv"]).default("json") }).parse(req.query);
+      const rows = await listLexiconForExport();
+      const body = format === "json" ? lexiconExportJson(rows) : lexiconExportCsv(rows);
+      reply
+        .header("Content-Type", format === "json" ? "application/json; charset=utf-8" : "text/csv; charset=utf-8")
+        .header("Content-Disposition", `attachment; filename="diemtin-lexicon.${format}"`);
+      return reply.send(body);
     }));
     app.post("/api/admin/video/lexicon", guarded(async (req) => {
       const input = lexiconInput.parse(req.body);
@@ -134,11 +158,61 @@ export const videoServer: ServerModule = {
       return { deleted: id };
     }));
     app.post("/api/admin/video/lexicon/enabled", guarded(async (req) => {
-      const input = z.object({ ids: z.array(z.number().int().positive()).max(1000), enabled: z.boolean() }).parse(req.body);
-      return { updated: await setLexiconEnabled(input.ids, input.enabled) };
+      const input = z.object({ ids: z.array(z.number().int().positive()).max(5000), enabled: z.boolean() }).parse(req.body);
+      return await setLexiconEnabled(input.ids, input.enabled);
+    }));
+    app.post("/api/admin/video/lexicon/locked", guarded(async (req) => {
+      const input = z.object({ ids: z.array(z.number().int().positive()).max(5000), locked: z.boolean() }).parse(req.body);
+      return await setLexiconLocked(input.ids, input.locked);
+    }));
+    app.post("/api/admin/video/lexicon/asr-queue", guarded(async (req) => {
+      const input = z.object({ ids: z.array(z.number().int().positive()).max(5000) }).parse(req.body);
+      return await queueLexiconAsr(input.ids);
     }));
     app.post("/api/admin/video/lexicon/import", guarded(async () => {
       return { result: await importLexiconFromExportFile() };
+    }));
+    // Bulk file import, the Studio flow: parse + classify for a preview, then a confirmed apply.
+    app.post("/api/admin/video/lexicon/import/preview", guarded(async (req) => {
+      const input = z.object({ name: z.string().max(300), text: z.string().max(4_000_000) }).parse(req.body);
+      const parsed = parseLexiconFile(input.name, input.text);
+      if ("fileError" in parsed) throw new LexiconConflict(parsed.fileError);
+      const rows = classifyLexiconRows(parsed.rows, await lexiconTermIndex());
+      return {
+        format: parsed.format,
+        rows,
+        counts: {
+          total: rows.length,
+          fresh: rows.filter((r) => r.status === "new").length,
+          duplicate: rows.filter((r) => r.status === "duplicate").length,
+          error: rows.filter((r) => r.status === "error").length,
+        },
+      };
+    }));
+    app.post("/api/admin/video/lexicon/import/apply", guarded(async (req) => {
+      const input = z.object({
+        entries: z.array(z.object({
+          term: z.string().max(500),
+          reading: z.string().max(1000),
+          scope: z.string().max(100).optional(),
+          category_scope: z.string().max(100).optional(),
+          note: z.string().max(5000).optional(),
+          enabled: z.boolean().optional(),
+          asr_status: z.string().max(40).optional(),
+        })).max(5000),
+        onDuplicate: z.enum(["skip", "overwrite"]),
+        batchEnabled: z.boolean().nullable(),
+      }).parse(req.body);
+      // Re-validate on the server: the preview verdicts are never trusted blindly.
+      const valid: ReturnType<typeof toEntryInput>[] = [];
+      let invalid = 0;
+      for (const raw of input.entries) {
+        const result = normalizeLexiconEntry(raw);
+        if ("error" in result) invalid++;
+        else valid.push(toEntryInput(result.entry));
+      }
+      const result = await importParsedLexiconEntries(valid, { onDuplicate: input.onDuplicate, batchEnabled: input.batchEnabled });
+      return { result: { ...result, invalid } };
     }));
 
     // Voice configuration: engine cards + the fallback chain, stored in industry/voice-config.json.

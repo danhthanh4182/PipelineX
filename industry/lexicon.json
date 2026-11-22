@@ -1,11 +1,2896 @@
 {
   "version": 1,
   "kind": "pronunciation-lexicon",
-  "generated_at": "2026-11-22T11:30:47.091Z",
+  "generated_at": "2026-11-22T16:12:13.062Z",
   "entries": [
+    {
+      "term": "AGI",
+      "reading": "trí tuệ nhân tạo tổng quát",
+      "category_scope": "all"
+    },
+    {
+      "term": "API",
+      "reading": "ây pi ai",
+      "category_scope": "all"
+    },
+    {
+      "term": "APT",
+      "reading": "mối đe dọa dai dẳng có chủ đích",
+      "category_scope": "all"
+    },
+    {
+      "term": "ARR",
+      "reading": "doanh thu định kỳ hàng năm",
+      "category_scope": "all"
+    },
+    {
+      "term": "Brier score",
+      "reading": "điểm brai ơ",
+      "category_scope": "all"
+    },
+    {
+      "term": "CBDC",
+      "reading": "tiền kỹ thuật số của ngân hàng trung ương",
+      "category_scope": "all"
+    },
+    {
+      "term": "CDN",
+      "reading": "xi đi en",
+      "category_scope": "all"
+    },
+    {
+      "term": "CI/CD",
+      "reading": "xi ai xi đi",
+      "category_scope": "all"
+    },
+    {
+      "term": "CLI",
+      "reading": "giao diện dòng lệnh",
+      "category_scope": "all"
+    },
+    {
+      "term": "CORS",
+      "reading": "chia sẻ tài nguyên chéo nguồn",
+      "category_scope": "all"
+    },
+    {
+      "term": "CPI",
+      "reading": "chỉ số giá tiêu dùng",
+      "category_scope": "all"
+    },
+    {
+      "term": "CPU",
+      "reading": "xi pi iu",
+      "category_scope": "all"
+    },
+    {
+      "term": "CRUD",
+      "reading": "thêm đọc sửa xóa",
+      "category_scope": "all"
+    },
+    {
+      "term": "CSRF",
+      "reading": "giả mạo yêu cầu liên trang",
+      "category_scope": "all"
+    },
+    {
+      "term": "CSS",
+      "reading": "xi ét ét",
+      "category_scope": "all"
+    },
+    {
+      "term": "CVE",
+      "reading": "xi vi i",
+      "category_scope": "all"
+    },
+    {
+      "term": "CVSS",
+      "reading": "xi vi ét ét",
+      "category_scope": "all"
+    },
+    {
+      "term": "CWE",
+      "reading": "xi vê kép i",
+      "category_scope": "all"
+    },
+    {
+      "term": "DDoS",
+      "reading": "tấn công từ chối dịch vụ phân tán",
+      "category_scope": "all"
+    },
+    {
+      "term": "DNS",
+      "reading": "đi en ét",
+      "category_scope": "all"
+    },
+    {
+      "term": "DOM",
+      "reading": "mô hình đối tượng tài liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "DRY",
+      "reading": "không lặp lại mã nguồn",
+      "category_scope": "all"
+    },
+    {
+      "term": "DeFi",
+      "reading": "tài chính phi tập trung",
+      "category_scope": "all"
+    },
+    {
+      "term": "DoS",
+      "reading": "từ chối dịch vụ",
+      "category_scope": "all"
+    },
+    {
+      "term": "Docker",
+      "reading": "đốc cơ",
+      "category_scope": "all"
+    },
+    {
+      "term": "Dockerfile",
+      "reading": "tệp cấu hình đốc cơ",
+      "category_scope": "all"
+    },
+    {
+      "term": "EBITDA",
+      "reading": "lợi nhuận trước thuế lãi vay và khấu hao",
+      "category_scope": "all"
+    },
+    {
+      "term": "EDR",
+      "reading": "phát hiện và phản hồi điểm cuối",
+      "category_scope": "all"
+    },
+    {
+      "term": "ETF",
+      "reading": "quỹ hoán đổi danh mục",
+      "category_scope": "all"
+    },
+    {
+      "term": "GDP",
+      "reading": "tổng sản phẩm quốc nội",
+      "category_scope": "all"
+    },
+    {
+      "term": "GPU",
+      "reading": "gờ pi iu",
+      "category_scope": "all"
+    },
+    {
+      "term": "GUI",
+      "reading": "giao diện đồ họa người dùng",
+      "category_scope": "all"
+    },
+    {
+      "term": "Git",
+      "reading": "ghít",
+      "category_scope": "all"
+    },
+    {
+      "term": "GitOps",
+      "reading": "vận hành hạ tầng qua ghít",
+      "category_scope": "all"
+    },
+    {
+      "term": "GraphQL",
+      "reading": "gráp qui eo",
+      "category_scope": "all"
+    },
+    {
+      "term": "HTML",
+      "reading": "hát ti em eo",
+      "category_scope": "all"
+    },
+    {
+      "term": "HTTP",
+      "reading": "hát ti ti pi",
+      "category_scope": "all"
+    },
+    {
+      "term": "HTTPS",
+      "reading": "hát ti ti pi ét",
+      "category_scope": "all"
+    },
+    {
+      "term": "IAM",
+      "reading": "quản lý định danh và truy cập",
+      "category_scope": "all"
+    },
+    {
+      "term": "IDE",
+      "reading": "môi trường phát triển tích hợp",
+      "category_scope": "all"
+    },
+    {
+      "term": "IP address",
+      "reading": "địa chỉ ai pi",
+      "category_scope": "all"
+    },
+    {
+      "term": "IPO",
+      "reading": "phát hành cổ phiếu lần đầu ra công chúng",
+      "category_scope": "all"
+    },
+    {
+      "term": "IaC",
+      "reading": "hạ tầng dưới dạng mã",
+      "category_scope": "all"
+    },
+    {
+      "term": "JSON",
+      "reading": "giây sần",
+      "category_scope": "all"
+    },
+    {
+      "term": "JWT",
+      "reading": "giây đắp liu ti",
+      "category_scope": "all"
+    },
+    {
+      "term": "K8s",
+      "reading": "cu bơ nét tít",
+      "category_scope": "all"
+    },
+    {
+      "term": "KYC",
+      "reading": "xác minh danh tính khách hàng",
+      "category_scope": "all"
+    },
+    {
+      "term": "Kubernetes",
+      "reading": "cu bơ nét tít",
+      "category_scope": "all"
+    },
+    {
+      "term": "LLM",
+      "reading": "mô hình ngôn ngữ lớn",
+      "category_scope": "all"
+    },
+    {
+      "term": "Linux",
+      "reading": "li núc",
+      "category_scope": "all"
+    },
+    {
+      "term": "LoRA",
+      "reading": "tinh chỉnh thích ứng hạng thấp",
+      "category_scope": "all"
+    },
+    {
+      "term": "M&A",
+      "reading": "mua bán và sáp nhập",
+      "category_scope": "all"
+    },
+    {
+      "term": "MCP",
+      "reading": "giao thức ngữ cảnh mô hình",
+      "category_scope": "all"
+    },
+    {
+      "term": "MFA",
+      "reading": "xác thực đa yếu tố",
+      "category_scope": "all"
+    },
+    {
+      "term": "MRR",
+      "reading": "doanh thu định kỳ hàng tháng",
+      "category_scope": "all"
+    },
+    {
+      "term": "Mixture of Experts",
+      "reading": "hỗn hợp chuyên gia",
+      "category_scope": "all"
+    },
+    {
+      "term": "MoE",
+      "reading": "hỗn hợp chuyên gia",
+      "category_scope": "all"
+    },
+    {
+      "term": "NAT",
+      "reading": "biên dịch địa chỉ mạng",
+      "category_scope": "all"
+    },
+    {
+      "term": "NLP",
+      "reading": "xử lý ngôn ngữ tự nhiên",
+      "category_scope": "all"
+    },
+    {
+      "term": "NoSQL",
+      "reading": "cơ sở dữ liệu phi quan hệ",
+      "category_scope": "all"
+    },
+    {
+      "term": "OAuth",
+      "reading": "giao thức ủy quyền mở âu ót",
+      "category_scope": "all"
+    },
+    {
+      "term": "OIDC",
+      "reading": "định danh mở trên nền âu ót",
+      "category_scope": "all"
+    },
+    {
+      "term": "ORM",
+      "reading": "ánh xạ quan hệ đối tượng",
+      "category_scope": "all"
+    },
+    {
+      "term": "RAG",
+      "reading": "tạo sinh tăng cường truy xuất",
+      "category_scope": "all"
+    },
+    {
+      "term": "RAM",
+      "reading": "bộ nhớ ram",
+      "category_scope": "all"
+    },
+    {
+      "term": "RCE",
+      "reading": "thực thi mã từ xa",
+      "category_scope": "all"
+    },
+    {
+      "term": "REST API",
+      "reading": "giao diện lập trình rét",
+      "category_scope": "all"
+    },
+    {
+      "term": "RESTful",
+      "reading": "chuẩn rét phun",
+      "category_scope": "all"
+    },
+    {
+      "term": "RLHF",
+      "reading": "học tăng cường từ phản hồi con người",
+      "category_scope": "all"
+    },
+    {
+      "term": "ROI",
+      "reading": "tỷ suất hoàn vốn",
+      "category_scope": "all"
+    },
+    {
+      "term": "RPD",
+      "reading": "số yêu cầu mỗi ngày",
+      "category_scope": "all"
+    },
+    {
+      "term": "RPM",
+      "reading": "số yêu cầu mỗi phút",
+      "category_scope": "all"
+    },
+    {
+      "term": "SDK",
+      "reading": "bộ công cụ phát triển phần mềm",
+      "category_scope": "all"
+    },
+    {
+      "term": "SEC",
+      "reading": "ủy ban chứng khoán và giao dịch hoa kỳ",
+      "category_scope": "all"
+    },
+    {
+      "term": "SIEM",
+      "reading": "quản lý thông tin và sự kiện bảo mật",
+      "category_scope": "all"
+    },
+    {
+      "term": "SLA",
+      "reading": "cam kết chất lượng dịch vụ",
+      "category_scope": "all"
+    },
+    {
+      "term": "SLO",
+      "reading": "mục tiêu chất lượng dịch vụ",
+      "category_scope": "all"
+    },
+    {
+      "term": "SOC",
+      "reading": "trung tâm điều hành an ninh mạng",
+      "category_scope": "all"
+    },
+    {
+      "term": "SQL",
+      "reading": "ét qui eo",
+      "category_scope": "all"
+    },
+    {
+      "term": "SQL injection",
+      "reading": "tiêm mã truy vấn độc hại",
+      "category_scope": "all"
+    },
+    {
+      "term": "SSD",
+      "reading": "ổ cứng thể rắn",
+      "category_scope": "all"
+    },
+    {
+      "term": "SSH",
+      "reading": "ét ét hắt",
+      "category_scope": "all"
+    },
+    {
+      "term": "SSH key",
+      "reading": "khóa ét ét ếch",
+      "category_scope": "all"
+    },
+    {
+      "term": "SSL",
+      "reading": "ét ét eo",
+      "category_scope": "all"
+    },
+    {
+      "term": "SSR",
+      "reading": "kết xuất phía máy chủ",
+      "category_scope": "all"
+    },
+    {
+      "term": "SSRF",
+      "reading": "giả mạo yêu cầu phía máy chủ",
+      "category_scope": "all"
+    },
+    {
+      "term": "SaaS",
+      "reading": "phần mềm dưới dạng dịch vụ",
+      "category_scope": "all"
+    },
+    {
+      "term": "TCP",
+      "reading": "ti xi pi",
+      "category_scope": "all"
+    },
+    {
+      "term": "TLS",
+      "reading": "ti eo ét",
+      "category_scope": "all"
+    },
+    {
+      "term": "TPD",
+      "reading": "số tô ken mỗi ngày",
+      "category_scope": "all"
+    },
+    {
+      "term": "TPM",
+      "reading": "số tô ken mỗi phút",
+      "category_scope": "all"
+    },
+    {
+      "term": "TPU",
+      "reading": "ti pi iu",
+      "category_scope": "all"
+    },
+    {
+      "term": "Terraform",
+      "reading": "te ra phoóc",
+      "category_scope": "all"
+    },
+    {
+      "term": "Transformer",
+      "reading": "kiến trúc tran phoóc mơ",
+      "category_scope": "all"
+    },
+    {
+      "term": "UDP",
+      "reading": "iu đi pi",
+      "category_scope": "all"
+    },
+    {
+      "term": "UI",
+      "reading": "giao diện người dùng",
+      "category_scope": "all"
+    },
+    {
+      "term": "URL",
+      "reading": "đường dẫn liên kết",
+      "category_scope": "all"
+    },
+    {
+      "term": "UUID",
+      "reading": "mã định danh duy nhất toàn cầu",
+      "category_scope": "all"
+    },
+    {
+      "term": "UX",
+      "reading": "trải nghiệm người dùng",
+      "category_scope": "all"
+    },
+    {
+      "term": "VM",
+      "reading": "máy ảo",
+      "category_scope": "all"
+    },
+    {
+      "term": "VPC",
+      "reading": "đám mây riêng ảo",
+      "category_scope": "all"
+    },
+    {
+      "term": "VPN",
+      "reading": "mạng riêng ảo",
+      "category_scope": "all"
+    },
+    {
+      "term": "VRAM",
+      "reading": "bộ nhớ đồ họa vi ram",
+      "category_scope": "all"
+    },
+    {
+      "term": "WAF",
+      "reading": "tường lửa ứng dụng web",
+      "category_scope": "all"
+    },
+    {
+      "term": "WebSocket",
+      "reading": "uép sóc két",
+      "category_scope": "all"
+    },
+    {
+      "term": "XSS",
+      "reading": "tấn công chèn mã kịch bản chéo trang",
+      "category_scope": "all"
+    },
+    {
+      "term": "YAML",
+      "reading": "da mồ",
+      "category_scope": "all"
+    },
+    {
+      "term": "abstraction",
+      "reading": "tính trừu tượng",
+      "category_scope": "all"
+    },
+    {
+      "term": "access control",
+      "reading": "kiểm soát truy cập",
+      "category_scope": "all"
+    },
+    {
+      "term": "acquirer",
+      "reading": "ngân hàng thanh toán",
+      "category_scope": "all"
+    },
+    {
+      "term": "acquisition",
+      "reading": "thương vụ mua lại",
+      "category_scope": "all"
+    },
+    {
+      "term": "activation function",
+      "reading": "hàm kích hoạt",
+      "category_scope": "all"
+    },
+    {
+      "term": "adversarial attack",
+      "reading": "tấn công đối kháng",
+      "category_scope": "all"
+    },
+    {
+      "term": "advisory",
+      "reading": "khuyến cáo bảo mật",
+      "category_scope": "all"
+    },
+    {
+      "term": "agent",
+      "reading": "tác tử",
+      "category_scope": "all"
+    },
+    {
+      "term": "agentic",
+      "reading": "theo hướng tác tử",
+      "category_scope": "all"
+    },
+    {
+      "term": "algorithm",
+      "reading": "thuật toán",
+      "category_scope": "all"
+    },
+    {
+      "term": "alignment",
+      "reading": "căn chỉnh giá trị mô hình",
+      "category_scope": "all"
+    },
+    {
+      "term": "angel investor",
+      "reading": "nhà đầu tư thiên thần",
+      "category_scope": "all"
+    },
+    {
+      "term": "annual recurring revenue",
+      "reading": "doanh thu định kỳ hàng năm",
+      "category_scope": "all"
+    },
+    {
+      "term": "ansible",
+      "reading": "an xi bồ",
+      "category_scope": "all"
+    },
+    {
+      "term": "arbitrage",
+      "reading": "kinh doanh chênh lệch giá",
+      "category_scope": "all"
+    },
+    {
+      "term": "argument",
+      "reading": "đối số",
+      "category_scope": "all"
+    },
+    {
+      "term": "array",
+      "reading": "mảng",
+      "category_scope": "all"
+    },
+    {
+      "term": "artifact",
+      "reading": "tạo phẩm phần mềm",
+      "category_scope": "all"
+    },
+    {
+      "term": "asset allocation",
+      "reading": "phân bổ tài sản",
+      "category_scope": "all"
+    },
+    {
+      "term": "asymmetric encryption",
+      "reading": "mã hóa bất đối xứng",
+      "category_scope": "all"
+    },
+    {
+      "term": "async",
+      "reading": "bất đồng bộ",
+      "category_scope": "all"
+    },
+    {
+      "term": "asynchronous",
+      "reading": "bất đồng bộ",
+      "category_scope": "all"
+    },
+    {
+      "term": "attack surface",
+      "reading": "bề mặt tấn công",
+      "category_scope": "all"
+    },
+    {
+      "term": "attention mechanism",
+      "reading": "cơ chế tập trung chú ý",
+      "category_scope": "all"
+    },
+    {
+      "term": "audit",
+      "reading": "kiểm toán",
+      "category_scope": "finance"
+    },
+    {
+      "term": "audit log",
+      "reading": "nhật ký kiểm toán bảo mật",
+      "category_scope": "all"
+    },
+    {
+      "term": "authentication",
+      "reading": "xác thực",
+      "category_scope": "all"
+    },
+    {
+      "term": "authentication bypass",
+      "reading": "vượt qua xác thực",
+      "category_scope": "all"
+    },
+    {
+      "term": "authorization",
+      "reading": "phân quyền",
+      "category_scope": "all"
+    },
+    {
+      "term": "auto scaling",
+      "reading": "tự động co giãn tài nguyên",
+      "category_scope": "all"
+    },
+    {
+      "term": "autoencoder",
+      "reading": "bộ tự mã hóa",
+      "category_scope": "all"
+    },
+    {
+      "term": "autoloading",
+      "reading": "tự động nạp",
+      "category_scope": "all"
+    },
+    {
+      "term": "autoregressive",
+      "reading": "tự hồi quy",
+      "category_scope": "all"
+    },
+    {
+      "term": "availability zone",
+      "reading": "vùng sẵn sàng",
+      "category_scope": "all"
+    },
+    {
+      "term": "backdoor",
+      "reading": "cửa hậu",
+      "category_scope": "all"
+    },
+    {
+      "term": "backend",
+      "reading": "hệ thống phía sau",
+      "category_scope": "all"
+    },
+    {
+      "term": "backpropagation",
+      "reading": "lan truyền ngược",
+      "category_scope": "all"
+    },
+    {
+      "term": "backward compatible",
+      "reading": "tương thích ngược",
+      "category_scope": "all"
+    },
+    {
+      "term": "balance sheet",
+      "reading": "bảng cân đối kế toán",
+      "category_scope": "all"
+    },
+    {
+      "term": "bandwidth",
+      "reading": "băng thông",
+      "category_scope": "all"
+    },
+    {
+      "term": "bare metal",
+      "reading": "máy chủ vật lý chuyên dụng",
+      "category_scope": "all"
+    },
+    {
+      "term": "batch size",
+      "reading": "kích thước lô dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "bear market",
+      "reading": "thị trường giá xuống",
+      "category_scope": "all"
+    },
+    {
+      "term": "benchmark",
+      "reading": "bài đánh giá chuẩn",
+      "category_scope": "all"
+    },
+    {
+      "term": "bias",
+      "reading": "độ chệch",
+      "category_scope": "all"
+    },
+    {
+      "term": "binary",
+      "reading": "nhị phân",
+      "category_scope": "all"
+    },
+    {
+      "term": "binary tree",
+      "reading": "cây nhị phân",
+      "category_scope": "all"
+    },
+    {
+      "term": "blockchain",
+      "reading": "chuỗi khối",
+      "category_scope": "all"
+    },
+    {
+      "term": "blue chip",
+      "reading": "cổ phiếu đầu ngành",
+      "category_scope": "all"
+    },
+    {
+      "term": "blue-green deployment",
+      "reading": "triển khai luân phiên hai môi trường",
+      "category_scope": "all"
+    },
+    {
+      "term": "boilerplate",
+      "reading": "mã khung mẫu",
+      "category_scope": "all"
+    },
+    {
+      "term": "bond",
+      "reading": "trái phiếu",
+      "category_scope": "finance"
+    },
+    {
+      "term": "boolean",
+      "reading": "kiểu luận lý",
+      "category_scope": "all"
+    },
+    {
+      "term": "botnet",
+      "reading": "mạng máy tính ma",
+      "category_scope": "all"
+    },
+    {
+      "term": "branch",
+      "reading": "nhánh",
+      "category_scope": "all"
+    },
+    {
+      "term": "breach",
+      "reading": "vụ xâm nhập",
+      "category_scope": "all"
+    },
+    {
+      "term": "breakpoint",
+      "reading": "điểm dừng gỡ lỗi",
+      "category_scope": "all"
+    },
+    {
+      "term": "brute force",
+      "reading": "tấn công dò mật khẩu vét cạn",
+      "category_scope": "all"
+    },
+    {
+      "term": "buffer overflow",
+      "reading": "tràn bộ đệm",
+      "category_scope": "all"
+    },
+    {
+      "term": "bug",
+      "reading": "lỗi",
+      "category_scope": "all"
+    },
+    {
+      "term": "build",
+      "reading": "bản dựng",
+      "category_scope": "all"
+    },
+    {
+      "term": "bull market",
+      "reading": "thị trường giá lên",
+      "category_scope": "all"
+    },
+    {
+      "term": "burn rate",
+      "reading": "tốc độ đốt tiền",
+      "category_scope": "all"
+    },
+    {
+      "term": "bytecode",
+      "reading": "mã trung gian",
+      "category_scope": "all"
+    },
+    {
+      "term": "cache",
+      "reading": "bộ nhớ đệm",
+      "category_scope": "all"
+    },
+    {
+      "term": "caching",
+      "reading": "lưu bộ nhớ đệm",
+      "category_scope": "all"
+    },
+    {
+      "term": "calibrated probability",
+      "reading": "xác suất đã hiệu chỉnh",
+      "category_scope": "all"
+    },
     {
       "term": "callback",
       "reading": "hàm gọi lại",
+      "category_scope": "all"
+    },
+    {
+      "term": "camelCase",
+      "reading": "kiểu lạc đà",
+      "category_scope": "all"
+    },
+    {
+      "term": "canary release",
+      "reading": "phát hành thử nghiệm từng phần",
+      "category_scope": "all"
+    },
+    {
+      "term": "capital expenditure",
+      "reading": "chi phí đầu tư tài sản cố định",
+      "category_scope": "all"
+    },
+    {
+      "term": "capital gain",
+      "reading": "lãi vốn",
+      "category_scope": "all"
+    },
+    {
+      "term": "cash flow",
+      "reading": "dòng tiền",
+      "category_scope": "all"
+    },
+    {
+      "term": "certificate",
+      "reading": "chứng chỉ số",
+      "category_scope": "all"
+    },
+    {
+      "term": "cgroup",
+      "reading": "nhóm điều khiển tài nguyên",
+      "category_scope": "all"
+    },
+    {
+      "term": "chain of thought",
+      "reading": "chuỗi suy luận từng bước",
+      "category_scope": "all"
+    },
+    {
+      "term": "changelog",
+      "reading": "nhật ký thay đổi",
+      "category_scope": "all"
+    },
+    {
+      "term": "chargeback",
+      "reading": "hoàn tiền giao dịch tranh chấp",
+      "category_scope": "all"
+    },
+    {
+      "term": "checkpoint",
+      "reading": "điểm lưu trọng số",
+      "category_scope": "all"
+    },
+    {
+      "term": "checksum",
+      "reading": "mã kiểm tra toàn vẹn",
+      "category_scope": "all"
+    },
+    {
+      "term": "chunking",
+      "reading": "chia nhỏ văn bản",
+      "category_scope": "all"
+    },
+    {
+      "term": "churn rate",
+      "reading": "tỷ lệ rời bỏ của khách hàng",
+      "category_scope": "all"
+    },
+    {
+      "term": "ciphertext",
+      "reading": "bản mã",
+      "category_scope": "all"
+    },
+    {
+      "term": "class",
+      "reading": "lớp",
+      "category_scope": "all"
+    },
+    {
+      "term": "classification",
+      "reading": "phân loại",
+      "category_scope": "all"
+    },
+    {
+      "term": "client",
+      "reading": "máy khách",
+      "category_scope": "all"
+    },
+    {
+      "term": "closure",
+      "reading": "hàm bao đóng",
+      "category_scope": "all"
+    },
+    {
+      "term": "cloud-native",
+      "reading": "thuần đám mây",
+      "category_scope": "all"
+    },
+    {
+      "term": "cluster",
+      "reading": "cụm máy chủ",
+      "category_scope": "all"
+    },
+    {
+      "term": "clustering",
+      "reading": "phân cụm dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "code review",
+      "reading": "đánh giá mã nguồn",
+      "category_scope": "all"
+    },
+    {
+      "term": "codebase",
+      "reading": "cơ sở mã nguồn",
+      "category_scope": "all"
+    },
+    {
+      "term": "cold start",
+      "reading": "khởi động nguội",
+      "category_scope": "all"
+    },
+    {
+      "term": "collateral",
+      "reading": "tài sản thế chấp",
+      "category_scope": "all"
+    },
+    {
+      "term": "commit",
+      "reading": "com mít",
+      "category_scope": "all"
+    },
+    {
+      "term": "compile",
+      "reading": "biên dịch",
+      "category_scope": "all"
+    },
+    {
+      "term": "compiler",
+      "reading": "trình biên dịch",
+      "category_scope": "all"
+    },
+    {
+      "term": "compliance",
+      "reading": "tuân thủ quy định",
+      "category_scope": "all"
+    },
+    {
+      "term": "compound interest",
+      "reading": "lãi kép",
+      "category_scope": "all"
+    },
+    {
+      "term": "compute",
+      "reading": "năng lực tính toán",
+      "category_scope": "all"
+    },
+    {
+      "term": "computer use",
+      "reading": "điều khiển máy tính",
+      "category_scope": "all"
+    },
+    {
+      "term": "computer vision",
+      "reading": "thị giác máy tính",
+      "category_scope": "all"
+    },
+    {
+      "term": "concurrency",
+      "reading": "đồng thời",
+      "category_scope": "all"
+    },
+    {
+      "term": "configmap",
+      "reading": "bản đồ cấu hình",
+      "category_scope": "all"
+    },
+    {
+      "term": "constant",
+      "reading": "hằng số",
+      "category_scope": "all"
+    },
+    {
+      "term": "constructor",
+      "reading": "hàm khởi tạo",
+      "category_scope": "all"
+    },
+    {
+      "term": "container",
+      "reading": "công tê nơ",
+      "category_scope": "all"
+    },
+    {
+      "term": "containerization",
+      "reading": "đóng gói thùng chứa",
+      "category_scope": "all"
+    },
+    {
+      "term": "context length",
+      "reading": "độ dài ngữ cảnh",
+      "category_scope": "all"
+    },
+    {
+      "term": "context window",
+      "reading": "cửa sổ ngữ cảnh",
+      "category_scope": "all"
+    },
+    {
+      "term": "control plane",
+      "reading": "tầng điều khiển",
+      "category_scope": "all"
+    },
+    {
+      "term": "cosine similarity",
+      "reading": "độ tương đồng cô sin",
+      "category_scope": "all"
+    },
+    {
+      "term": "crash",
+      "reading": "sập",
+      "category_scope": "all"
+    },
+    {
+      "term": "credential",
+      "reading": "thông tin xác thực",
+      "category_scope": "all"
+    },
+    {
+      "term": "credit scoring",
+      "reading": "chấm điểm tín dụng",
+      "category_scope": "all"
+    },
+    {
+      "term": "critical",
+      "reading": "nghiêm trọng",
+      "category_scope": "all"
+    },
+    {
+      "term": "cron job",
+      "reading": "tác vụ định kỳ",
+      "category_scope": "all"
+    },
+    {
+      "term": "crowdfunding",
+      "reading": "gọi vốn cộng đồng",
+      "category_scope": "all"
+    },
+    {
+      "term": "cursor",
+      "reading": "con trỏ dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "custodian",
+      "reading": "đơn vị lưu ký tài sản",
+      "category_scope": "all"
+    },
+    {
+      "term": "daemon",
+      "reading": "tiến trình nền",
+      "category_scope": "all"
+    },
+    {
+      "term": "dashboard",
+      "reading": "bảng điều khiển giám sát",
+      "category_scope": "all"
+    },
+    {
+      "term": "data center",
+      "reading": "trung tâm dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "data plane",
+      "reading": "tầng dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "data structure",
+      "reading": "cấu trúc dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "database",
+      "reading": "cơ sở dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "dataset",
+      "reading": "tập dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "deadlock",
+      "reading": "tắc nghẽn chéo",
+      "category_scope": "all"
+    },
+    {
+      "term": "debt-to-equity",
+      "reading": "tỷ lệ nợ trên vốn chủ sở hữu",
+      "category_scope": "all"
+    },
+    {
+      "term": "debug",
+      "reading": "gỡ lỗi",
+      "category_scope": "all"
+    },
+    {
+      "term": "debugger",
+      "reading": "trình gỡ lỗi",
+      "category_scope": "all"
+    },
+    {
+      "term": "decoupling",
+      "reading": "tách rời phụ thuộc",
+      "category_scope": "all"
+    },
+    {
+      "term": "decryption",
+      "reading": "giải mã",
+      "category_scope": "all"
+    },
+    {
+      "term": "deep copy",
+      "reading": "sao chép sâu",
+      "category_scope": "all"
+    },
+    {
+      "term": "deep learning",
+      "reading": "học sâu",
+      "category_scope": "all"
+    },
+    {
+      "term": "default",
+      "reading": "vỡ nợ",
+      "category_scope": "finance"
+    },
+    {
+      "term": "defense in depth",
+      "reading": "phòng thủ theo chiều sâu",
+      "category_scope": "all"
+    },
+    {
+      "term": "deflation",
+      "reading": "giảm phát",
+      "category_scope": "all"
+    },
+    {
+      "term": "denial of service",
+      "reading": "từ chối dịch vụ",
+      "category_scope": "all"
+    },
+    {
+      "term": "dependency",
+      "reading": "phụ thuộc",
+      "category_scope": "all"
+    },
+    {
+      "term": "dependency injection",
+      "reading": "tiêm phụ thuộc",
+      "category_scope": "all"
+    },
+    {
+      "term": "deploy",
+      "reading": "triển khai",
+      "category_scope": "all"
+    },
+    {
+      "term": "deprecated",
+      "reading": "không còn khuyến khích",
+      "category_scope": "all"
+    },
+    {
+      "term": "derivative",
+      "reading": "công cụ phái sinh",
+      "category_scope": "all"
+    },
+    {
+      "term": "deserialization",
+      "reading": "giải tuần tự hóa",
+      "category_scope": "all"
+    },
+    {
+      "term": "design pattern",
+      "reading": "mẫu thiết kế",
+      "category_scope": "all"
+    },
+    {
+      "term": "diffusion model",
+      "reading": "mô hình khuếch tán",
+      "category_scope": "all"
+    },
+    {
+      "term": "digital signature",
+      "reading": "chữ ký số",
+      "category_scope": "all"
+    },
+    {
+      "term": "disaster recovery",
+      "reading": "khôi phục sau thảm họa",
+      "category_scope": "all"
+    },
+    {
+      "term": "distillation",
+      "reading": "chưng cất tri thức",
+      "category_scope": "all"
+    },
+    {
+      "term": "dividend",
+      "reading": "cổ tức",
+      "category_scope": "all"
+    },
+    {
+      "term": "download",
+      "reading": "tải về",
+      "category_scope": "all"
+    },
+    {
+      "term": "downtime",
+      "reading": "thời gian ngừng hoạt động",
+      "category_scope": "all"
+    },
+    {
+      "term": "due diligence",
+      "reading": "thẩm định chuyên sâu",
+      "category_scope": "all"
+    },
+    {
+      "term": "eKYC",
+      "reading": "định danh khách hàng điện tử",
+      "category_scope": "all"
+    },
+    {
+      "term": "edge case",
+      "reading": "trường hợp biên",
+      "category_scope": "all"
+    },
+    {
+      "term": "edge computing",
+      "reading": "điện toán biên",
+      "category_scope": "all"
+    },
+    {
+      "term": "egress",
+      "reading": "lưu lượng đi ra",
+      "category_scope": "all"
+    },
+    {
+      "term": "embedding",
+      "reading": "véc tơ nhúng",
+      "category_scope": "all"
+    },
+    {
+      "term": "encapsulation",
+      "reading": "tính đóng gói",
+      "category_scope": "all"
+    },
+    {
+      "term": "encryption",
+      "reading": "mã hóa",
+      "category_scope": "all"
+    },
+    {
+      "term": "endpoint",
+      "reading": "điểm cuối",
+      "category_scope": "all"
+    },
+    {
+      "term": "enum",
+      "reading": "kiểu liệt kê",
+      "category_scope": "all"
+    },
+    {
+      "term": "environment variable",
+      "reading": "biến môi trường",
+      "category_scope": "all"
+    },
+    {
+      "term": "epoch",
+      "reading": "kỷ nguyên huấn luyện",
+      "category_scope": "all"
+    },
+    {
+      "term": "equity",
+      "reading": "vốn chủ sở hữu",
+      "category_scope": "finance"
+    },
+    {
+      "term": "escrow",
+      "reading": "tài khoản ký quỹ trung gian",
+      "category_scope": "all"
+    },
+    {
+      "term": "evaluation",
+      "reading": "đánh giá mô hình",
+      "category_scope": "all"
+    },
+    {
+      "term": "event loop",
+      "reading": "vòng lặp sự kiện",
+      "category_scope": "all"
+    },
+    {
+      "term": "exception",
+      "reading": "ngoại lệ",
+      "category_scope": "all"
+    },
+    {
+      "term": "exchange rate",
+      "reading": "tỷ giá hối đoái",
+      "category_scope": "all"
+    },
+    {
+      "term": "exfiltration",
+      "reading": "đánh cắp trích xuất dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "exploit",
+      "reading": "khai thác",
+      "category_scope": "all"
+    },
+    {
+      "term": "failover",
+      "reading": "chuyển đổi dự phòng",
+      "category_scope": "all"
+    },
+    {
+      "term": "fault tolerance",
+      "reading": "khả năng chịu lỗi",
+      "category_scope": "all"
+    },
+    {
+      "term": "feature engineering",
+      "reading": "trích xuất đặc trưng",
+      "category_scope": "all"
+    },
+    {
+      "term": "few-shot",
+      "reading": "học từ vài ví dụ",
+      "category_scope": "all"
+    },
+    {
+      "term": "fiat currency",
+      "reading": "tiền pháp định",
+      "category_scope": "all"
+    },
+    {
+      "term": "fine-tuning",
+      "reading": "tinh chỉnh",
+      "category_scope": "all"
+    },
+    {
+      "term": "fintech",
+      "reading": "công nghệ tài chính",
+      "category_scope": "all"
+    },
+    {
+      "term": "firewall",
+      "reading": "tường lửa",
+      "category_scope": "all"
+    },
+    {
+      "term": "fiscal policy",
+      "reading": "chính sách tài khóa",
+      "category_scope": "all"
+    },
+    {
+      "term": "foreign key",
+      "reading": "khóa ngoại",
+      "category_scope": "all"
+    },
+    {
+      "term": "forex",
+      "reading": "thị trường ngoại hối",
+      "category_scope": "all"
+    },
+    {
+      "term": "foundation model",
+      "reading": "mô hình nền tảng",
+      "category_scope": "all"
+    },
+    {
+      "term": "framework",
+      "reading": "khung phát triển",
+      "category_scope": "all"
+    },
+    {
+      "term": "free tier",
+      "reading": "gói miễn phí",
+      "category_scope": "all"
+    },
+    {
+      "term": "frontend",
+      "reading": "giao diện người dùng",
+      "category_scope": "all"
+    },
+    {
+      "term": "full-stack",
+      "reading": "toàn diện",
+      "category_scope": "all"
+    },
+    {
+      "term": "function",
+      "reading": "hàm",
+      "category_scope": "all"
+    },
+    {
+      "term": "function calling",
+      "reading": "gọi hàm công cụ",
+      "category_scope": "all"
+    },
+    {
+      "term": "fuzzing",
+      "reading": "kiểm thử làm mờ đầu vào",
+      "category_scope": "all"
+    },
+    {
+      "term": "gRPC",
+      "reading": "gờ a pi xi",
+      "category_scope": "all"
+    },
+    {
+      "term": "garbage collection",
+      "reading": "thu gom rác bộ nhớ",
+      "category_scope": "all"
+    },
+    {
+      "term": "gateway",
+      "reading": "cổng kết nối",
+      "category_scope": "all"
+    },
+    {
+      "term": "generative AI",
+      "reading": "trí tuệ nhân tạo tạo sinh",
+      "category_scope": "all"
+    },
+    {
+      "term": "gradient descent",
+      "reading": "giảm dần theo độ dốc",
+      "category_scope": "all"
+    },
+    {
+      "term": "gross margin",
+      "reading": "biên lợi nhuận gộp",
+      "category_scope": "all"
+    },
+    {
+      "term": "grounding",
+      "reading": "neo giữ thông tin thực tế",
+      "category_scope": "all"
+    },
+    {
+      "term": "guardrails",
+      "reading": "hàng rào kiểm soát an toàn",
+      "category_scope": "all"
+    },
+    {
+      "term": "guest VM",
+      "reading": "máy ảo khách",
+      "category_scope": "all"
+    },
+    {
+      "term": "hallucination",
+      "reading": "ảo giác",
+      "category_scope": "all"
+    },
+    {
+      "term": "hardening",
+      "reading": "gia cố bảo mật hệ thống",
+      "category_scope": "all"
+    },
+    {
+      "term": "hash",
+      "reading": "băm",
+      "category_scope": "all"
+    },
+    {
+      "term": "hash map",
+      "reading": "bảng băm",
+      "category_scope": "all"
+    },
+    {
+      "term": "headless",
+      "reading": "không giao diện hiển thị",
+      "category_scope": "all"
+    },
+    {
+      "term": "heap",
+      "reading": "vùng nhớ híp",
+      "category_scope": "all"
+    },
+    {
+      "term": "hedge fund",
+      "reading": "quỹ phòng hộ",
+      "category_scope": "all"
+    },
+    {
+      "term": "hedging",
+      "reading": "phòng ngừa rủi ro tài chính",
+      "category_scope": "all"
+    },
+    {
+      "term": "high availability",
+      "reading": "tính sẵn sàng cao",
+      "category_scope": "all"
+    },
+    {
+      "term": "host",
+      "reading": "máy chủ",
+      "category_scope": "all"
+    },
+    {
+      "term": "hot reload",
+      "reading": "tải lại nóng",
+      "category_scope": "all"
+    },
+    {
+      "term": "hotfix",
+      "reading": "bản vá nóng",
+      "category_scope": "all"
+    },
+    {
+      "term": "hydration",
+      "reading": "kích hoạt tương tác trang",
+      "category_scope": "all"
+    },
+    {
+      "term": "hyperparameter",
+      "reading": "siêu tham số",
+      "category_scope": "all"
+    },
+    {
+      "term": "hypervisor",
+      "reading": "trình giám sát máy ảo",
+      "category_scope": "all"
+    },
+    {
+      "term": "idempotent",
+      "reading": "lũy đẳng",
+      "category_scope": "all"
+    },
+    {
+      "term": "image",
+      "reading": "ảnh đóng gói",
+      "category_scope": "all"
+    },
+    {
+      "term": "immutable",
+      "reading": "bất biến",
+      "category_scope": "all"
+    },
+    {
+      "term": "in-context learning",
+      "reading": "học trong ngữ cảnh",
+      "category_scope": "all"
+    },
+    {
+      "term": "incident response",
+      "reading": "ứng phó sự cố an ninh",
+      "category_scope": "all"
+    },
+    {
+      "term": "index",
+      "reading": "chỉ mục",
+      "category_scope": "all"
+    },
+    {
+      "term": "indexing",
+      "reading": "đánh chỉ mục",
+      "category_scope": "all"
+    },
+    {
+      "term": "inference",
+      "reading": "suy luận",
+      "category_scope": "all"
+    },
+    {
+      "term": "inflation",
+      "reading": "lạm phát",
+      "category_scope": "all"
+    },
+    {
+      "term": "infrastructure",
+      "reading": "hạ tầng",
+      "category_scope": "all"
+    },
+    {
+      "term": "ingress",
+      "reading": "lưu lượng đi vào",
+      "category_scope": "all"
+    },
+    {
+      "term": "inheritance",
+      "reading": "tính kế thừa",
+      "category_scope": "all"
+    },
+    {
+      "term": "input",
+      "reading": "đầu vào",
+      "category_scope": "all"
+    },
+    {
+      "term": "insolvency",
+      "reading": "mất khả năng thanh toán",
+      "category_scope": "all"
+    },
+    {
+      "term": "instance",
+      "reading": "thể hiện",
+      "category_scope": "all"
+    },
+    {
+      "term": "integration test",
+      "reading": "kiểm thử tích hợp",
+      "category_scope": "all"
+    },
+    {
+      "term": "interest rate",
+      "reading": "lãi suất",
+      "category_scope": "all"
+    },
+    {
+      "term": "interface",
+      "reading": "giao diện",
+      "category_scope": "all"
+    },
+    {
+      "term": "interpreter",
+      "reading": "trình thông dịch",
+      "category_scope": "all"
+    },
+    {
+      "term": "iteration",
+      "reading": "vòng lặp xử lý",
+      "category_scope": "all"
+    },
+    {
+      "term": "kernel",
+      "reading": "nhân",
+      "category_scope": "all"
+    },
+    {
+      "term": "knowledge graph",
+      "reading": "đồ thị tri thức",
+      "category_scope": "all"
+    },
+    {
+      "term": "latency",
+      "reading": "độ trễ",
+      "category_scope": "all"
+    },
+    {
+      "term": "latent space",
+      "reading": "không gian tiềm ẩn",
+      "category_scope": "all"
+    },
+    {
+      "term": "lateral movement",
+      "reading": "di chuyển ngang trong mạng",
+      "category_scope": "all"
+    },
+    {
+      "term": "least privilege",
+      "reading": "nguyên tắc đặc quyền tối thiểu",
+      "category_scope": "all"
+    },
+    {
+      "term": "ledger",
+      "reading": "sổ cái kế toán",
+      "category_scope": "all"
+    },
+    {
+      "term": "legacy",
+      "reading": "hệ thống cũ",
+      "category_scope": "all"
+    },
+    {
+      "term": "leverage",
+      "reading": "đòn bẩy tài chính",
+      "category_scope": "finance"
+    },
+    {
+      "term": "library",
+      "reading": "thư viện",
+      "category_scope": "all"
+    },
+    {
+      "term": "license",
+      "reading": "giấy phép",
+      "category_scope": "all"
+    },
+    {
+      "term": "linked list",
+      "reading": "danh sách liên kết",
+      "category_scope": "all"
+    },
+    {
+      "term": "linter",
+      "reading": "công cụ kiểm tra cú pháp",
+      "category_scope": "all"
+    },
+    {
+      "term": "liquidity",
+      "reading": "tính thanh khoản",
+      "category_scope": "all"
+    },
+    {
+      "term": "load balancer",
+      "reading": "bộ cân bằng tải",
+      "category_scope": "all"
+    },
+    {
+      "term": "load balancing",
+      "reading": "cân bằng tải",
+      "category_scope": "all"
+    },
+    {
+      "term": "local storage",
+      "reading": "bộ nhớ cục bộ trình duyệt",
+      "category_scope": "all"
+    },
+    {
+      "term": "lockfile",
+      "reading": "tệp khóa phiên bản",
+      "category_scope": "all"
+    },
+    {
+      "term": "log aggregation",
+      "reading": "thu thập nhật ký tập trung",
+      "category_scope": "all"
+    },
+    {
+      "term": "logging",
+      "reading": "ghi nhật ký",
+      "category_scope": "all"
+    },
+    {
+      "term": "loop",
+      "reading": "vòng lặp",
+      "category_scope": "all"
+    },
+    {
+      "term": "loss function",
+      "reading": "hàm mất mát",
+      "category_scope": "all"
+    },
+    {
+      "term": "mTLS",
+      "reading": "xác thực tầng truyền tải hai chiều",
+      "category_scope": "all"
+    },
+    {
+      "term": "machine learning",
+      "reading": "học máy",
+      "category_scope": "all"
+    },
+    {
+      "term": "malware",
+      "reading": "phần mềm độc hại",
+      "category_scope": "all"
+    },
+    {
+      "term": "man-in-the-middle",
+      "reading": "tấn công xen giữa",
+      "category_scope": "all"
+    },
+    {
+      "term": "market cap",
+      "reading": "vốn hóa thị trường",
+      "category_scope": "all"
+    },
+    {
+      "term": "memory",
+      "reading": "bộ nhớ",
+      "category_scope": "all"
+    },
+    {
+      "term": "memory corruption",
+      "reading": "hỏng bộ nhớ",
+      "category_scope": "all"
+    },
+    {
+      "term": "memory leak",
+      "reading": "rò rỉ bộ nhớ",
+      "category_scope": "all"
+    },
+    {
+      "term": "merchant",
+      "reading": "đơn vị chấp nhận thanh toán",
+      "category_scope": "all"
+    },
+    {
+      "term": "merge",
+      "reading": "hợp nhất",
+      "category_scope": "all"
+    },
+    {
+      "term": "metadata",
+      "reading": "siêu dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "method",
+      "reading": "phương thức",
+      "category_scope": "all"
+    },
+    {
+      "term": "metrics",
+      "reading": "chỉ số đo lường",
+      "category_scope": "all"
+    },
+    {
+      "term": "microkernel",
+      "reading": "vi nhân",
+      "category_scope": "all"
+    },
+    {
+      "term": "microservice",
+      "reading": "vi dịch vụ",
+      "category_scope": "all"
+    },
+    {
+      "term": "middleware",
+      "reading": "phần mềm trung gian",
+      "category_scope": "all"
+    },
+    {
+      "term": "migration",
+      "reading": "di trú dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "mitigation",
+      "reading": "biện pháp giảm thiểu rủi ro",
+      "category_scope": "all"
+    },
+    {
+      "term": "model",
+      "reading": "mô hình",
+      "category_scope": "all"
+    },
+    {
+      "term": "monetary policy",
+      "reading": "chính sách tiền tệ",
+      "category_scope": "all"
+    },
+    {
+      "term": "monitoring",
+      "reading": "giám sát",
+      "category_scope": "all"
+    },
+    {
+      "term": "monolith",
+      "reading": "kiến trúc nguyên khối",
+      "category_scope": "all"
+    },
+    {
+      "term": "monorepo",
+      "reading": "kho mã hợp nhất",
+      "category_scope": "all"
+    },
+    {
+      "term": "multi-cloud",
+      "reading": "đa đám mây",
+      "category_scope": "all"
+    },
+    {
+      "term": "multi-region",
+      "reading": "đa khu vực",
+      "category_scope": "all"
+    },
+    {
+      "term": "multimodal",
+      "reading": "đa phương thức",
+      "category_scope": "all"
+    },
+    {
+      "term": "multimodal model",
+      "reading": "mô hình đa phương thức",
+      "category_scope": "all"
+    },
+    {
+      "term": "mutex",
+      "reading": "khóa loại trừ tương hỗ",
+      "category_scope": "all"
+    },
+    {
+      "term": "namespace",
+      "reading": "không gian tên",
+      "category_scope": "all"
+    },
+    {
+      "term": "namespace isolation",
+      "reading": "cô lập không gian tên",
+      "category_scope": "all"
+    },
+    {
+      "term": "nested virtualization",
+      "reading": "ảo hóa lồng nhau",
+      "category_scope": "all"
+    },
+    {
+      "term": "net income",
+      "reading": "lợi nhuận ròng",
+      "category_scope": "all"
+    },
+    {
+      "term": "neural network",
+      "reading": "mạng nơ ron nhân tạo",
+      "category_scope": "all"
+    },
+    {
+      "term": "node",
+      "reading": "nút mạng",
+      "category_scope": "all"
+    },
+    {
+      "term": "null pointer",
+      "reading": "con trỏ rỗng",
+      "category_scope": "all"
+    },
+    {
+      "term": "object",
+      "reading": "đối tượng",
+      "category_scope": "all"
+    },
+    {
+      "term": "observability",
+      "reading": "khả năng quan sát hệ thống",
+      "category_scope": "all"
+    },
+    {
+      "term": "offline",
+      "reading": "ngoại tuyến",
+      "category_scope": "all"
+    },
+    {
+      "term": "on-premise",
+      "reading": "hạ tầng tại chỗ",
+      "category_scope": "all"
+    },
+    {
+      "term": "open banking",
+      "reading": "ngân hàng mở",
+      "category_scope": "all"
+    },
+    {
+      "term": "open source",
+      "reading": "mã nguồn mở",
+      "category_scope": "all"
+    },
+    {
+      "term": "open weights",
+      "reading": "mở trọng số",
+      "category_scope": "all"
+    },
+    {
+      "term": "operating expense",
+      "reading": "chi phí vận hành",
+      "category_scope": "all"
+    },
+    {
+      "term": "orchestration",
+      "reading": "điều phối tự động",
+      "category_scope": "all"
+    },
+    {
+      "term": "order book",
+      "reading": "sổ lệnh giao dịch",
+      "category_scope": "all"
+    },
+    {
+      "term": "origin",
+      "reading": "máy chủ gốc",
+      "category_scope": "all"
+    },
+    {
+      "term": "output",
+      "reading": "đầu ra",
+      "category_scope": "all"
+    },
+    {
+      "term": "overfitting",
+      "reading": "quá khớp dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "package manager",
+      "reading": "trình quản lý gói",
+      "category_scope": "all"
+    },
+    {
+      "term": "packet",
+      "reading": "gói tin",
+      "category_scope": "all"
+    },
+    {
+      "term": "pagination",
+      "reading": "phân trang",
+      "category_scope": "all"
+    },
+    {
+      "term": "parallelism",
+      "reading": "xử lý song song",
+      "category_scope": "all"
+    },
+    {
+      "term": "parameter",
+      "reading": "tham số",
+      "category_scope": "all"
+    },
+    {
+      "term": "parser",
+      "reading": "trình phân tích cú pháp",
+      "category_scope": "all"
+    },
+    {
+      "term": "passphrase",
+      "reading": "cụm mật khẩu",
+      "category_scope": "all"
+    },
+    {
+      "term": "patch",
+      "reading": "bản vá",
+      "category_scope": "all"
+    },
+    {
+      "term": "payload",
+      "reading": "dữ liệu tải",
+      "category_scope": "all"
+    },
+    {
+      "term": "payloads",
+      "reading": "các gói dữ liệu tải",
+      "category_scope": "all"
+    },
+    {
+      "term": "payment gateway",
+      "reading": "cổng thanh toán điện tử",
+      "category_scope": "all"
+    },
+    {
+      "term": "peer-to-peer",
+      "reading": "ngang hàng trực tiếp",
+      "category_scope": "all"
+    },
+    {
+      "term": "penetration testing",
+      "reading": "kiểm thử xâm nhập",
+      "category_scope": "all"
+    },
+    {
+      "term": "perplexity",
+      "reading": "độ bối rối ngôn ngữ",
+      "category_scope": "all"
+    },
+    {
+      "term": "phishing",
+      "reading": "tấn công giả mạo lừa đảo",
+      "category_scope": "all"
+    },
+    {
+      "term": "pipeline",
+      "reading": "đường ống",
+      "category_scope": "all"
+    },
+    {
+      "term": "plaintext",
+      "reading": "bản rõ",
+      "category_scope": "all"
+    },
+    {
+      "term": "pod",
+      "reading": "nhóm thùng chứa pót",
+      "category_scope": "all"
+    },
+    {
+      "term": "pointer",
+      "reading": "con trỏ",
+      "category_scope": "all"
+    },
+    {
+      "term": "polymorphism",
+      "reading": "tính đa hình",
+      "category_scope": "all"
+    },
+    {
+      "term": "port",
+      "reading": "cổng",
+      "category_scope": "all"
+    },
+    {
+      "term": "portfolio",
+      "reading": "danh mục đầu tư",
+      "category_scope": "all"
+    },
+    {
+      "term": "post-training",
+      "reading": "hậu huấn luyện",
+      "category_scope": "all"
+    },
+    {
+      "term": "pre-training",
+      "reading": "tiền huấn luyện",
+      "category_scope": "all"
+    },
+    {
+      "term": "primary key",
+      "reading": "khóa chính",
+      "category_scope": "all"
+    },
+    {
+      "term": "private equity",
+      "reading": "quỹ đầu tư vốn tư nhân",
+      "category_scope": "all"
+    },
+    {
+      "term": "private key",
+      "reading": "khóa riêng tư",
+      "category_scope": "all"
+    },
+    {
+      "term": "privilege escalation",
+      "reading": "leo thang đặc quyền",
+      "category_scope": "all"
+    },
+    {
+      "term": "profiler",
+      "reading": "công cụ đo hiệu năng",
+      "category_scope": "all"
+    },
+    {
+      "term": "prompt",
+      "reading": "câu lệnh gợi ý",
+      "category_scope": "all"
+    },
+    {
+      "term": "prompt engineering",
+      "reading": "kỹ thuật thiết kế câu lệnh",
+      "category_scope": "all"
+    },
+    {
+      "term": "prompt injection",
+      "reading": "tiêm nhiễm câu lệnh độc hại",
+      "category_scope": "all"
+    },
+    {
+      "term": "provisioning",
+      "reading": "cấp phát tài nguyên",
+      "category_scope": "all"
+    },
+    {
+      "term": "proxy",
+      "reading": "máy chủ trung gian",
+      "category_scope": "all"
+    },
+    {
+      "term": "public key",
+      "reading": "khóa công khai",
+      "category_scope": "all"
+    },
+    {
+      "term": "pull request",
+      "reading": "yêu cầu hợp nhất",
+      "category_scope": "all"
+    },
+    {
+      "term": "quantitative easing",
+      "reading": "nới lỏng định lượng",
+      "category_scope": "all"
+    },
+    {
+      "term": "quantization",
+      "reading": "lượng tử hóa mô hình",
+      "category_scope": "all"
+    },
+    {
+      "term": "query",
+      "reading": "truy vấn",
+      "category_scope": "all"
+    },
+    {
+      "term": "race condition",
+      "reading": "điều kiện tranh chấp",
+      "category_scope": "all"
+    },
+    {
+      "term": "race conditions",
+      "reading": "các điều kiện tranh chấp",
+      "category_scope": "all"
+    },
+    {
+      "term": "ransomware",
+      "reading": "mã độc tống tiền",
+      "category_scope": "all"
+    },
+    {
+      "term": "rate limit",
+      "reading": "giới hạn tần suất gọi",
+      "category_scope": "all"
+    },
+    {
+      "term": "reasoning model",
+      "reading": "mô hình suy luận",
+      "category_scope": "all"
+    },
+    {
+      "term": "recession",
+      "reading": "suy thoái kinh tế",
+      "category_scope": "all"
+    },
+    {
+      "term": "reconciliation",
+      "reading": "đối soát giao dịch",
+      "category_scope": "all"
+    },
+    {
+      "term": "recursion",
+      "reading": "đệ quy",
+      "category_scope": "all"
+    },
+    {
+      "term": "red team",
+      "reading": "đội ngũ tấn công mô phỏng",
+      "category_scope": "all"
+    },
+    {
+      "term": "refactor",
+      "reading": "tái cấu trúc mã",
+      "category_scope": "all"
+    },
+    {
+      "term": "regex",
+      "reading": "biểu thức chính quy",
+      "category_scope": "all"
+    },
+    {
+      "term": "registry",
+      "reading": "kho lưu trữ ảnh đóng gói",
+      "category_scope": "all"
+    },
+    {
+      "term": "reinforcement learning",
+      "reading": "học tăng cường",
+      "category_scope": "all"
+    },
+    {
+      "term": "relational database",
+      "reading": "cơ sở dữ liệu quan hệ",
+      "category_scope": "all"
+    },
+    {
+      "term": "remediation",
+      "reading": "khắc phục lỗ hổng",
+      "category_scope": "all"
+    },
+    {
+      "term": "remittance",
+      "reading": "kiều hối chuyển tiền",
+      "category_scope": "all"
+    },
+    {
+      "term": "remote code execution",
+      "reading": "thực thi mã từ xa",
+      "category_scope": "all"
+    },
+    {
+      "term": "rendering",
+      "reading": "kết xuất giao diện",
+      "category_scope": "all"
+    },
+    {
+      "term": "replica",
+      "reading": "bản sao dự phòng",
+      "category_scope": "all"
+    },
+    {
+      "term": "repository",
+      "reading": "kho mã",
+      "category_scope": "all"
+    },
+    {
+      "term": "request",
+      "reading": "yêu cầu",
+      "category_scope": "all"
+    },
+    {
+      "term": "reranker",
+      "reading": "bộ xếp hạng lại kết quả",
+      "category_scope": "all"
+    },
+    {
+      "term": "response",
+      "reading": "phản hồi",
+      "category_scope": "all"
+    },
+    {
+      "term": "revenue",
+      "reading": "doanh thu",
+      "category_scope": "all"
+    },
+    {
+      "term": "reverse proxy",
+      "reading": "máy chủ trung gian ngược",
+      "category_scope": "all"
+    },
+    {
+      "term": "reward model",
+      "reading": "mô hình phần thưởng",
+      "category_scope": "all"
+    },
+    {
+      "term": "risk management",
+      "reading": "quản trị rủi ro",
+      "category_scope": "all"
+    },
+    {
+      "term": "rollback",
+      "reading": "quay lui phiên bản",
+      "category_scope": "all"
+    },
+    {
+      "term": "root user",
+      "reading": "người dùng quản trị cao nhất",
+      "category_scope": "all"
+    },
+    {
+      "term": "rootkit",
+      "reading": "bộ công cụ ẩn quyền quản trị",
+      "category_scope": "all"
+    },
+    {
+      "term": "router",
+      "reading": "bộ định tuyến",
+      "category_scope": "all"
+    },
+    {
+      "term": "runtime",
+      "reading": "môi trường chạy",
+      "category_scope": "all"
+    },
+    {
+      "term": "runway",
+      "reading": "thời gian duy trì hoạt động",
+      "category_scope": "all"
+    },
+    {
+      "term": "sandbox",
+      "reading": "hộp cát",
+      "category_scope": "all"
+    },
+    {
+      "term": "scalability",
+      "reading": "khả năng mở rộng",
+      "category_scope": "all"
+    },
+    {
+      "term": "scaling law",
+      "reading": "quy luật mở rộng quy mô",
+      "category_scope": "all"
+    },
+    {
+      "term": "scheduler",
+      "reading": "bộ lập lịch tác vụ",
+      "category_scope": "all"
+    },
+    {
+      "term": "schema",
+      "reading": "lược đồ",
+      "category_scope": "all"
+    },
+    {
+      "term": "secret management",
+      "reading": "quản lý khóa bí mật",
+      "category_scope": "all"
+    },
+    {
+      "term": "seed round",
+      "reading": "vòng gọi vốn hạt giống",
+      "category_scope": "all"
+    },
+    {
+      "term": "self-hosted",
+      "reading": "tự lưu trữ",
+      "category_scope": "all"
+    },
+    {
+      "term": "semantic search",
+      "reading": "tìm kiếm ngữ nghĩa",
+      "category_scope": "all"
+    },
+    {
+      "term": "serialization",
+      "reading": "tuần tự hóa dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "server",
+      "reading": "máy chủ",
+      "category_scope": "all"
+    },
+    {
+      "term": "serverless",
+      "reading": "phi máy chủ",
+      "category_scope": "all"
+    },
+    {
+      "term": "service mesh",
+      "reading": "lưới dịch vụ",
+      "category_scope": "all"
+    },
+    {
+      "term": "session",
+      "reading": "phiên làm việc",
+      "category_scope": "all"
+    },
+    {
+      "term": "settlement",
+      "reading": "thanh toán bù trừ",
+      "category_scope": "finance"
+    },
+    {
+      "term": "sharding",
+      "reading": "phân mảnh cơ sở dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "short selling",
+      "reading": "bán khống",
+      "category_scope": "all"
+    },
+    {
+      "term": "sidecar",
+      "reading": "tiến trình phụ trợ đi kèm",
+      "category_scope": "all"
+    },
+    {
+      "term": "singleton",
+      "reading": "mẫu đơn thể",
+      "category_scope": "all"
+    },
+    {
+      "term": "smart contract",
+      "reading": "hợp đồng thông minh",
+      "category_scope": "all"
+    },
+    {
+      "term": "snapshot",
+      "reading": "bản chụp nhanh hệ thống",
+      "category_scope": "all"
+    },
+    {
+      "term": "social engineering",
+      "reading": "kỹ nghệ xã hội lừa đảo",
+      "category_scope": "all"
+    },
+    {
+      "term": "source code",
+      "reading": "mã nguồn",
+      "category_scope": "all"
+    },
+    {
+      "term": "spoofing",
+      "reading": "giả mạo danh tính mạng",
+      "category_scope": "all"
+    },
+    {
+      "term": "stablecoin",
+      "reading": "đồng tiền ổn định giá",
+      "category_scope": "all"
+    },
+    {
+      "term": "stack",
+      "reading": "ngăn xếp",
+      "category_scope": "all"
+    },
+    {
+      "term": "staging",
+      "reading": "môi trường tiền sản xuất",
+      "category_scope": "all"
+    },
+    {
+      "term": "staking",
+      "reading": "khóa tài sản nhận thưởng",
+      "category_scope": "all"
+    },
+    {
+      "term": "state management",
+      "reading": "quản lý trạng thái",
+      "category_scope": "all"
+    },
+    {
+      "term": "static typing",
+      "reading": "định kiểu tĩnh",
+      "category_scope": "all"
+    },
+    {
+      "term": "stock exchange",
+      "reading": "sở giao dịch chứng khoán",
+      "category_scope": "all"
+    },
+    {
+      "term": "stored procedure",
+      "reading": "thủ tục lưu trữ",
+      "category_scope": "all"
+    },
+    {
+      "term": "string",
+      "reading": "chuỗi",
+      "category_scope": "all"
+    },
+    {
+      "term": "subnet",
+      "reading": "mạng con",
+      "category_scope": "all"
+    },
+    {
+      "term": "supervised learning",
+      "reading": "học có giám sát",
+      "category_scope": "all"
+    },
+    {
+      "term": "supply chain attack",
+      "reading": "tấn công chuỗi cung ứng phần mềm",
+      "category_scope": "all"
+    },
+    {
+      "term": "supply chain finance",
+      "reading": "tài trợ chuỗi cung ứng",
+      "category_scope": "all"
+    },
+    {
+      "term": "symmetric encryption",
+      "reading": "mã hóa đối xứng",
+      "category_scope": "all"
+    },
+    {
+      "term": "syntax",
+      "reading": "cú pháp",
+      "category_scope": "all"
+    },
+    {
+      "term": "synthetic data",
+      "reading": "dữ liệu tổng hợp",
+      "category_scope": "all"
+    },
+    {
+      "term": "systemd",
+      "reading": "trình quản lý dịch vụ hệ thống",
+      "category_scope": "all"
+    },
+    {
+      "term": "tech debt",
+      "reading": "nợ kỹ thuật",
+      "category_scope": "all"
+    },
+    {
+      "term": "telemetry",
+      "reading": "dữ liệu đo từ xa",
+      "category_scope": "all"
+    },
+    {
+      "term": "temperature",
+      "reading": "nhiệt độ sáng tạo",
+      "category_scope": "all"
+    },
+    {
+      "term": "template",
+      "reading": "bản mẫu",
+      "category_scope": "all"
+    },
+    {
+      "term": "tensor",
+      "reading": "ten xơ",
+      "category_scope": "all"
+    },
+    {
+      "term": "test-time compute",
+      "reading": "tính toán tại thời điểm suy luận",
+      "category_scope": "all"
+    },
+    {
+      "term": "thread",
+      "reading": "luồng",
+      "category_scope": "all"
+    },
+    {
+      "term": "threat intelligence",
+      "reading": "tình báo mối đe dọa",
+      "category_scope": "all"
+    },
+    {
+      "term": "throughput",
+      "reading": "thông lượng xử lý",
+      "category_scope": "all"
+    },
+    {
+      "term": "timeout",
+      "reading": "hết thời gian chờ",
+      "category_scope": "all"
+    },
+    {
+      "term": "token",
+      "reading": "tô ken",
+      "category_scope": "all"
+    },
+    {
+      "term": "token hijacking",
+      "reading": "chiếm đoạt mã phiên truy cập",
+      "category_scope": "all"
+    },
+    {
+      "term": "tokenization",
+      "reading": "tách từ thành tô ken",
+      "category_scope": "all"
+    },
+    {
+      "term": "tokenizer",
+      "reading": "bộ tách tô ken",
+      "category_scope": "all"
+    },
+    {
+      "term": "tool use",
+      "reading": "sử dụng công cụ",
+      "category_scope": "all"
+    },
+    {
+      "term": "tracing",
+      "reading": "truy vết yêu cầu",
+      "category_scope": "all"
+    },
+    {
+      "term": "traffic",
+      "reading": "lưu lượng",
+      "category_scope": "all"
+    },
+    {
+      "term": "training",
+      "reading": "huấn luyện",
+      "category_scope": "all"
+    },
+    {
+      "term": "transaction",
+      "reading": "giao dịch",
+      "category_scope": "all"
+    },
+    {
+      "term": "transfer learning",
+      "reading": "học chuyển giao",
+      "category_scope": "all"
+    },
+    {
+      "term": "transpiler",
+      "reading": "trình chuyển mã",
+      "category_scope": "all"
+    },
+    {
+      "term": "treasury",
+      "reading": "kho bạc",
+      "category_scope": "all"
+    },
+    {
+      "term": "trojan",
+      "reading": "mã độc tơ rô giần",
+      "category_scope": "all"
+    },
+    {
+      "term": "tunnel",
+      "reading": "đường hầm",
+      "category_scope": "all"
+    },
+    {
+      "term": "type safety",
+      "reading": "an toàn kiểu dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "unauthenticated",
+      "reading": "chưa xác thực",
+      "category_scope": "all"
+    },
+    {
+      "term": "unauthorized access",
+      "reading": "truy cập trái phép",
+      "category_scope": "all"
+    },
+    {
+      "term": "underfitting",
+      "reading": "chưa khớp dữ liệu",
+      "category_scope": "all"
+    },
+    {
+      "term": "unicorn",
+      "reading": "kỳ lân công nghệ",
+      "category_scope": "all"
+    },
+    {
+      "term": "unit test",
+      "reading": "kiểm thử đơn vị",
+      "category_scope": "all"
+    },
+    {
+      "term": "unsupervised learning",
+      "reading": "học không giám sát",
+      "category_scope": "all"
+    },
+    {
+      "term": "upstream",
+      "reading": "máy chủ nguồn tiếp nhận",
+      "category_scope": "all"
+    },
+    {
+      "term": "uptime",
+      "reading": "thời gian hoạt động liên tục",
+      "category_scope": "all"
+    },
+    {
+      "term": "valuation",
+      "reading": "định giá doanh nghiệp",
+      "category_scope": "all"
+    },
+    {
+      "term": "variable",
+      "reading": "biến",
+      "category_scope": "all"
+    },
+    {
+      "term": "vector database",
+      "reading": "cơ sở dữ liệu véc tơ",
+      "category_scope": "all"
+    },
+    {
+      "term": "venture capital",
+      "reading": "vốn đầu tư mạo hiểm",
+      "category_scope": "all"
+    },
+    {
+      "term": "version control",
+      "reading": "quản lý phiên bản",
+      "category_scope": "all"
+    },
+    {
+      "term": "virtual machine",
+      "reading": "máy ảo",
+      "category_scope": "all"
+    },
+    {
+      "term": "virtual server",
+      "reading": "máy chủ ảo",
+      "category_scope": "all"
+    },
+    {
+      "term": "virtualization",
+      "reading": "ảo hóa",
+      "category_scope": "all"
+    },
+    {
+      "term": "volatility",
+      "reading": "biến động giá",
+      "category_scope": "all"
+    },
+    {
+      "term": "vulnerability",
+      "reading": "lỗ hổng bảo mật",
+      "category_scope": "all"
+    },
+    {
+      "term": "webhook",
+      "reading": "cổng nhận sự kiện tự động",
+      "category_scope": "all"
+    },
+    {
+      "term": "weights",
+      "reading": "trọng số",
+      "category_scope": "all"
+    },
+    {
+      "term": "wire transfer",
+      "reading": "chuyển khoản ngân hàng",
+      "category_scope": "all"
+    },
+    {
+      "term": "workaround",
+      "reading": "cách khắc phục tạm thời",
+      "category_scope": "all"
+    },
+    {
+      "term": "workload",
+      "reading": "khối lượng công việc",
+      "category_scope": "all"
+    },
+    {
+      "term": "yield",
+      "reading": "lợi suất",
+      "category_scope": "finance"
+    },
+    {
+      "term": "zero trust",
+      "reading": "kiến trúc không tin cậy mặc định",
+      "category_scope": "all"
+    },
+    {
+      "term": "zero-day",
+      "reading": "ze rô đê",
+      "category_scope": "all"
+    },
+    {
+      "term": "zero-shot",
+      "reading": "suy luận không cần ví dụ",
       "category_scope": "all"
     }
   ]

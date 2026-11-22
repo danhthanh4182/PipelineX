@@ -6,7 +6,8 @@ export const videoModule = defineModule({
   // In the engine's back office, at the top of its sidebar: the page used every day.
   pages: [
     { path: "videos", file: "web/videos.tsx", admin: true, nav: "Videos", shell: "engine", group: "Production" },
-    { path: "lexicon", file: "web/lexicon.tsx", admin: true, nav: "Lexicon", shell: "engine", group: "Production" },
+    { path: "lexicon", file: "web/lexicon.tsx", admin: true, nav: "Từ điển đọc", shell: "engine", group: "Production" },
     { path: "voice", file: "web/voice.tsx", admin: true, nav: "Voice", shell: "engine", group: "Production" },
+    { path: "journal", file: "web/journal.tsx", admin: true, nav: "Nhật ký", shell: "engine", group: "Production" },
   ],
 });

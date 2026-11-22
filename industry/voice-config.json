@@ -5,7 +5,6 @@
     "relay",
     "piper"
   ],
-  "sample_sentence": "Chào bạn đến với Điểm Tin Công Nghệ — bản tin công nghệ mỗi ngày.",
   "engines": {
     "vieneu": {
       "kind": "package",
@@ -25,7 +24,7 @@
     },
     "nvidia": {
       "kind": "api",
-      "enabled": false,
+      "enabled": true,
       "voice": "Magpie-Multilingual.VI-VN.Long",
       "preview_voice": "Magpie-Multilingual.VI-VN.Long",
       "model": "ai-magpie-tts-multilingual",
@@ -53,5 +52,6 @@
       "voice": "vi-VN-HoaiMyNeural",
       "preview_voice": "vi-VN-HoaiMyNeural"
     }
-  }
+  },
+  "sample_sentence": "Chào bạn đến với Điểm Tin Công Nghệ — bản tin công nghệ mỗi ngày."
 }
